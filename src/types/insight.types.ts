@@ -9,7 +9,13 @@ export type InsightType =
   | 'reward_hunter'
   | 'expensive_day'
   | 'responsible_one'
-  | 'money_network';
+  | 'money_network'
+  // NEW: Activity-based insights
+  | 'money_flow'
+  | 'transaction_partner'
+  | 'peak_activity'
+  | 'bulk_payment'
+  | 'spending_category';
 
 export type InsightTone = 'funny' | 'hard-hitting' | 'thoughtful' | 'social' | 'wholesome';
 
@@ -78,4 +84,49 @@ export interface MoneyNetworkData {
   peopleCount: number;
   groupCount: number;
   people: string[];
+}
+
+// NEW: Activity-based insight data interfaces
+export interface MoneyFlowInsightData {
+  totalSent: { value: number; currency: 'INR' };
+  totalReceived: { value: number; currency: 'INR' };
+  netFlow: { value: number; currency: 'INR' };
+  sentCount: number;
+  receivedCount: number;
+  flowDirection: 'giver' | 'receiver' | 'balanced';
+}
+
+export interface TransactionPartnerInsightData {
+  mostFrequentPartner: string;
+  transactionCount: number;
+  totalAmount: { value: number; currency: 'INR' };
+  partnerType: 'recipient' | 'sender' | 'both';
+}
+
+export interface PeakActivityInsightData {
+  peakHour: number;
+  peakDay: string;
+  peakHourTransactions: number;
+  peakDayTransactions: number;
+  nightOwlScore: number;
+}
+
+export interface BulkPaymentInsightData {
+  maxTransactionsInHour: number;
+  maxTransactionsInDay: number;
+  busiestDate: Date;
+  velocityScore: number;
+}
+
+export interface SpendingCategoryInsightData {
+  topCategory: string;
+  topCategoryAmount: { value: number; currency: 'INR' };
+  topCategoryCount: number;
+  categoryBreakdown: Array<{
+    category: string;
+    amount: { value: number; currency: 'INR' };
+    count: number;
+    percentage: number;
+  }>;
+  diversityScore: number;
 }

@@ -37,9 +37,29 @@ export default function Story() {
             </div>
           </div>
 
+          <div className={styles.insightsSection}>
+            <h2>{insights.length} Insights Generated</h2>
+            {insights.length > 0 ? (
+              <div className={styles.insightsList}>
+                {insights.map((insight, index) => (
+                  <div key={index} className={styles.insightCard}>
+                    <h3 className={styles.insightTitle}>{insight.title}</h3>
+                    <p className={styles.insightMessage}>{insight.message}</p>
+                    <div className={styles.insightMeta}>
+                      <span className={styles.insightType}>{insight.type}</span>
+                      {insight.tone && <span className={styles.insightTone}>{insight.tone}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className={styles.noInsights}>No insights generated for this time period.</p>
+            )}
+          </div>
+
           <p className={styles.message}>
-            Story mode UI will be implemented in Phase 3!<br />
-            For now, you can see your data has been successfully processed.
+            Story mode UI with swipeable cards will be implemented in Phase 3!<br />
+            For now, you can see your insights have been calculated.
           </p>
 
           <button onClick={() => navigate('/')} className={styles.backButton}>

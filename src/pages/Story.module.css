@@ -48,6 +48,48 @@
          active:translate-y-0;
 }
 
+.insightsSection {
+  @apply mt-8 mb-8;
+}
+
+.insightsSection h2 {
+  @apply text-2xl font-bold mb-6;
+}
+
+.insightsList {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.insightCard {
+  @apply bg-white/10 backdrop-blur-sm rounded-lg p-5 text-left
+         border border-white/20 transition-all duration-300
+         hover:bg-white/15 hover:-translate-y-1 hover:shadow-lg;
+}
+
+.insightTitle {
+  @apply text-lg font-bold mb-3 m-0;
+}
+
+.insightMessage {
+  @apply text-sm leading-relaxed mb-3 opacity-90;
+}
+
+.insightMeta {
+  @apply flex gap-2 flex-wrap;
+}
+
+.insightType {
+  @apply inline-block bg-white/20 px-2 py-1 rounded text-xs font-medium;
+}
+
+.insightTone {
+  @apply inline-block bg-white/10 px-2 py-1 rounded text-xs;
+}
+
+.noInsights {
+  @apply text-base opacity-70;
+}
+
 @media (max-width: 768px) {
   .title {
     @apply text-3xl;
@@ -59,5 +101,9 @@
 
   .statNumber {
     @apply text-3xl;
+  }
+
+  .insightsList {
+    @apply grid-cols-1;
   }
 }

@@ -27,27 +27,46 @@ function removeAntiXSSIPrefix(jsonString: string): string {
 export function parseGroupExpensesJSON(jsonString: string): JSONParseResult<GroupExpense> {
   try {
     if (!jsonString || jsonString.trim().length === 0) {
+      console.warn('Empty group expenses JSON');
       return { success: true, data: [] };
     }
 
-    const cleaned = removeAntiXSSIPrefix(jsonString);
-    const parsed = JSON.parse(cleaned);
+    console.log('Group expenses JSON preview (first 200 chars):', jsonString.substring(0, 200));
 
-    // Handle different JSON structures
-    let expenses = Array.isArray(parsed) ? parsed : parsed.groupExpenses || [];
+    const cleaned = removeAntiXSSIPrefix(jsonString);
+    console.log('After removing XSSI prefix (first 200 chars):', cleaned.substring(0, 200));
+
+    const parsed = JSON.parse(cleaned);
+    console.log('Parsed group expenses JSON structure:', {
+      isArray: Array.isArray(parsed),
+      keys: typeof parsed === 'object' ? Object.keys(parsed) : 'not an object',
+      firstItem: Array.isArray(parsed) ? parsed[0] : null,
+    });
+
+    // Handle different JSON structures - support both camelCase and snake_case
+    let expenses = Array.isArray(parsed)
+      ? parsed
+      : (parsed.Group_expenses || parsed.groupExpenses || []);
+    console.log(`Found ${expenses.length} group expenses in JSON`);
 
     const transformedExpenses = expenses
-      .map((expense: any) => {
+      .map((expense: any, index: number) => {
         try {
-          if (!expense.creationTime) {
+          // Support both snake_case and camelCase field names
+          const creationTime = expense.creation_time || expense.creationTime;
+          const groupName = expense.group_name || expense.groupName;
+          const totalAmount = expense.total_amount || expense.totalAmount;
+
+          if (!creationTime) {
+            if (index < 3) console.warn(`Skipping group expense ${index} - no creation_time:`, expense);
             return null;
           }
 
           return {
-            creationTime: new Date(expense.creationTime),
+            creationTime: new Date(creationTime),
             creator: expense.creator || '',
-            groupName: expense.groupName || '',
-            totalAmount: parseCurrency(expense.totalAmount || ''),
+            groupName: groupName || '',
+            totalAmount: parseCurrency(totalAmount || ''),
             state: expense.state || 'ONGOING',
             title: expense.title || '',
             items: (expense.items || []).map((item: any) => ({
@@ -57,13 +76,16 @@ export function parseGroupExpensesJSON(jsonString: string): JSONParseResult<Grou
             })),
           } as GroupExpense;
         } catch (error) {
+          console.error(`Error transforming group expense ${index}:`, error, expense);
           return null;
         }
       })
       .filter((item): item is GroupExpense => item !== null);
 
+    console.log(`Transformed ${expenses.length} expenses to ${transformedExpenses.length} valid items`);
     return { success: true, data: transformedExpenses };
   } catch (error) {
+    console.error('Group expenses JSON parse error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown JSON parsing error',
@@ -77,36 +99,56 @@ export function parseGroupExpensesJSON(jsonString: string): JSONParseResult<Grou
 export function parseVoucherRewardsJSON(jsonString: string): JSONParseResult<Voucher> {
   try {
     if (!jsonString || jsonString.trim().length === 0) {
+      console.warn('Empty voucher rewards JSON');
       return { success: true, data: [] };
     }
 
-    const cleaned = removeAntiXSSIPrefix(jsonString);
-    const parsed = JSON.parse(cleaned);
+    console.log('Voucher rewards JSON preview (first 200 chars):', jsonString.substring(0, 200));
 
-    // Handle different JSON structures
-    let vouchers = Array.isArray(parsed) ? parsed : parsed.vouchers || [];
+    const cleaned = removeAntiXSSIPrefix(jsonString);
+    console.log('After removing XSSI prefix (first 200 chars):', cleaned.substring(0, 200));
+
+    const parsed = JSON.parse(cleaned);
+    console.log('Parsed voucher JSON structure:', {
+      isArray: Array.isArray(parsed),
+      keys: typeof parsed === 'object' ? Object.keys(parsed) : 'not an object',
+      firstItem: Array.isArray(parsed) ? parsed[0] : null,
+    });
+
+    // Handle different JSON structures - support multiple field names
+    let vouchers = Array.isArray(parsed)
+      ? parsed
+      : (parsed.couponRewardExportRecord || parsed.vouchers || []);
+    console.log(`Found ${vouchers.length} vouchers in JSON`);
 
     const transformedVouchers = vouchers
-      .map((voucher: any) => {
+      .map((voucher: any, index: number) => {
         try {
           if (!voucher.code) {
+            if (index < 3) console.warn(`Skipping voucher ${index} - no code:`, voucher);
             return null;
           }
+
+          // Support both expiryDate and expiry_date field names
+          const expiryDate = voucher.expiryDate || voucher.expiry_date || voucher.expiration_date;
 
           return {
             code: voucher.code,
             details: voucher.details || '',
             summary: voucher.summary || '',
-            expiryDate: voucher.expiryDate ? new Date(voucher.expiryDate) : new Date(),
+            expiryDate: expiryDate ? new Date(expiryDate) : new Date(),
           } as Voucher;
         } catch (error) {
+          console.error(`Error transforming voucher ${index}:`, error, voucher);
           return null;
         }
       })
       .filter((item): item is Voucher => item !== null);
 
+    console.log(`Transformed ${vouchers.length} vouchers to ${transformedVouchers.length} valid items`);
     return { success: true, data: transformedVouchers };
   } catch (error) {
+    console.error('Voucher JSON parse error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown JSON parsing error',

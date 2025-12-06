@@ -1,5 +1,7 @@
 // Core data structure types for Google Pay export data
 
+import type { TransactionCategory } from '../utils/categoryUtils';
+
 export interface Currency {
   value: number;
   currency: 'INR' | 'USD';
@@ -13,6 +15,7 @@ export interface Transaction {
   method: string;
   status: string;
   amount: Currency;
+  category?: TransactionCategory;
 }
 
 export interface GroupExpenseItem {
@@ -45,11 +48,26 @@ export interface Voucher {
   expiryDate: Date;
 }
 
+export interface ActivityRecord {
+  title: string;
+  time: Date;
+  description?: string;
+  products?: string[];
+
+  // NEW STRUCTURED FIELDS
+  transactionType?: 'sent' | 'received' | 'paid' | 'request' | 'other';
+  amount?: Currency;
+  recipient?: string;
+  sender?: string;
+  category?: TransactionCategory;
+}
+
 export interface ParsedData {
   transactions: Transaction[];
   groupExpenses: GroupExpense[];
   cashbackRewards: CashbackReward[];
   voucherRewards: Voucher[];
+  activities: ActivityRecord[];
 }
 
 export interface RawExtractedData {
@@ -58,4 +76,5 @@ export interface RawExtractedData {
   cashbackRewards?: string;
   voucherRewards?: string;
   remittances?: string;
+  myActivity?: string;
 }
