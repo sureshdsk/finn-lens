@@ -15,7 +15,13 @@ export type InsightType =
   | 'transaction_partner'
   | 'peak_activity'
   | 'bulk_payment'
-  | 'spending_category';
+  | 'spending_category'
+  // FUNNY INSIGHTS
+  | 'payment_streak'
+  | 'split_dodger'
+  | 'midnight_shopper'
+  | 'smallest_payment'
+  | 'round_number_obsession';
 
 export type InsightTone = 'funny' | 'hard-hitting' | 'thoughtful' | 'social' | 'wholesome';
 
@@ -129,4 +135,39 @@ export interface SpendingCategoryInsightData {
     percentage: number;
   }>;
   diversityScore: number;
+}
+
+// FUNNY INSIGHTS DATA INTERFACES
+export interface PaymentStreakInsightData {
+  longestStreak: number;
+  streakStartDate: Date;
+  streakEndDate: Date;
+  currentStreak: number;
+}
+
+export interface SplitDodgerInsightData {
+  totalSplits: number;
+  dodgedCount: number;
+  dodgedAmount: { value: number; currency: 'INR' };
+  dodgeRate: number;
+}
+
+export interface MidnightShopperInsightData {
+  lateNightCount: number;
+  latestHour: number;
+  latestTransaction: string;
+  totalLateNightSpending: { value: number; currency: 'INR' };
+}
+
+export interface SmallestPaymentInsightData {
+  amount: { value: number; currency: 'INR' };
+  description: string;
+  date: Date;
+}
+
+export interface RoundNumberObsessionInsightData {
+  roundPayments: number;
+  totalPayments: number;
+  roundPercentage: number;
+  favoriteRoundNumber: number;
 }

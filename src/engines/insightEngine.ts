@@ -29,6 +29,12 @@ import { calculatePeakActivityInsight } from './calculators/peakActivityCalculat
 import { calculateBulkPaymentInsight } from './calculators/bulkPaymentCalculator';
 import { calculateSpendingCategoryInsight } from './calculators/spendingCategoryCalculator';
 
+// FUNNY: Humorous calculators
+import { calculatePaymentStreakInsight } from './calculators/paymentStreakCalculator';
+import { calculateMidnightShopperInsight } from './calculators/midnightShopperCalculator';
+import { calculateSmallestPaymentInsight } from './calculators/smallestPaymentCalculator';
+import { calculateRoundNumberObsessionInsight } from './calculators/roundNumberCalculator';
+
 /**
  * Calculate all insights for the given data and year filter
  */
@@ -91,14 +97,34 @@ export function calculateAllInsights(
   const categoryInsight = calculateSpendingCategoryInsight(filteredData);
   if (categoryInsight) insights.push(categoryInsight);
 
+  // FUNNY: Humorous insights
+  const paymentStreakInsight = calculatePaymentStreakInsight(filteredData);
+  if (paymentStreakInsight) insights.push(paymentStreakInsight);
+
+  const midnightShopperInsight = calculateMidnightShopperInsight(filteredData);
+  if (midnightShopperInsight) insights.push(midnightShopperInsight);
+
+  const smallestPaymentInsight = calculateSmallestPaymentInsight(filteredData);
+  if (smallestPaymentInsight) insights.push(smallestPaymentInsight);
+
+  const roundNumberInsight = calculateRoundNumberObsessionInsight(filteredData);
+  if (roundNumberInsight) insights.push(roundNumberInsight);
+
+  const funnyInsightCount = [
+    paymentStreakInsight,
+    midnightShopperInsight,
+    smallestPaymentInsight,
+    roundNumberInsight
+  ].filter(Boolean).length;
+
   console.log(
     `Generated ${insights.length} insights (including ${
       [moneyFlowInsight, transactionPartnerInsight, peakActivityInsight, bulkPaymentInsight, categoryInsight].filter(
         Boolean
       ).length
-    } activity/category-based)`
+    } activity/category-based, ${funnyInsightCount} funny insights)`
   );
 
-  // Return max 10 insights
-  return insights.slice(0, 10);
+  // Return max 12 insights (increased to accommodate funny ones)
+  return insights.slice(0, 12);
 }
