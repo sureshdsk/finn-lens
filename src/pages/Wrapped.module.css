@@ -9,7 +9,7 @@
 }
 
 .progressSegment {
-  @apply flex-1 h-1 bg-white/30 rounded-full cursor-pointer
+  @apply flex-1 h-0.5 bg-white/20 rounded-full cursor-pointer
          transition-all duration-300;
 }
 
@@ -25,32 +25,32 @@
 }
 
 .slideWrapper {
-  @apply relative w-full max-w-md h-full flex items-center justify-center;
+  @apply relative w-full max-w-sm h-full flex items-center justify-center;
   max-height: 100%;
 }
 
 .shareIcon {
-  @apply absolute top-4 right-4 w-10 h-10 rounded-full
-         bg-white/20 backdrop-blur-sm border border-white/30
-         text-white text-lg font-bold
+  @apply absolute top-4 right-4 w-9 h-9 rounded-full
+         bg-black/20 backdrop-blur-sm border border-white/20
+         text-white text-sm font-medium
          flex items-center justify-center
          cursor-pointer transition-all duration-200
-         hover:bg-white/30 hover:scale-110
+         hover:bg-black/30 hover:scale-105
          active:scale-95 disabled:opacity-50;
   z-index: 10;
 }
 
 .slide {
-  @apply w-full rounded-3xl overflow-hidden shadow-2xl relative;
+  @apply w-full rounded-2xl overflow-hidden shadow-xl relative;
   aspect-ratio: 9 / 16;
   max-height: 100%;
-  animation: slideIn 0.4s ease-out;
+  animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;
@@ -64,33 +64,32 @@
 }
 
 .slideIcon {
-  @apply text-7xl mb-6;
-  animation: bounce 2s ease-in-out infinite;
+  @apply text-6xl mb-5;
+  animation: float 3s ease-in-out infinite;
 }
 
-@keyframes bounce {
+@keyframes float {
   0%, 100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
 }
 
 .slideTitle {
-  @apply text-xl font-medium opacity-90 mb-2;
+  @apply text-base font-medium opacity-80 mb-2;
 }
 
 .slideValue {
-  @apply text-5xl font-black mb-4;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  animation: popIn 0.5s ease-out 0.2s both;
+  @apply text-4xl font-bold mb-3;
+  animation: popIn 0.4s ease-out 0.1s both;
 }
 
 @keyframes popIn {
   from {
     opacity: 0;
-    transform: scale(0.5);
+    transform: scale(0.8);
   }
   to {
     opacity: 1;
@@ -99,21 +98,21 @@
 }
 
 .slideSubtitle {
-  @apply text-lg opacity-80 mb-2;
+  @apply text-sm opacity-70 mb-2;
 }
 
 .slideDetail {
-  @apply text-sm opacity-60 mt-2 bg-white/10 px-4 py-2 rounded-full;
+  @apply text-xs opacity-50 mt-3 bg-white/10 px-4 py-2 rounded-full;
 }
 
 .watermark {
-  @apply absolute bottom-6 left-0 right-0 text-center
-         text-xs opacity-50 font-medium;
+  @apply absolute bottom-5 left-0 right-0 text-center
+         text-xs opacity-40 font-medium;
 }
 
 /* Navigation hints */
 .navHints {
-  @apply flex justify-between items-center px-6 py-2 text-white/50 text-sm;
+  @apply flex justify-between items-center px-6 py-2 text-white/40 text-xs;
 }
 
 .navHint {
@@ -121,7 +120,7 @@
 }
 
 .slideCounter {
-  @apply font-medium text-white/70;
+  @apply font-medium text-white/60;
 }
 
 /* Action buttons */
@@ -130,31 +129,30 @@
 }
 
 .exitButton {
-  @apply px-8 bg-white/10 text-white font-semibold py-3 rounded-xl
-         border border-white/20 transition-all duration-300
-         hover:bg-white/20 active:scale-95;
+  @apply px-6 bg-white/10 text-white text-sm font-medium py-2.5 rounded-lg
+         border border-white/10 transition-all duration-200
+         hover:bg-white/15 active:scale-95;
 }
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .slide {
-    @apply max-w-full rounded-2xl;
+    @apply max-w-full rounded-xl;
     aspect-ratio: 9 / 16;
   }
 
   .slideValue {
-    @apply text-4xl;
+    @apply text-3xl;
   }
 
   .slideIcon {
-    @apply text-6xl;
+    @apply text-5xl;
   }
 
   .slideContent {
     @apply p-6;
   }
 }
-
 
 /* Touch feedback */
 .slideContainer:active .slide {

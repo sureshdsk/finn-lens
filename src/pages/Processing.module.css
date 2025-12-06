@@ -1,31 +1,29 @@
 .processing {
-  @apply min-h-screen flex items-center justify-center
-         bg-gradient-to-br from-primary-500 to-secondary-500 p-5;
+  @apply min-h-screen flex items-center justify-center bg-primary-50 p-6;
 }
 
 .container {
-  @apply text-center text-white max-w-lg w-full;
+  @apply text-center max-w-md w-full;
 }
 
 .title {
-  @apply text-4xl font-extrabold mb-3 m-0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  @apply text-2xl font-bold mb-2 text-primary-900;
 }
 
 .subtitle {
-  @apply text-lg mb-10 opacity-90;
+  @apply text-sm mb-12 text-primary-400;
 }
 
 .stagesContainer {
-  @apply flex justify-center gap-8 mb-12 flex-wrap;
+  @apply flex justify-center gap-8 mb-12;
 }
 
 .stage {
-  @apply flex flex-col items-center gap-3 opacity-40 transition-all duration-300;
+  @apply flex flex-col items-center gap-3 opacity-30 transition-all duration-300;
 }
 
 .stageActive {
-  @apply opacity-100 scale-110;
+  @apply opacity-100;
 }
 
 .stageComplete {
@@ -33,24 +31,28 @@
 }
 
 .stageIcon {
-  @apply text-4xl w-16 h-16 flex items-center justify-center
-         bg-white/20 rounded-full backdrop-blur-sm;
+  @apply text-2xl w-14 h-14 flex items-center justify-center
+         bg-primary-100 rounded-2xl text-primary-500;
+}
+
+.stageActive .stageIcon {
+  @apply bg-primary-900 text-white;
 }
 
 .stageComplete .stageIcon {
-  @apply bg-white/30 text-green-400;
+  @apply bg-accent-500 text-white;
 }
 
 .stageLabel {
-  @apply text-sm font-medium;
+  @apply text-xs font-medium text-primary-500;
 }
 
 .loader {
-  @apply flex justify-center mb-8;
+  @apply flex justify-center mb-10;
 }
 
 .spinner {
-  @apply w-12 h-12 border-4 border-white/30 border-t-white rounded-full;
+  @apply w-8 h-8 border-2 border-primary-200 border-t-primary-900 rounded-full;
   animation: spin 1s linear infinite;
 }
 
@@ -61,44 +63,40 @@
 }
 
 .privacyNote {
-  @apply text-sm opacity-80 mt-8;
+  @apply text-xs text-primary-400;
 }
 
 /* Error state */
 .errorContainer {
-  @apply text-center text-white;
+  @apply text-center;
 }
 
 .errorIcon {
-  @apply text-6xl mb-4;
+  @apply text-5xl mb-4;
 }
 
 .errorTitle {
-  @apply text-3xl font-bold mb-4;
+  @apply text-xl font-bold mb-4 text-primary-900;
 }
 
 .errorMessage {
-  @apply text-lg mb-8 opacity-90 bg-white/10 p-4 rounded-lg;
+  @apply text-sm mb-8 text-primary-600 bg-white p-4 rounded-2xl border border-primary-100;
 }
 
 .retryButton {
-  @apply bg-white text-primary-600 border-0 px-8 py-3 text-base font-semibold
-         rounded-lg cursor-pointer transition-all duration-300
-         hover:-translate-y-0.5 hover:shadow-lg
-         active:translate-y-0;
+  @apply bg-primary-900 text-white border-0 px-8 py-3 text-sm font-semibold
+         rounded-xl cursor-pointer transition-all duration-200
+         hover:bg-primary-800
+         active:scale-95;
 }
 
 @media (max-width: 768px) {
-  .title {
-    @apply text-3xl;
-  }
-
   .stagesContainer {
     @apply gap-4;
   }
 
   .stageIcon {
-    @apply text-3xl w-12 h-12;
+    @apply text-xl w-12 h-12;
   }
 
   .stageLabel {

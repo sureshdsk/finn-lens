@@ -1,121 +1,107 @@
 .story {
-  @apply min-h-screen flex items-center justify-center
-         bg-gradient-to-br from-primary-500 to-secondary-500 p-5;
+  @apply min-h-screen flex items-center justify-center bg-primary-50 p-6;
 }
 
 .container {
-  @apply text-center text-white max-w-4xl w-full;
+  @apply text-center max-w-3xl w-full;
 }
 
 .title {
-  @apply text-4xl font-extrabold mb-10 m-0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  @apply text-3xl font-bold mb-8 text-primary-900;
 }
 
 .debugInfo {
-  @apply bg-white/15 backdrop-blur-md rounded-xl p-8
-         border border-white/20;
+  @apply bg-white rounded-2xl p-8 border border-primary-100;
 }
 
 .debugInfo h2 {
-  @apply text-2xl font-bold mb-8;
+  @apply text-lg font-semibold mb-6 text-primary-700;
 }
 
 .totalSpentCard {
-  @apply bg-gradient-to-r from-green-400/30 to-emerald-500/30
-         rounded-2xl p-8 mb-8 border border-white/30;
+  @apply bg-primary-900 text-white rounded-2xl p-8 mb-8;
 }
 
 .totalSpentAmount {
-  @apply text-6xl font-black mb-2;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  @apply text-5xl font-bold mb-2;
 }
 
 .totalSpentLabel {
-  @apply text-lg opacity-90;
+  @apply text-sm text-primary-300;
 }
 
 .stats {
-  @apply grid grid-cols-2 md:grid-cols-4 gap-6 mb-8;
+  @apply grid grid-cols-2 md:grid-cols-4 gap-3 mb-8;
 }
 
 .stat {
-  @apply bg-white/10 rounded-lg p-4;
+  @apply bg-primary-50 rounded-xl p-4 border border-primary-100;
 }
 
 .statNumber {
-  @apply text-4xl font-extrabold mb-2;
+  @apply text-3xl font-bold mb-1 text-primary-900;
 }
 
 .statLabel {
-  @apply text-sm opacity-80;
+  @apply text-xs text-primary-500;
 }
 
 .message {
-  @apply text-base leading-relaxed mb-8 opacity-90;
+  @apply text-sm leading-relaxed mb-8 text-primary-600;
 }
 
 .actionButtons {
-  @apply flex flex-col sm:flex-row gap-4 justify-center mt-8 flex-wrap;
+  @apply flex flex-col sm:flex-row gap-3 justify-center mt-8;
 }
 
 .wrappedButton {
-  @apply bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white
-         border-0 px-8 py-4 text-lg font-bold
-         rounded-xl cursor-pointer transition-all duration-300
-         hover:-translate-y-1 hover:shadow-xl hover:shadow-orange-500/30
-         active:translate-y-0 animate-pulse;
-  animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    box-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
-  }
-  to {
-    box-shadow: 0 0 20px rgba(251, 146, 60, 0.8), 0 0 30px rgba(236, 72, 153, 0.4);
-  }
+  @apply bg-primary-900 text-white
+         border-0 px-8 py-4 text-base font-semibold
+         rounded-xl cursor-pointer transition-all duration-200
+         hover:bg-primary-800
+         active:scale-95;
 }
 
 .categoriesButton {
-  @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white
-         border-0 px-8 py-3 text-base font-semibold
-         rounded-lg cursor-pointer transition-all duration-300
-         hover:-translate-y-0.5 hover:shadow-lg
-         active:translate-y-0;
+  @apply bg-white text-primary-800
+         border border-primary-200 px-6 py-3 text-sm font-medium
+         rounded-xl cursor-pointer transition-all duration-200
+         hover:bg-primary-50 hover:border-primary-300
+         active:scale-95;
 }
 
 .backButton {
-  @apply bg-white text-primary-600 border-0 px-8 py-3 text-base font-semibold
-         rounded-lg cursor-pointer transition-all duration-300
-         hover:-translate-y-0.5 hover:shadow-lg
-         active:translate-y-0;
+  @apply bg-transparent text-primary-500 border-0
+         px-6 py-3 text-sm font-medium
+         rounded-xl cursor-pointer transition-all duration-200
+         hover:text-primary-700 hover:bg-primary-100
+         active:scale-95;
 }
 
 .insightsSection {
-  @apply mt-8 mb-8;
+  @apply mt-8 mb-6;
 }
 
 .insightsSection h2 {
-  @apply text-2xl font-bold mb-6;
+  @apply text-base font-semibold mb-4 text-primary-700;
 }
 
 .insightsList {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+  @apply grid grid-cols-1 md:grid-cols-2 gap-3;
 }
 
 .insightCard {
-  @apply bg-white/10 backdrop-blur-sm rounded-lg p-5 text-left
-         border border-white/20 transition-all duration-300
-         hover:bg-white/15 hover:-translate-y-1 hover:shadow-lg;
+  @apply bg-primary-50 rounded-xl p-4 text-left
+         border border-primary-100 transition-all duration-200
+         hover:border-primary-200;
 }
 
 .insightTitle {
-  @apply text-lg font-bold mb-3 m-0;
+  @apply text-sm font-semibold mb-2 text-primary-800;
 }
 
 .insightMessage {
-  @apply text-sm leading-relaxed mb-3 opacity-90;
+  @apply text-xs leading-relaxed mb-2 text-primary-600;
 }
 
 .insightMeta {
@@ -123,20 +109,20 @@
 }
 
 .insightType {
-  @apply inline-block bg-white/20 px-2 py-1 rounded text-xs font-medium;
+  @apply inline-block bg-primary-200 text-primary-700 px-2 py-0.5 rounded text-xs font-medium;
 }
 
 .insightTone {
-  @apply inline-block bg-white/10 px-2 py-1 rounded text-xs;
+  @apply inline-block bg-primary-100 text-primary-500 px-2 py-0.5 rounded text-xs;
 }
 
 .noInsights {
-  @apply text-base opacity-70;
+  @apply text-sm text-primary-400;
 }
 
 @media (max-width: 768px) {
   .title {
-    @apply text-3xl;
+    @apply text-2xl;
   }
 
   .stats {
@@ -144,10 +130,14 @@
   }
 
   .statNumber {
-    @apply text-3xl;
+    @apply text-2xl;
   }
 
   .insightsList {
     @apply grid-cols-1;
+  }
+
+  .totalSpentAmount {
+    @apply text-4xl;
   }
 }

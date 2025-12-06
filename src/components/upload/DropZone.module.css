@@ -1,19 +1,18 @@
 .container {
-  @apply w-full max-w-2xl mx-auto;
+  @apply w-full max-w-xl mx-auto;
 }
 
 .dropzone {
-  @apply border-2 border-dashed border-primary-500 rounded-xl p-10 text-center
-         bg-gradient-to-br from-primary-50 to-primary-100
-         transition-all duration-300 cursor-pointer;
+  @apply border-2 border-dashed border-primary-300 rounded-2xl p-12 text-center
+         bg-white transition-all duration-200 cursor-pointer;
 }
 
 .dropzone:hover {
-  @apply border-primary-600 from-primary-100 to-primary-200 -translate-y-0.5;
+  @apply border-primary-400 bg-primary-50;
 }
 
 .dragging {
-  @apply border-primary-700 from-primary-200 to-primary-300 scale-[1.02];
+  @apply border-primary-500 bg-primary-100;
 }
 
 .disabled {
@@ -25,44 +24,43 @@
 }
 
 .icon {
-  @apply text-6xl mb-4;
+  @apply text-5xl mb-5;
 }
 
 .title {
-  @apply text-2xl font-semibold mb-2 text-gray-900;
+  @apply text-xl font-semibold mb-2 text-primary-900;
 }
 
 .description {
-  @apply text-base text-gray-600 my-2;
+  @apply text-sm text-primary-500 my-2;
 }
 
 .or {
-  @apply text-sm text-gray-500 my-4 font-medium;
+  @apply text-xs text-primary-400 my-5 font-medium uppercase tracking-wider;
 }
 
 .uploadButton {
-  @apply bg-gradient-to-r from-primary-500 to-secondary-500
-         text-white border-0 px-8 py-3 text-base font-semibold
-         rounded-lg cursor-pointer transition-all duration-300 mt-2
-         hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary-400/40
-         active:translate-y-0
+  @apply bg-primary-900 text-white border-0 px-8 py-3 text-sm font-semibold
+         rounded-xl cursor-pointer transition-all duration-200
+         hover:bg-primary-800
+         active:scale-95
          disabled:opacity-60 disabled:cursor-not-allowed;
 }
 
 .error {
-  @apply bg-red-100 text-red-700 px-4 py-3 rounded-lg mt-4 text-sm font-medium;
+  @apply bg-red-50 text-red-600 px-4 py-3 rounded-xl mt-4 text-sm border border-red-100;
 }
 
 .helpText {
-  @apply mt-8 p-6 bg-white rounded-lg shadow-sm;
+  @apply mt-8 p-5 bg-white rounded-2xl border border-primary-100;
 }
 
 .helpTitle {
-  @apply text-lg font-semibold mb-4 text-gray-900;
+  @apply text-sm font-semibold mb-4 text-primary-800;
 }
 
 .helpList {
-  @apply text-left pl-5 m-0 text-gray-600 leading-relaxed list-decimal;
+  @apply text-left pl-5 m-0 text-primary-500 leading-relaxed list-decimal text-sm;
 }
 
 .helpList li {
@@ -70,5 +68,5 @@
 }
 
 .helpList a {
-  @apply text-primary-500 no-underline font-medium hover:underline;
+  @apply text-primary-700 underline font-medium hover:text-primary-900;
 }

@@ -1,18 +1,17 @@
 .landing {
-  @apply min-h-screen flex flex-col bg-gradient-to-br from-primary-500 to-secondary-500 p-5;
+  @apply min-h-screen flex flex-col bg-primary-50 p-6;
 }
 
 .header {
-  @apply text-center py-10 px-5 text-white;
+  @apply text-center py-12 px-5;
 }
 
 .title {
-  @apply text-5xl font-extrabold m-0 mb-3;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  @apply text-5xl font-bold m-0 mb-4 text-primary-900 tracking-tight;
 }
 
 .subtitle {
-  @apply text-xl font-normal m-0 opacity-95;
+  @apply text-lg font-normal m-0 text-primary-500;
 }
 
 .main {
@@ -24,12 +23,13 @@
 }
 
 .privacyBadge {
-  @apply flex items-center gap-4 bg-white/15 backdrop-blur-md
-         px-6 py-4 rounded-xl border border-white/20 text-white max-w-md;
+  @apply flex items-center gap-4 bg-white
+         px-5 py-4 rounded-2xl border border-primary-200
+         text-primary-600 max-w-md;
 }
 
 .badgeIcon {
-  @apply text-3xl;
+  @apply text-2xl;
 }
 
 .badgeContent {
@@ -37,11 +37,11 @@
 }
 
 .badgeTitle {
-  @apply block text-base font-semibold mb-1;
+  @apply block text-sm font-semibold mb-0.5 text-primary-800;
 }
 
 .badgeText {
-  @apply m-0 text-sm opacity-90;
+  @apply m-0 text-sm text-primary-500;
 }
 
 @media (max-width: 768px) {
@@ -50,7 +50,7 @@
   }
 
   .subtitle {
-    @apply text-lg;
+    @apply text-base;
   }
 
   .privacyBadge {
