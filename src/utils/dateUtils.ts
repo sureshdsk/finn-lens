@@ -100,10 +100,6 @@ function isFailedActivity(activity: ActivityRecord): boolean {
     'canceled',
     'rejected',
     'unsuccessful',
-    'could not',
-    'refund',
-    'reversed',
-    'pending',  // Also exclude pending transactions
   ];
 
   // Check title

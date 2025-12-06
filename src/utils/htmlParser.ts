@@ -114,14 +114,24 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
 
         // Check if this activity is marked as Failed
         // Failed transactions have "Failed" text in the content
-        const isFailed = contentText.toLowerCase().includes('failed') ||
-                        contentHTML.toLowerCase().includes('failed');
+        // Also check for other failure indicators
+        const lowerContent = contentText.toLowerCase();
+        const failureKeywords = [
+          'failed',
+          'declined',
+          'cancelled',
+          'canceled',
+          'rejected',
+          'unsuccessful',
+        ];
+
+        const isFailed = failureKeywords.some(keyword => lowerContent.includes(keyword));
 
         if (isFailed) {
           failedCount++;
           // Skip failed transactions - don't add them to activities
           if (index < 10 || failedCount <= 5) {
-            console.log(`Skipping failed activity ${index}:`, contentText.substring(0, 100));
+            console.log(`Skipping failed activity ${index}:`, contentText.substring(0, 150));
           }
           return;
         }
