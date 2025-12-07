@@ -168,6 +168,24 @@
   font-size: 0.9375rem;
 }
 
+.dateTimeCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 120px;
+}
+
+.dateText {
+  font-weight: 600;
+  color: #333;
+}
+
+.timeText {
+  font-size: 0.75rem;
+  color: #666;
+  font-family: 'Courier New', monospace;
+}
+
 .descriptionCell {
   max-width: 300px;
   overflow: hidden;
@@ -188,8 +206,15 @@
 
 .amountCell {
   font-weight: 600;
-  color: #667eea;
   font-family: 'Courier New', monospace;
+}
+
+.amountSent {
+  color: #e53e3e;
+}
+
+.amountReceived {
+  color: #38a169;
 }
 
 .categoryBadge {
@@ -241,6 +266,35 @@
 .statusBadge.failed {
   background: #ffebee;
   color: #c62828;
+}
+
+/* Direction Badges */
+.directionBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.directionSent {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.directionPaid {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.directionReceived {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.directionOther {
+  background: #f5f5f5;
+  color: #666;
 }
 
 .emptyState {

@@ -2,7 +2,7 @@
 
 import { ActivityRecord, Currency } from '../types/data.types';
 import { parseCurrency } from './currencyUtils';
-import { categorizeTransaction } from './categoryUtils';
+import { classifyTransaction } from './multi-layer-classifier';
 
 export interface HTMLParseResult {
   success: boolean;
@@ -187,6 +187,9 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
 
         // Only add if we have a valid title
         if (title) {
+          // Extract amount value for classification
+          const amountValue = amount?.value || 0;
+
           activities.push({
             title,
             time: activityDate,
@@ -197,7 +200,7 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
             amount,
             recipient,
             sender,
-            category: categorizeTransaction(title + ' ' + contentText),
+            category: classifyTransaction(title + ' ' + contentText, amountValue),
           });
         }
 

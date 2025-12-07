@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import { categorizeTransaction } from './categoryUtils';
+import { classifyTransaction } from './multi-layer-classifier';
 
 export interface CSVParseResult<T> {
   success: boolean;
@@ -93,6 +93,9 @@ export function parseTransactionsCSV(csvString: string) {
       }
 
       const description = row.Description || '';
+      const amountStr = row.Amount || '0';
+      // Extract numeric value for classification (remove currency symbols and commas)
+      const amountValue = parseFloat(amountStr.replace(/[₹$,]/g, '')) || 0;
 
       return {
         time: new Date(row.Time),
@@ -101,8 +104,8 @@ export function parseTransactionsCSV(csvString: string) {
         product: row.Product || '',
         method: row['Payment method'] || row.Method || '',
         status: row.Status || '',
-        amount: row.Amount || '', // Will be parsed by currencyUtils
-        category: categorizeTransaction(description),
+        amount: amountStr, // Will be parsed by currencyUtils
+        category: classifyTransaction(description, amountValue),
       };
     } catch (error) {
       console.error(`Error transforming row ${rowsProcessed}:`, error, row);

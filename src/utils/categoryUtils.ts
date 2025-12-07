@@ -1,6 +1,8 @@
 // Category classification utilities
+// This file is maintained for backward compatibility
+// New code should use multi-layer-classifier.ts instead
 
-import categories from '../categories.json';
+import classificationRules from '../config/classification-rules.json' assert { type: 'json' };
 import { Currency } from '../types/data.types';
 
 export type TransactionCategory =
@@ -10,13 +12,20 @@ export type TransactionCategory =
   | 'Entertainment'
   | 'E-commerce'
   | 'Travel & Transport'
+  | 'Bills & Utilities'
   | 'Utilities & Bills'
   | 'Healthcare'
   | 'Education'
+  | 'Investment & Finance'
   | 'Investments'
   | 'Transfers'
   | 'Bank Transfers'
+  | 'Transfers & Payments'
+  | 'Services & Miscellaneous'
   | 'Others';
+
+// Extract categories from unified config
+const categories = classificationRules.categories as Record<string, { keywords: string[] }>;
 
 /**
  * Convert any currency to INR for aggregation
@@ -32,15 +41,17 @@ export function convertToINR(amount: Currency): number {
 
 /**
  * Categorize a transaction or activity based on description
- * Uses keyword matching from categories.json + smart pattern detection
+ * Uses keyword matching from unified config + smart pattern detection
+ *
+ * @deprecated Use classifyTransaction from multi-layer-classifier.ts for better accuracy
  */
 export function categorizeTransaction(description: string): TransactionCategory {
   const lowerDesc = description.toLowerCase();
 
   // FIRST: Check each category's keywords (business/service categories)
-  for (const [category, keywords] of Object.entries(categories)) {
-    if (category === 'Others') continue; // Skip "Others" in first pass
-    for (const keyword of keywords as string[]) {
+  for (const [category, rules] of Object.entries(categories)) {
+    if (category === 'Services & Miscellaneous') continue; // Skip fallback category in first pass
+    for (const keyword of rules.keywords) {
       if (lowerDesc.includes(keyword.toLowerCase())) {
         return category as TransactionCategory;
       }
@@ -81,7 +92,7 @@ export function categorizeTransaction(description: string): TransactionCategory 
     return 'Transfers';
   }
 
-  return 'Others'; // Default fallback
+  return 'Services & Miscellaneous'; // Default fallback
 }
 
 /**

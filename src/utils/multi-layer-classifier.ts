@@ -3,18 +3,30 @@
  * Implements priority-based, configurable merchant categorization
  */
 
-import categoriesData from '../categories.json' assert { type: 'json' };
-import classifierConfig from '../config/classifier-config.json' assert { type: 'json' };
-import type { ClassificationResult, CategoryConfig } from '../types/classifier.types';
+import classificationRules from '../config/classification-rules.json' assert { type: 'json' };
+import type { ClassificationResult } from '../types/classifier.types';
 
 interface CategoryRules {
   keywords: string[];
   patterns: string[];
+  exactMatches: Record<string, boolean>;
 }
 
 type Categories = Record<string, CategoryRules>;
 
-const categories: Categories = categoriesData as Categories;
+const config = classificationRules as {
+  version: string;
+  categories: Categories;
+  exclusions: {
+    payment_gateways: string[];
+    bank_isos: string[];
+    personal_indicators: string[];
+    technical_terms: string[];
+  };
+  fuzzyKeywords: Record<string, string[]>;
+};
+
+const categories = config.categories;
 
 /**
  * Layer 1: Exclusion Rules
@@ -22,17 +34,17 @@ const categories: Categories = categoriesData as Categories;
  */
 function checkExclusions(merchant: string): boolean {
   const lowerMerchant = merchant.toLowerCase();
-  const config = classifierConfig.exclusions;
+  const exclusions = config.exclusions;
 
   // Check payment gateways
-  for (const gateway of config.payment_gateways) {
+  for (const gateway of exclusions.payment_gateways) {
     if (lowerMerchant.includes(gateway.toLowerCase())) {
       return true;
     }
   }
 
   // Check bank ISOs (regex patterns)
-  for (const pattern of config.bank_isos) {
+  for (const pattern of exclusions.bank_isos) {
     try {
       const regex = new RegExp(pattern, 'i');
       if (regex.test(merchant)) {
@@ -44,7 +56,7 @@ function checkExclusions(merchant: string): boolean {
   }
 
   // Check personal name indicators
-  for (const pattern of config.personal_indicators) {
+  for (const pattern of exclusions.personal_indicators) {
     try {
       const regex = new RegExp(pattern, 'i');
       if (regex.test(merchant)) {
@@ -56,7 +68,7 @@ function checkExclusions(merchant: string): boolean {
   }
 
   // Check technical terms
-  for (const term of config.technical_terms) {
+  for (const term of exclusions.technical_terms) {
     if (lowerMerchant.includes(term.toLowerCase())) {
       return true;
     }
@@ -70,12 +82,14 @@ function checkExclusions(merchant: string): boolean {
  * Brand-specific exact matches (highest priority)
  */
 function checkExactMatches(merchant: string): string | null {
-  const exactMatches = classifierConfig.exactMatches as Record<string, string>;
   const upperMerchant = merchant.toUpperCase().trim();
 
-  for (const [exactMerchant, category] of Object.entries(exactMatches)) {
-    if (upperMerchant === exactMerchant.toUpperCase()) {
-      return category;
+  // Check each category's exact matches
+  for (const [category, rules] of Object.entries(categories)) {
+    for (const exactMerchant of Object.keys(rules.exactMatches)) {
+      if (upperMerchant === exactMerchant.toUpperCase()) {
+        return category;
+      }
     }
   }
 
@@ -88,7 +102,7 @@ function checkExactMatches(merchant: string): string | null {
  */
 function checkFuzzyKeywords(merchant: string): string | null {
   const lowerMerchant = merchant.toLowerCase();
-  const fuzzyKeywords = classifierConfig.fuzzyKeywords as Record<string, string[]>;
+  const fuzzyKeywords = config.fuzzyKeywords;
 
   // For each fuzzy keyword set, check if any variant matches
   for (const [baseKeyword, variants] of Object.entries(fuzzyKeywords)) {

@@ -25,6 +25,7 @@ interface TableRow {
   category?: string;
   status?: string;
   recipient?: string;
+  direction?: 'sent' | 'received' | 'paid' | 'other';
 }
 
 export default function DataTable() {
@@ -43,18 +44,24 @@ export default function DataTable() {
 
     const rows: TableRow[] = [];
 
-    // Add activities
+    // Add activities (both sent and received)
     parsedData.activities.forEach(activity => {
-      if (activity.amount && (activity.transactionType === 'sent' || activity.transactionType === 'paid')) {
+      if (activity.amount && activity.transactionType) {
+        const isReceived = activity.transactionType === 'received';
+        const displayAmount = convertToINR(activity.amount);
+
         rows.push({
           date: activity.time,
           type: 'activity',
-          description: activity.recipient || activity.title,
-          amount: convertToINR(activity.amount),
+          description: isReceived
+            ? (activity.sender ? `From ${activity.sender}` : activity.title)
+            : (activity.recipient ? `To ${activity.recipient}` : activity.title),
+          amount: displayAmount,
           currency: activity.amount.currency,
           category: activity.category,
           status: 'Completed',
           recipient: activity.recipient,
+          direction: activity.transactionType,
         });
       }
     });
@@ -136,13 +143,24 @@ export default function DataTable() {
     return filtered;
   }, [tableData, categoryFilter, typeFilter, yearFilter, monthFilter]);
 
-  // Calculate totals
+  // Calculate totals with direction awareness
   const totals = useMemo(() => {
-    const total = filteredData.reduce((sum, row) => sum + row.amount, 0);
+    const sent = filteredData
+      .filter(row => row.direction === 'sent' || row.direction === 'paid' || !row.direction)
+      .reduce((sum, row) => sum + row.amount, 0);
+
+    const received = filteredData
+      .filter(row => row.direction === 'received')
+      .reduce((sum, row) => sum + row.amount, 0);
+
+    const netFlow = received - sent;
+
     return {
-      total,
+      sent,
+      received,
+      netFlow,
       count: filteredData.length,
-      average: filteredData.length > 0 ? total / filteredData.length : 0,
+      average: filteredData.length > 0 ? sent / filteredData.length : 0,
     };
   }, [filteredData]);
 
@@ -151,13 +169,33 @@ export default function DataTable() {
   const columns = useMemo(
     () => [
       columnHelper.accessor('date', {
-        header: 'Date',
-        cell: info => info.getValue().toLocaleDateString('en-IN', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        }),
-        sortingFn: 'datetime',
+        header: 'Date & Time',
+        cell: info => {
+          const date = info.getValue();
+          return (
+            <div className={styles.dateTimeCell}>
+              <div className={styles.dateText}>
+                {date.toLocaleDateString('en-IN', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </div>
+              <div className={styles.timeText}>
+                {date.toLocaleTimeString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
+              </div>
+            </div>
+          );
+        },
+        sortingFn: (rowA, rowB, columnId) => {
+          const dateA = rowA.getValue<Date>(columnId);
+          const dateB = rowB.getValue<Date>(columnId);
+          return dateA.getTime() - dateB.getTime();
+        },
       }),
       columnHelper.accessor('description', {
         header: 'Description',
@@ -171,16 +209,43 @@ export default function DataTable() {
           </Tooltip>
         ),
       }),
+      columnHelper.accessor('direction', {
+        header: 'Direction',
+        cell: info => {
+          const direction = info.getValue();
+          if (!direction) return <span className={styles.directionBadge}>-</span>;
+
+          const directionStyles = {
+            sent: { label: '↑ Sent', className: styles.directionSent },
+            paid: { label: '↑ Paid', className: styles.directionPaid },
+            received: { label: '↓ Received', className: styles.directionReceived },
+            other: { label: '-', className: styles.directionOther },
+          };
+
+          const config = directionStyles[direction] || directionStyles.other;
+          return (
+            <span className={`${styles.directionBadge} ${config.className}`}>
+              {config.label}
+            </span>
+          );
+        },
+      }),
       columnHelper.accessor('amount', {
         header: 'Amount',
-        cell: info => (
-          <div className={styles.amountCell}>
-            ₹{info.getValue().toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </div>
-        ),
+        cell: info => {
+          const row = info.row.original;
+          const amount = info.getValue();
+          const isReceived = row.direction === 'received';
+
+          return (
+            <div className={`${styles.amountCell} ${isReceived ? styles.amountReceived : styles.amountSent}`}>
+              {isReceived ? '+' : '-'}₹{amount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
+          );
+        },
         sortingFn: 'basic',
       }),
       columnHelper.accessor('category', {
@@ -271,16 +336,26 @@ export default function DataTable() {
       {/* Summary Cards */}
       <div className={styles.summaryCards}>
         <div className={styles.summaryCard}>
-          <div className={styles.summaryLabel}>Total Spent</div>
-          <div className={styles.summaryValue}>{formatAmount(totals.total)}</div>
+          <div className={styles.summaryLabel}>Money Sent</div>
+          <div className={`${styles.summaryValue} ${styles.amountSent}`}>
+            -{formatAmount(totals.sent)}
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryLabel}>Money Received</div>
+          <div className={`${styles.summaryValue} ${styles.amountReceived}`}>
+            +{formatAmount(totals.received)}
+          </div>
+        </div>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryLabel}>Net Flow</div>
+          <div className={`${styles.summaryValue} ${totals.netFlow >= 0 ? styles.amountReceived : styles.amountSent}`}>
+            {totals.netFlow >= 0 ? '+' : ''}{formatAmount(Math.abs(totals.netFlow))}
+          </div>
         </div>
         <div className={styles.summaryCard}>
           <div className={styles.summaryLabel}>Transactions</div>
           <div className={styles.summaryValue}>{totals.count}</div>
-        </div>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryLabel}>Average</div>
-          <div className={styles.summaryValue}>{formatAmount(totals.average)}</div>
         </div>
       </div>
 
