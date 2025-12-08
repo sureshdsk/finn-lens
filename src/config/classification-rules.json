@@ -20,6 +20,7 @@
         "foodpanda",
         "parotta",
         "biryani",
+        "biriyani",
         "chicken",
         "food",
         "eat",
@@ -27,11 +28,16 @@
         "domino",
         "subway",
         "taco",
-        "mexican"
+        "mexican",
+        "ananda bhavan",
+        "a2b"
       ],
       "patterns": [],
       "exactMatches": {
-        "CALIFORNIA BURRITO": true
+        "CALIFORNIA BURRITO": true,
+        "ADYAR ANANDA BHAVAN": true,
+        "A2B": true,
+        "BIRIYANI": true
       }
     },
     "Groceries": {
@@ -66,11 +72,21 @@
         "h&m",
         "max fashion",
         "westside",
-        "reliance trends"
+        "reliance trends",
+        "chennai silks",
+        "madras silks",
+        "thangamaligai",
+        "jewellers",
+        "jewellery",
+        "jewelry"
       ],
       "patterns": [],
       "exactMatches": {
-        "ZUDIO": true
+        "ZUDIO": true,
+        "THE CHENNAI SILKS": true,
+        "THE MADRAS SILKS INDIA P LTD ONLINE": true,
+        "G R THANGAMALIGAI JEWELLERS": true,
+        "THANGAMALIGAI": true
       }
     },
     "Entertainment": {
@@ -92,7 +108,11 @@
         "google play",
         "playstore",
         "app store",
-        "itunes"
+        "itunes",
+        "tasmac",
+        "wine shop",
+        "liquor",
+        "beverage"
       ],
       "patterns": [
         "^GOOGLE\\*.*",
@@ -101,7 +121,8 @@
       "exactMatches": {
         "APPLE MEDIA SERVICES": true,
         "APPLE.COM/BILL": true,
-        "GOOGLE PLAY": true
+        "GOOGLE PLAY": true,
+        "TASMAC": true
       }
     },
     "E-commerce": {
@@ -142,12 +163,18 @@
         "hpcl",
         "iocl",
         "shell",
-        "nayara"
+        "nayara",
+        "setc",
+        "state express",
+        "transport corporation"
       ],
       "patterns": [],
       "exactMatches": {
         "SHOBA FUELS": true,
-        "Archaeological Survey Of India": true
+        "Archaeological Survey Of India": true,
+        "SETC STATE EXPRESS TRANSPORT CORPORATION TN LTD": true,
+        "SETC": true,
+        "STATE TRANSPORT CORPORATION": true
       }
     },
     "Bills & Utilities": {
@@ -162,7 +189,10 @@
         "jio",
         "airtel",
         "internet",
-        "vodafone"
+        "vodafone",
+        "broadband",
+        "fiber",
+        "air fiber"
       ],
       "patterns": [],
       "exactMatches": {
@@ -171,7 +201,8 @@
         "ATRIA CONVERGENCE TECHNOLOGIES LIMITED": true,
         "ATRIA CONVERGENCE TECHNOLOGIES": true,
         "ACT BROADBAND": true,
-        "ACTCORP": true
+        "ACTCORP": true,
+        "Air Fiber": true
       }
     },
     "Healthcare": {
@@ -256,12 +287,17 @@
         "non-profit",
         "nonprofit",
         "trust",
-        "welfare"
+        "welfare",
+        "cloud service",
+        "hosting",
+        "server"
       ],
       "patterns": [],
       "exactMatches": {
         "BHARATMATRIMONYCOM": true,
-        "AGARAM FOUNDATION": true
+        "AGARAM FOUNDATION": true,
+        "Google Cloud": true,
+        "GOOGLE CLOUD": true
       }
     },
     "Transfers & Payments": {
