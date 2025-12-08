@@ -169,8 +169,8 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
         if (parts.length === 0) return;
 
         // Extract date from the content text using regex
-        // Date format: "4 Dec 2025, 23:08:00 GMT+05:30" or "4 Dec 2025, 23:08:00 IST"
-        const dateRegex = /(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4},\s+\d{2}:\d{2}:\d{2}\s+(?:GMT[+-]\d{2}:\d{2}|IST))/;
+        // Date format: "Dec 6, 2025, 12:12:14 PM GMT+05:30" or "Nov 10, 2023, 11:45:00 AM IST"
+        const dateRegex = /([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4},\s+\d{1,2}:\d{2}:\d{2}\s+[AP]M\s+(?:GMT[+-]\d{2}:\d{2}|IST))/;
         const dateMatch = contentText.match(dateRegex);
 
         let activityDate = new Date();
@@ -178,9 +178,15 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
 
         if (dateMatch) {
           dateStr = dateMatch[1];
-          // Remove timezone and parse
-          const cleanDateStr = dateStr.replace(/,?\s*(IST|GMT[+-]\d{2}:\d{2})$/, '').trim();
-          activityDate = new Date(cleanDateStr);
+          // Parse the full date string including timezone
+          // JavaScript Date constructor can handle formats like "8 Dec 2025, 20:11:19 GMT+05:30"
+          activityDate = new Date(dateStr);
+
+          // Fallback: if parsing fails, try without timezone
+          if (isNaN(activityDate.getTime())) {
+            const cleanDateStr = dateStr.replace(/,?\s*(IST|GMT[+-]\d{2}:\d{2})$/, '').trim();
+            activityDate = new Date(cleanDateStr);
+          }
         }
 
         // Extract title (text before the date)
@@ -249,11 +255,20 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
         const parts = contentText.split('\n').map(p => p.trim()).filter(Boolean);
         if (parts.length === 0) return;
 
-        const dateStr = parts[1];
+        // Extract date using the same regex as above
+        const dateRegex = /(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4},\s+\d{2}:\d{2}:\d{2}\s+(?:GMT[+-]\d{2}:\d{2}|IST))/;
+        const dateMatch = contentText.match(dateRegex);
+
         let activityDate = new Date();
-        if (dateStr) {
-          const cleanDateStr = dateStr.replace(/,?\s*(IST|GMT[+-]\d{2}:\d{2})$/, '').trim();
-          activityDate = new Date(cleanDateStr);
+        if (dateMatch) {
+          const dateStr = dateMatch[1];
+          activityDate = new Date(dateStr);
+
+          // Fallback: if parsing fails, try without timezone
+          if (isNaN(activityDate.getTime())) {
+            const cleanDateStr = dateStr.replace(/,?\s*(IST|GMT[+-]\d{2}:\d{2})$/, '').trim();
+            activityDate = new Date(cleanDateStr);
+          }
         }
 
         const year = activityDate.getFullYear();

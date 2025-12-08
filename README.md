@@ -99,8 +99,13 @@ The app will be available at `http://localhost:5173`
 # Start development server with hot reload
 npm run dev
 
-# Type check TypeScript
+# Type check and lint
 npm run lint
+
+# Run tests
+npm test                # Run tests in watch mode
+npm run test:ui         # Run tests with UI
+npm run test:coverage   # Run tests with coverage report
 
 # Build for production
 npm run build

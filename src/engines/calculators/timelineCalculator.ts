@@ -42,7 +42,7 @@ export function calculateSpendingTimelineInsight(
 
   // NEW: Add activity context
   if (activityFrequency > 0) {
-    message += `${transactions.length} card transactions + ${activityFrequency} app payments. `;
+    message += `${transactions.length} transactions + ${activityFrequency} app payments. `;
   }
 
   message += `Your digital payment journey. 🚀`;

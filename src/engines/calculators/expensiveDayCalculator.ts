@@ -2,78 +2,93 @@
 
 import { ParsedData } from '../../types/data.types';
 import { Insight, ExpensiveDayData } from '../../types/insight.types';
-import { groupTransactionsByDate, formatDate } from '../../utils/dateUtils';
+import { formatDate } from '../../utils/dateUtils';
 import { convertToINR } from '../../utils/categoryUtils';
 
 /**
  * Calculate Expensive Day insight
- * Finds the day with highest total spending
+ * Finds the day with highest total spending from ALL sources (transactions + activities)
  */
 export function calculateExpensiveDayInsight(
   data: ParsedData
 ): Insight<ExpensiveDayData> | null {
   const { transactions, activities } = data;
 
-  if (transactions.length === 0) return null;
+  if (transactions.length === 0 && activities.length === 0) return null;
 
-  // Group transactions by date
-  const groupedByDate = groupTransactionsByDate(transactions);
+  // Create a map to track spending by date (YYYY-MM-DD format)
+  const spendingByDate = new Map<string, {
+    total: number;
+    transactionCount: number;
+    activityCount: number;
+  }>();
 
-  let maxDate: Date | null = null;
+  // Add transaction amounts to the map
+  transactions.forEach(transaction => {
+    const dateKey = transaction.time.toISOString().slice(0, 10);
+    const amount = convertToINR(transaction.amount);
+
+    if (!spendingByDate.has(dateKey)) {
+      spendingByDate.set(dateKey, { total: 0, transactionCount: 0, activityCount: 0 });
+    }
+
+    const dayData = spendingByDate.get(dateKey)!;
+    dayData.total += amount;
+    dayData.transactionCount++;
+  });
+
+  // Add activity amounts (only spent/paid, not received)
+  activities.forEach(activity => {
+    if (activity.amount && (activity.transactionType === 'sent' || activity.transactionType === 'paid')) {
+      const dateKey = activity.time.toISOString().slice(0, 10);
+      const amount = convertToINR(activity.amount);
+
+      if (!spendingByDate.has(dateKey)) {
+        spendingByDate.set(dateKey, { total: 0, transactionCount: 0, activityCount: 0 });
+      }
+
+      const dayData = spendingByDate.get(dateKey)!;
+      dayData.total += amount;
+      dayData.activityCount++;
+    }
+  });
+
+  // Find the day with maximum spending
+  let maxDate: string | null = null;
   let maxAmount = 0;
   let maxTransactionCount = 0;
+  let maxActivityCount = 0;
 
-  // Find the day with highest spending
-  groupedByDate.forEach((dayTransactions, dateKey) => {
-    let dayTotal = 0;
-
-    dayTransactions.forEach(transaction => {
-      dayTotal += convertToINR(transaction.amount);
-    });
-
-    if (dayTotal > maxAmount) {
-      maxAmount = dayTotal;
-      maxDate = new Date(dateKey);
-      maxTransactionCount = dayTransactions.length;
+  spendingByDate.forEach((dayData, dateKey) => {
+    if (dayData.total > maxAmount) {
+      maxAmount = dayData.total;
+      maxDate = dateKey;
+      maxTransactionCount = dayData.transactionCount;
+      maxActivityCount = dayData.activityCount;
     }
   });
 
   if (!maxDate || maxAmount === 0) return null;
 
-  // Cast to Date after null check to help TypeScript
-  const expensiveDay: Date = maxDate;
-
-  // NEW: Check activity correlation on the same day
-  const expensiveDayStr = expensiveDay.toISOString().slice(0, 10);
-  const activitiesOnDay = activities.filter(a => {
-    const activityDateStr = a.time.toISOString().slice(0, 10);
-    return (
-      activityDateStr === expensiveDayStr &&
-      a.amount &&
-      (a.transactionType === 'sent' || a.transactionType === 'paid')
-    );
-  });
-
-  const activitySpent = activitiesOnDay.reduce(
-    (sum, a) => sum + convertToINR(a.amount!),
-    0
-  );
+  const expensiveDay = new Date(maxDate);
+  const totalSpent = maxAmount;
 
   // Generate message
   let message = '';
 
-  if (activitiesOnDay.length > 0) {
-    const totalSpent = maxAmount + activitySpent;
-    message = `On ${formatDate(maxDate)}, you went wild! ${maxTransactionCount} card transactions + ${activitiesOnDay.length} app payments for ₹${Math.round(totalSpent).toLocaleString()}. `;
+  if (maxTransactionCount > 0 && maxActivityCount > 0) {
+    message = `On ${formatDate(expensiveDay)}, you went wild! ${maxTransactionCount} transactions + ${maxActivityCount} app payments for ₹${Math.round(totalSpent).toLocaleString()}. `;
+  } else if (maxActivityCount > 0) {
+    message = `On ${formatDate(expensiveDay)}, you made ${maxActivityCount} payments totaling ₹${Math.round(totalSpent).toLocaleString()}. `;
   } else {
-    message = `On ${formatDate(maxDate)}, you spent ₹${Math.round(maxAmount).toLocaleString()}. `;
+    message = `On ${formatDate(expensiveDay)}, you spent ₹${Math.round(totalSpent).toLocaleString()}. `;
   }
 
-  if (maxAmount >= 50000) {
+  if (totalSpent >= 50000) {
     message += 'Remember this epic day? 🎉';
-  } else if (maxAmount >= 10000) {
+  } else if (totalSpent >= 10000) {
     message += 'That was a big day! 💳';
-  } else if (maxAmount >= 5000) {
+  } else if (totalSpent >= 5000) {
     message += 'A memorable spending spree! 🛍️';
   } else {
     message += 'Your peak spending day! 📊';
@@ -84,8 +99,8 @@ export function calculateExpensiveDayInsight(
     title: 'Your Most Expensive Day',
     tone: 'hard-hitting',
     data: {
-      date: maxDate,
-      amount: maxAmount
+      date: expensiveDay,
+      amount: totalSpent
     },
     message
   };
