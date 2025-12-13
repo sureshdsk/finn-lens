@@ -6,6 +6,7 @@ import { convertToINR } from '../utils/categoryUtils';
 import { filterTransactionsByYear, filterActivitiesByYear } from '../utils/dateUtils';
 import NoDataRedirect from '../components/NoDataRedirect';
 import { animate as anime } from 'animejs';
+import { bgMusic } from '../utils/backgroundMusic';
 import styles from './Wrapped.module.css';
 
 interface SlideData {
@@ -17,6 +18,7 @@ interface SlideData {
   bgColor: string;
   detail?: string;
 }
+
 
 const getCategoryIcon = (category: string): string => {
   const icons: Record<string, string> = {
@@ -44,7 +46,6 @@ export default function Wrapped() {
   const [isSharing, setIsSharing] = useState(false);
   const [bgStyle, setBgStyle] = useState<'blobs' | 'mesh' | 'particles'>('blobs');
   const slideRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Generate slides from insights and data
   const slides: SlideData[] = useMemo(() => {
@@ -390,38 +391,19 @@ export default function Wrapped() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nextSlide, prevSlide, navigate]);
 
-  // Auto-play music on component mount
+  // Initialize and play background music
   useEffect(() => {
-    const playMusic = () => {
-      if (audioRef.current) {
-        audioRef.current.volume = 0.3; // Set volume to 30%
-        audioRef.current.play()
-          .then(() => console.log('Music started playing'))
-          .catch(() => {
-            console.log('Autoplay blocked, trying on user interaction');
-            // Try to play on first user interaction
-            const handleInteraction = () => {
-              if (audioRef.current) {
-                audioRef.current.play()
-                  .then(() => console.log('Music started after interaction'))
-                  .catch(e => console.log('Could not play music:', e));
-              }
-              document.removeEventListener('click', handleInteraction);
-              document.removeEventListener('keydown', handleInteraction);
-            };
-            document.addEventListener('click', handleInteraction);
-            document.addEventListener('keydown', handleInteraction);
-          });
-      }
-    };
-
-    // Try to play music after a short delay
-    setTimeout(playMusic, 500);
+    // Initialize music manager
+    bgMusic.initialize();
+    
+    // Start playing after a short delay
+    const timer = setTimeout(() => {
+      bgMusic.play();
+    }, 500);
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+      clearTimeout(timer);
+      // Don't pause music on unmount - let it continue playing
     };
   }, []);
 
@@ -440,7 +422,7 @@ export default function Wrapped() {
 
   const shareSlide = useCallback(async () => {
     if (!slideRef.current) return;
-
+    
     setIsSharing(true);
     try {
       // Disable animations for export by adding a class
@@ -721,6 +703,7 @@ export default function Wrapped() {
             }}
             disabled={isSharing}
             aria-label="Share or download slide"
+            data-share-button="true"
             title="Share or download"
           >
             {isSharing ? (
@@ -774,15 +757,7 @@ export default function Wrapped() {
           Exit
         </button>
       </div>
-      
-      {/* Hidden Audio Element - Plays automatically */}
-      <audio
-        ref={audioRef}
-        src="/background-music.mp3"
-        loop
-        autoPlay
-        style={{ display: 'none' }}
-      />
     </div>
   );
 }
+
