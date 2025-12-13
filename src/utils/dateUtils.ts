@@ -103,7 +103,7 @@ function isFailedActivity(activity: ActivityRecord): boolean {
   const title = activity.title.toLowerCase();
   const description = (activity.description || '').toLowerCase();
 
-  // Check for explicit "Failed" status (common in GPay HTML exports)
+  // Check for explicit "Failed" status (common in Google Pay HTML exports)
   // The word "Failed" often appears on its own line in the description
   const failedKeywords = [
     'failed',

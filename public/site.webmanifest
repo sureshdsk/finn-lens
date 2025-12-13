@@ -1,7 +1,7 @@
 {
-  "name": "GPay Wrapped",
-  "short_name": "GPay Wrapped",
-  "description": "Your Google Pay year in review - privacy-first financial insights",
+  "name": "FinnLens",
+  "short_name": "FinnLens",
+  "description": "Your transactions year in review - privacy-first financial insights",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

@@ -239,7 +239,7 @@ export default function Story() {
         <div className={styles.navContent}>
           <div className={styles.navBrand}>
             <span className={styles.navLogo}>💸</span>
-            <span className={styles.navTitle}>GPay Wrapped</span>
+            <span className={styles.navTitle}>FinnLens</span>
           </div>
           <div className={styles.navActions}>
             <div className={styles.navLinks}>
@@ -266,7 +266,7 @@ export default function Story() {
         <div className={styles.hero} ref={heroRef}>
           <div className={styles.heroIcon}>💸</div>
           <h1 className={styles.heroTitle}>
-            Your GPay Wrapped
+            Your payments in a year, wrapped!
           </h1>
           <div className={styles.heroYear}>
             {selectedYear === 'all' ? 'All Time' : selectedYear}

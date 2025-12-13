@@ -254,7 +254,7 @@ export const useThemeStore = create<ThemeStore>()(
       },
     }),
     {
-      name: 'gpay-wrapped-theme',
+      name: 'finnlens-theme',
       partialize: (state) => ({
         currentTheme: state.currentTheme,
         currentMode: state.currentMode,

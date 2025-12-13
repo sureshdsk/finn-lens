@@ -1,4 +1,4 @@
-# GPay Wrapped
+# FinnLens
 
 Your year in payments, privacy-first. A 100% offline web application that analyzes your Google Pay transaction history and creates personalized insights in a Spotify Wrapped-style story format.
 
@@ -30,9 +30,9 @@ Your year in payments, privacy-first. A 100% offline web application that analyz
 5. Wait for the export email (usually within minutes)
 6. Download the `.zip` file
 
-### 2. Upload to GPay Wrapped
+### 2. Upload to FinnLens
 
-1. Visit the GPay Wrapped app
+1. Visit the FinnLens app
 2. Drag and drop your downloaded `.zip` file, or click to browse
 3. Wait a few seconds for processing
 4. Browse your personalized insights!
@@ -45,7 +45,7 @@ Your year in payments, privacy-first. A 100% offline web application that analyz
 
 ## Insights Provided
 
-GPay Wrapped analyzes your data to provide insights like:
+FinnLens analyzes your data to provide insights like:
 
 - **Domain Collector**: Track your domain purchases and renewals
 - **Group Expense Champion**: See your reliability in paying group bills
@@ -82,7 +82,7 @@ GPay Wrapped analyzes your data to provide insights like:
 git clone git@github.com:sureshdsk/gpay-wrapped.git
 OR
 git clone https://github.com/sureshdsk/gpay-wrapped.git
-cd gpay-wrapped
+cd finnlens
 
 # Install dependencies
 npm install
@@ -151,7 +151,7 @@ src/
 
 ## Data Format
 
-GPay Wrapped processes the following files from your Google Takeout export:
+FinnLens processes the following files from your Google Takeout export:
 
 - `Google transactions/transactions_*.csv` - Transaction history
 - `Google Pay/Group expenses/Group expenses.json` - Split bills

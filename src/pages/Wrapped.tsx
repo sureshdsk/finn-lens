@@ -70,7 +70,7 @@ export default function Wrapped() {
       // Intro slide
       {
         id: 'intro',
-        title: 'Your GPay',
+        title: 'Your FinnLens',
         value: selectedYear === 'all' ? 'All Time' : selectedYear,
         subtitle: 'Wrapped',
         icon: '🎉',
@@ -95,7 +95,7 @@ export default function Wrapped() {
           generatedSlides.push({
             id: 'money_flow',
             title: data.flowDirection === 'giver' ? 'The Generous One' :
-                   data.flowDirection === 'receiver' ? 'Money Magnet' : 'Balanced Flow',
+              data.flowDirection === 'receiver' ? 'Money Magnet' : 'Balanced Flow',
             value: `₹${formatAmount(data.totalSent.value)}`,
             subtitle: `sent to friends & family`,
             icon: data.flowDirection === 'giver' ? '🎁' : data.flowDirection === 'receiver' ? '🧲' : '⚖️',
@@ -202,7 +202,7 @@ export default function Wrapped() {
           const firstDate = new Date(data.firstDate);
           generatedSlides.push({
             id: 'spending_timeline',
-            title: 'GPay Journey',
+            title: 'Payment Journey',
             value: data.yearsSince,
             subtitle: 'years of transactions',
             icon: '📅',
@@ -304,7 +304,7 @@ export default function Wrapped() {
           const data = insight.data as any;
           generatedSlides.push({
             id: 'smallest_payment',
-            title: 'Every Rupee Counts',
+            title: 'Every Payment Counts',
             value: `₹${data.amount.value}`,
             subtitle: 'smallest payment',
             icon: '🪙',
@@ -333,7 +333,7 @@ export default function Wrapped() {
     generatedSlides.push({
       id: 'outro',
       title: "That's your",
-      value: 'GPay Wrapped',
+      value: 'FinnLens',
       subtitle: selectedYear === 'all' ? 'All Time' : selectedYear,
       icon: '✨',
       bgColor: '#8B5CF6', // Purple
@@ -396,7 +396,7 @@ export default function Wrapped() {
   useEffect(() => {
     // Initialize music manager
     bgMusic.initialize();
-    
+
     // Start playing after a short delay
     const timer = setTimeout(() => {
       bgMusic.play();
@@ -424,7 +424,7 @@ export default function Wrapped() {
 
   const shareSlide = useCallback(async () => {
     if (!slideRef.current) return;
-    
+
     setIsSharing(true);
     try {
       // Disable animations for export by adding a class
@@ -453,7 +453,7 @@ export default function Wrapped() {
             clonedSlide.style.opacity = '1';
             clonedSlide.style.position = 'relative';
             clonedSlide.style.overflow = 'hidden';
-            
+
             // Ensure blob container is visible if using blobs
             const blobContainer = clonedSlide.querySelector(`.${styles.blobContainer}`) as HTMLElement;
             if (blobContainer) {
@@ -465,19 +465,19 @@ export default function Wrapped() {
                 }
               });
             }
-            
+
             // Ensure particles are visible if using particles
             const particleContainer = clonedSlide.querySelector(`.${styles.particleContainer}`) as HTMLElement;
             if (particleContainer) {
               particleContainer.style.opacity = '1';
             }
-            
+
             // Ensure mesh is visible if using mesh
             const meshContainer = clonedSlide.querySelector(`.${styles.meshContainer}`) as HTMLElement;
             if (meshContainer) {
               meshContainer.style.opacity = '1';
             }
-            
+
             // Make all text white for contrast
             const allTextElements = clonedSlide.querySelectorAll('.slideTitle, .slideValue, .slideSubtitle, .slideDetail, .watermark');
             allTextElements.forEach((el: any) => {
@@ -498,7 +498,7 @@ export default function Wrapped() {
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
-        const file = new File([blob], `gpay-wrapped-${slides[currentSlide].id}.png`, {
+        const file = new File([blob], `finnlens-${slides[currentSlide].id}.png`, {
           type: 'image/png',
         });
 
@@ -507,8 +507,8 @@ export default function Wrapped() {
           try {
             await navigator.share({
               files: [file],
-              title: 'My GPay Wrapped',
-              text: 'Check out my GPay Wrapped!',
+              title: 'My FinnLens',
+              text: 'Check out my FinnLens!',
             });
           } catch (err) {
             // User cancelled or error, fallback to download
@@ -528,7 +528,7 @@ export default function Wrapped() {
 
   const downloadImage = (canvas: HTMLCanvasElement) => {
     const link = document.createElement('a');
-    link.download = `gpay-wrapped-${slides[currentSlide].id}.png`;
+    link.download = `finnlens-${slides[currentSlide].id}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
@@ -543,25 +543,25 @@ export default function Wrapped() {
     <div className={styles.wrapped}>
       {/* Header */}
       <div className={styles.header}>
-        <h1 className={styles.headerTitle}>GPay Wrapped {selectedYear === 'all' ? 'All Time' : selectedYear}</h1>
-        
+        <h1 className={styles.headerTitle}>FinnLens {selectedYear === 'all' ? 'All Time' : selectedYear}</h1>
+
         {/* Background Style Selector */}
         <div className={styles.bgSelector}>
-          <button 
+          <button
             className={`${styles.bgBtn} ${bgStyle === 'blobs' ? styles.active : ''}`}
             onClick={() => setBgStyle('blobs')}
             title="Blob Animation"
           >
             🫧
           </button>
-          <button 
+          <button
             className={`${styles.bgBtn} ${bgStyle === 'mesh' ? styles.active : ''}`}
             onClick={() => setBgStyle('mesh')}
             title="Geometric Mesh"
           >
             🔺
           </button>
-          <button 
+          <button
             className={`${styles.bgBtn} ${bgStyle === 'particles' ? styles.active : ''}`}
             onClick={() => setBgStyle('particles')}
             title="Particle System"
@@ -597,29 +597,29 @@ export default function Wrapped() {
         </button>
 
         <div className={styles.slideWrapper}>
-          <div 
-            ref={slideRef} 
+          <div
+            ref={slideRef}
             className={styles.slide}
             style={{ position: 'relative', overflow: 'hidden' }}
           >
             {/* Dynamic Background based on selection */}
             {bgStyle === 'blobs' && (
               <div className={styles.blobContainer}>
-                <div 
-                  className={styles.blob1} 
+                <div
+                  className={styles.blob1}
                   style={{ backgroundColor: slide.bgColor }}
                 />
-                <div 
-                  className={styles.blob2} 
+                <div
+                  className={styles.blob2}
                   style={{ backgroundColor: slide.bgColor, opacity: 0.7 }}
                 />
-                <div 
-                  className={styles.blob3} 
+                <div
+                  className={styles.blob3}
                   style={{ backgroundColor: slide.bgColor, opacity: 0.5 }}
                 />
               </div>
             )}
-            
+
             {bgStyle === 'mesh' && (
               <div className={styles.meshContainer}>
                 <svg className={styles.triangleMesh} viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
@@ -654,7 +654,7 @@ export default function Wrapped() {
                 </svg>
               </div>
             )}
-            
+
             {bgStyle === 'particles' && (
               <div className={styles.particleContainer}>
                 {[...Array(30)].map((_, i) => (
@@ -674,36 +674,36 @@ export default function Wrapped() {
                 ))}
               </div>
             )}
-            
+
             {/* Animated background elements */}
             <div className={styles.animatedBg}>
               <div className={styles.particle1}></div>
               <div className={styles.particle2}></div>
               <div className={styles.particle3}></div>
               <div className={styles.glowOrb}></div>
-              
+
               {/* Floating emojis */}
               <div className={styles.floatingEmoji1}>✨</div>
               <div className={styles.floatingEmoji2}>💫</div>
               <div className={styles.floatingEmoji3}>⭐</div>
-              
+
               {/* Animated shapes */}
               <div className={styles.shape1}></div>
               <div className={styles.shape2}></div>
-              
+
               {/* New creative elements */}
               <div className={styles.wavePattern}></div>
               <div className={styles.hexGrid}>
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className={styles.hex} style={{animationDelay: `${i * 0.2}s`}}></div>
+                  <div key={i} className={styles.hex} style={{ animationDelay: `${i * 0.2}s` }}></div>
                 ))}
               </div>
-              
+
               {/* Neon lines removed */}
-              
+
               {/* Bubble effects */}
               {[...Array(5)].map((_, i) => (
-                <div 
+                <div
                   key={`bubble-${i}`}
                   className={styles.bubble}
                   style={{
@@ -715,17 +715,17 @@ export default function Wrapped() {
                 />
               ))}
             </div>
-            
+
             <div className={styles.slideContent}>
               <div className={styles.slideIcon}>{slide.icon}</div>
               <h2 className={styles.slideTitle}>{slide.title}</h2>
               <div className={styles.slideValue}>{slide.value}</div>
               <p className={styles.slideSubtitle}>{slide.subtitle}</p>
               {slide.detail && <p className={styles.slideDetail}>{slide.detail}</p>}
-              
+
               {/* Celebration burst removed */}
-              
-              <div className={styles.watermark}>gpay-wrapped.pages.dev</div>
+
+              <div className={styles.watermark}>finnlens.com</div>
             </div>
           </div>
 

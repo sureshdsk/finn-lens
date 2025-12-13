@@ -1,4 +1,4 @@
-# GPay Wrapped - Implementation Plan
+# FinnLens - Implementation Plan
 
 ## Overview
 Build a 100% offline, privacy-first Google Pay Wrapped web application using React and pure JavaScript. The app processes Google Takeout zip files in the browser, calculates 8-10 personalized financial insights in a story-mode format (like Spotify Wrapped), and generates shareable 1080x1080 social media images.
@@ -30,7 +30,7 @@ Google Pay export contains:
 ## Project Structure
 
 ```
-gpay-wrapped/
+finnlens/
 ├── src/
 │   ├── main.tsx
 │   ├── App.tsx
@@ -249,7 +249,7 @@ export interface RawExtractedData {
 ### 4. Your Spending Timeline (Thought-provoking)
 - **Data**: All transactions (first to last date)
 - **Calculation**: Date range, years/days since first transaction
-- **Message**: "From {date} to {date}. {X} years of GPay!"
+- **Message**: "From {date} to {date}. {X} years of payments!"
 
 ### 5. Friend Who Always Splits (Social)
 - **Data**: Group expenses (participant names)
@@ -288,7 +288,7 @@ export interface RawExtractedData {
 **Goal**: Upload zip → Extract files → Parse data → Store in memory
 
 #### Day 1-2: Project Setup & Landing Page
-1. Create Vite React + TypeScript app: `npm create vite@latest gpay-wrapped -- --template react-ts`
+1. Create Vite React + TypeScript app: `npm create vite@latest finnlens -- --template react-ts`
 2. Install dependencies: `npm install zustand jszip papaparse html2canvas react-router-dom react-swipeable`
 3. Install TypeScript types: `npm install -D @types/papaparse @types/node`
 4. Setup folder structure (all directories above)
@@ -563,7 +563,7 @@ export interface RawExtractedData {
 3. Twitter format (1200x675):
    - Horizontal layout, compact
    - Twitter-optimized contrast
-4. All formats include GPay Wrapped branding
+4. All formats include FinnLens branding
 
 **Critical Files**:
 - Update insight components with format-aware rendering
@@ -572,7 +572,7 @@ export interface RawExtractedData {
 1. Implement format-specific export:
    - High-resolution (scale: 2)
    - Format-aware canvas sizing
-   - Filename: `gpay-wrapped-{insight-type}-{format}.png`
+   - Filename: `finnlens-{insight-type}-{format}.png`
 2. Add format preview switcher
 3. Test on browsers (Chrome, Firefox, Safari)
 4. Handle edge cases per format
@@ -820,8 +820,8 @@ export async function enhanceInsightWithAI(insight, userData) {
 
 ```bash
 # Create project with TypeScript
-npm create vite@latest gpay-wrapped -- --template react-ts
-cd gpay-wrapped
+npm create vite@latest finnlens -- --template react-ts
+cd finnlens
 
 # Install dependencies
 npm install zustand jszip papaparse html2canvas react-router-dom react-swipeable

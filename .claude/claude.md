@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-GPay Wrapped is a privacy-first web application that analyzes Google Pay transaction history and generates personalized financial insights in a Spotify Wrapped-style story format. All data processing happens entirely in the browser with no server-side processing.
+FinnLens is a privacy-first web application that analyzes Google Pay transaction history and generates personalized financial insights in a Spotify Wrapped-style story format. All data processing happens entirely in the browser with no server-side processing.
 
 **Critical Privacy Principle**: Never add any network calls or external dependencies that could leak user data. The app must function completely offline after initial load.
 

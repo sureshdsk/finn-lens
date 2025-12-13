@@ -40,7 +40,7 @@ export default function Footer() {
           </a>
           {' '} | {' '}
           <a href="/about" className={styles.aboutLink}>
-            About GPay Wrapped
+            About FinnLens
           </a>
         </p>
       </div>

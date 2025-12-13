@@ -2,7 +2,7 @@
 
 ## Overview
 
-GPay Wrapped uses a **unified configuration file** for all transaction categorization rules:
+FinnLens uses a **unified configuration file** for all transaction categorization rules:
 
 **Location**: `src/config/classification-rules.json`
 

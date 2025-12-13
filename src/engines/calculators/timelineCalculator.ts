@@ -32,12 +32,12 @@ export function calculateSpendingTimelineInsight(
 
   const years = parseFloat(yearsSince);
   if (years >= 1) {
-    message += `That's ${yearsSince} years of GPay! `;
+    message += `That's ${yearsSince} years of payments! `;
   } else if (daysSince >= 30) {
     const months = Math.floor(daysSince / 30);
-    message += `That's ${months} month${months === 1 ? '' : 's'} of GPay! `;
+    message += `That's ${months} month${months === 1 ? '' : 's'} of payments! `;
   } else {
-    message += `That's ${daysSince} day${daysSince === 1 ? '' : 's'} of GPay! `;
+    message += `That's ${daysSince} day${daysSince === 1 ? '' : 's'} of payments! `;
   }
 
   // NEW: Add activity context

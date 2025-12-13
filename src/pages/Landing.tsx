@@ -42,7 +42,7 @@ export default function Landing() {
       </a>
 
       <header className={styles.header}>
-        <h1 className={styles.title}>GPay Wrapped 🎁</h1>
+        <h1 className={styles.title}>FinnLens 🔍</h1>
         <p className={styles.subtitle}>Your year in payments, privacy-first</p>
       </header>
 
@@ -81,7 +81,7 @@ export default function Landing() {
           <p className={styles.builtBy}>
             Made with ❤️ by <a href="https://www.linkedin.com/in/sureshdsk/" target="_blank" rel="noopener noreferrer" className={styles.authorLink}>@sureshdsk</a>
             {'  '} | {'  '}
-            <a href="/about" className={styles.aboutLink}>About GPay Wrapped</a>
+            <a href="/about" className={styles.aboutLink}>About FinnLens</a>
           </p>
         </div>
       </footer>

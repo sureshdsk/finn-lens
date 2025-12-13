@@ -28,7 +28,7 @@ export default function About() {
         <div className={styles.content}>
           {/* Hero */}
           <div className={styles.hero}>
-            <h1 className={styles.title}>About GPay Wrapped</h1>
+            <h1 className={styles.title}>About FinnLens</h1>
             <p className={styles.subtitle}>
               Your year in payments, visualized with privacy
             </p>
@@ -46,7 +46,7 @@ export default function About() {
                 and quirks.
               </p>
               <p>
-                So we built GPay Wrapped — a privacy-first tool that turns your Google Pay transaction
+                So we built FinnLens — a privacy-first tool that turns your Google Pay transaction
                 history into beautiful, shareable insights. All processing happens entirely in your
                 browser. Your data never leaves your device.
               </p>
@@ -265,7 +265,7 @@ export default function About() {
             </h2>
             <div className={styles.text}>
               <p>
-                GPay Wrapped is 100% open source. The entire codebase is available on GitHub —
+                FinnLens is 100% open source. The entire codebase is available on GitHub —
                 contributions, feedback, and stars are always welcome!
               </p>
               <div className={styles.buttonGroup}>
@@ -281,7 +281,7 @@ export default function About() {
                   View on GitHub
                 </a>
                 <button onClick={() => navigate('/')} className={styles.secondaryButton}>
-                  Try GPay Wrapped →
+                  Try FinnLens →
                 </button>
               </div>
             </div>
