@@ -103,7 +103,7 @@ export const themes: Record<ThemeName, Theme> = {
       accentHover: '#fde68a',
       background: 'linear-gradient(135deg, #0c4a6e 0%, #134e4a 50%, #1e3a8a 100%)',
       backgroundAlt: 'rgba(12, 74, 110, 0.85)',
-      surface: 'rgba(20, 184, 166, 0.25)',
+      surface: 'rgba(15, 23, 42, 0.75)',
       surfaceBorder: 'rgba(45, 212, 191, 0.25)',
       text: '#cffafe',
       textSecondary: '#a5f3fc',
