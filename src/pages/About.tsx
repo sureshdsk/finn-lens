@@ -225,7 +225,7 @@ export default function About() {
                 <div className={styles.teamRole}>Developer</div>
               </a>
               <a
-                href="www.linkedin.com/in/dakshithaa-venkatesan-a0400a332"
+                href="https://www.linkedin.com/in/dakshithaa-venkatesan-a0400a332"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.teamCard}
