@@ -48,7 +48,8 @@ export function calculateAllInsights(
     groupExpenses: filterGroupExpensesByYear(data.groupExpenses, year),
     cashbackRewards: filterCashbackRewardsByYear(data.cashbackRewards, year),
     voucherRewards: filterVouchersByYear(data.voucherRewards, year),
-    activities: filterActivitiesByYear(data.activities, year)
+    activities: filterActivitiesByYear(data.activities, year),
+    sources: data.sources, // Preserve source apps
   };
 
   const insights: Insight[] = [];

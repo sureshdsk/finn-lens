@@ -2,7 +2,7 @@
 
 import { Transaction, GroupExpense, CashbackReward, Voucher, ActivityRecord } from '../types/data.types';
 
-export type YearFilter = '2025' | 'all';
+export type YearFilter = '2025' | '2024' | '2023' | 'all';
 
 /**
  * Check if a transaction status indicates failure

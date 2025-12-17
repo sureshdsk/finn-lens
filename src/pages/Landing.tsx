@@ -8,17 +8,16 @@ export default function Landing() {
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
 
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async (files: File[]) => {
     setUploading(true);
 
-    // Store the file in sessionStorage (we'll extract it in Processing page)
+    // Pass files via navigation state
     try {
-      // We can't store File directly, so we'll pass it via navigation state
-      navigate('/processing', { state: { file } });
+      navigate('/processing', { state: { files } });
     } catch (error) {
       console.error('Upload error:', error);
       setUploading(false);
-      alert('Failed to process file. Please try again.');
+      alert('Failed to process files. Please try again.');
     }
   };
 
@@ -52,13 +51,23 @@ export default function Landing() {
       <footer className={styles.footer}>
         <div className={styles.howToSection}>
           <h3 className={styles.howToTitle}>📥 How to get your data:</h3>
+
+          <h4>Google Pay:</h4>
           <ol className={styles.howToSteps}>
             <li className={styles.howToStep}>Visit <a href="https://takeout.google.com/" target="_blank" rel="noopener noreferrer" className={styles.howToLink}>Google Takeout</a></li>
-            <li className={styles.howToStep}>Click "Deselect all" to uncheck all products</li>
             <li className={styles.howToStep}>Select only "Google Pay" from the list</li>
-            <li className={styles.howToStep}>Click "Next" and download your data as a ZIP file</li>
-            <li className={styles.howToStep}>Upload the ZIP file here (best experienced on desktop browsers 💻)</li>
+            <li className={styles.howToStep}>Download your data as a ZIP file</li>
           </ol>
+
+          <h4>BHIM App:</h4>
+          <ol className={styles.howToSteps}>
+            <li className={styles.howToStep}>Open BHIM app and go to Transaction History</li>
+            <li className={styles.howToStep}>Export as HTML file</li>
+          </ol>
+
+          <p className={styles.multiFileNote}>
+            💡 You can upload files from multiple apps at once!
+          </p>
         </div>
 
         <div className={styles.privacyBadge}>

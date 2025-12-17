@@ -12,16 +12,26 @@ import { convertToINR } from '../../utils/categoryUtils';
 export function calculateMidnightShopperInsight(
   data: ParsedData
 ): Insight<MidnightShopperInsightData> | null {
-  const { activities } = data;
+  const { activities, transactions } = data;
 
+  // Combine activities and transactions
   const financialActivities = activities.filter(
     a => a.amount && (a.transactionType === 'sent' || a.transactionType === 'paid')
   );
 
-  if (financialActivities.length === 0) return null;
+  const allPayments = [
+    ...financialActivities,
+    ...transactions.map(t => ({
+      time: t.time,
+      amount: t.amount,
+      title: t.description,
+    })),
+  ];
+
+  if (allPayments.length === 0) return null;
 
   // Filter late night transactions (12am - 5am)
-  const lateNightTransactions = financialActivities.filter(a => {
+  const lateNightTransactions = allPayments.filter(a => {
     const hour = a.time.getHours();
     return hour >= 0 && hour < 5;
   });

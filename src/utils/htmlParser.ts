@@ -217,6 +217,7 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
             recipient,
             sender,
             category: classifyTransaction(title + ' ' + contentText, amountValue) as TransactionCategory,
+            sourceApp: 'googlepay' as const, // HTML parser is currently only for Google Pay
           });
         }
       } catch (error) {

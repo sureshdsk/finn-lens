@@ -7,6 +7,7 @@ import { Currency } from '../types/data.types';
 import NoDataRedirect from '../components/NoDataRedirect';
 import Footer from '../components/Footer';
 import ThemeSwitcher from '../components/ThemeSwitcher';
+import FilterBar from '../components/filters/FilterBar';
 import { animate as anime } from 'animejs';
 import styles from './Categories.module.css';
 
@@ -59,15 +60,15 @@ const CATEGORY_ICONS: Record<TransactionCategory, string> = {
 
 export default function Categories() {
   const navigate = useNavigate();
-  const { parsedData, selectedYear } = useDataStore();
+  const { parsedData, filterContext } = useDataStore();
   const [expandedCategory, setExpandedCategory] = useState<TransactionCategory | null>(null);
 
   // Get all items with their category
   const allItemsWithCategory = useMemo(() => {
     if (!parsedData) return [];
 
-    const filteredTransactions = filterTransactionsByYear(parsedData.transactions, selectedYear);
-    const filteredActivities = filterActivitiesByYear(parsedData.activities, selectedYear);
+    const filteredTransactions = filterTransactionsByYear(parsedData.transactions, filterContext.year);
+    const filteredActivities = filterActivitiesByYear(parsedData.activities, filterContext.year);
 
     const items: (TransactionItem & { category: TransactionCategory })[] = [
       ...filteredTransactions.map(t => ({
@@ -89,7 +90,7 @@ export default function Categories() {
     ];
 
     return items;
-  }, [parsedData, selectedYear]);
+  }, [parsedData, filterContext.year]);
 
   const categoryData = useMemo(() => {
     if (allItemsWithCategory.length === 0) return [];
@@ -231,6 +232,9 @@ export default function Categories() {
       </nav>
 
       <div className={styles.container}>
+        {/* Filter Bar */}
+        <FilterBar />
+
         {/* Hero Section */}
         <div className={styles.hero} ref={heroRef}>
           <div className={styles.heroIcon}>🏷️</div>
@@ -238,7 +242,7 @@ export default function Categories() {
             Spending Categories
           </h1>
           <div className={styles.heroYear}>
-            {selectedYear === 'all' ? 'All Time' : selectedYear}
+            {filterContext.year === 'all' ? 'All Time' : filterContext.year}
           </div>
           <div className={styles.heroAmountWrapper}>
             <div className={styles.heroLabel}>Total Spent</div>

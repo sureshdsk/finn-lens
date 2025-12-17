@@ -41,7 +41,7 @@ const getCategoryIcon = (category: string): string => {
 
 export default function Wrapped() {
   const navigate = useNavigate();
-  const { parsedData, insights, selectedYear } = useDataStore();
+  const { parsedData, insights, filterContext } = useDataStore();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [bgStyle, setBgStyle] = useState<'blobs' | 'mesh' | 'particles'>('blobs');
@@ -51,8 +51,8 @@ export default function Wrapped() {
   const slides: SlideData[] = useMemo(() => {
     if (!parsedData) return [];
 
-    const filteredTransactions = filterTransactionsByYear(parsedData.transactions, selectedYear);
-    const filteredActivities = filterActivitiesByYear(parsedData.activities, selectedYear);
+    const filteredTransactions = filterTransactionsByYear(parsedData.transactions, filterContext.year);
+    const filteredActivities = filterActivitiesByYear(parsedData.activities, filterContext.year);
 
     // Calculate total spent
     const totalSpent = filteredTransactions.reduce((sum, t) => sum + convertToINR(t.amount), 0) +
@@ -71,7 +71,7 @@ export default function Wrapped() {
       {
         id: 'intro',
         title: 'Your FinnLens',
-        value: selectedYear === 'all' ? 'All Time' : selectedYear,
+        value: filterContext.year === 'all' ? 'All Time' : filterContext.year,
         subtitle: 'Wrapped',
         icon: '🎉',
         bgColor: '#8338ec'
@@ -334,14 +334,14 @@ export default function Wrapped() {
       id: 'outro',
       title: "That's your",
       value: 'FinnLens',
-      subtitle: selectedYear === 'all' ? 'All Time' : selectedYear,
+      subtitle: filterContext.year === 'all' ? 'All Time' : filterContext.year,
       icon: '✨',
       bgColor: '#8B5CF6', // Purple
       detail: 'Share with friends!',
     });
 
     return generatedSlides;
-  }, [parsedData, insights, selectedYear]);
+  }, [parsedData, insights, filterContext.year]);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide(prev => {
@@ -543,7 +543,7 @@ export default function Wrapped() {
     <div className={styles.wrapped}>
       {/* Header */}
       <div className={styles.header}>
-        <h1 className={styles.headerTitle}>FinnLens {selectedYear === 'all' ? 'All Time' : selectedYear}</h1>
+        <h1 className={styles.headerTitle}>FinnLens {filterContext.year === 'all' ? 'All Time' : filterContext.year}</h1>
 
         {/* Background Style Selector */}
         <div className={styles.bgSelector}>

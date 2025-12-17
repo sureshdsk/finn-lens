@@ -12,20 +12,26 @@ import { convertToINR } from '../../utils/categoryUtils';
 export function calculateRoundNumberObsessionInsight(
   data: ParsedData
 ): Insight<RoundNumberObsessionInsightData> | null {
-  const { activities } = data;
+  const { activities, transactions } = data;
 
+  // Combine activities and transactions
   const financialActivities = activities.filter(
     a => a.amount && (a.transactionType === 'sent' || a.transactionType === 'paid')
   );
 
-  if (financialActivities.length < 10) return null; // Need enough data
+  const allPayments = [
+    ...financialActivities.map(a => ({ amount: a.amount! })),
+    ...transactions.map(t => ({ amount: t.amount })),
+  ];
+
+  if (allPayments.length < 10) return null; // Need enough data
 
   // Count round numbers
   const roundNumberCounts = new Map<number, number>();
   let roundPayments = 0;
 
-  financialActivities.forEach(a => {
-    const amountINR = Math.round(convertToINR(a.amount!));
+  allPayments.forEach(payment => {
+    const amountINR = Math.round(convertToINR(payment.amount));
 
     // Check if it's a round number (divisible by 10, 50, 100, 500, 1000)
     const isRound10 = amountINR % 10 === 0 && amountINR > 0;
@@ -52,7 +58,7 @@ export function calculateRoundNumberObsessionInsight(
     }
   });
 
-  const roundPercentage = Math.round((roundPayments / financialActivities.length) * 100);
+  const roundPercentage = Math.round((roundPayments / allPayments.length) * 100);
 
   // Find favorite round number
   let favoriteRoundNumber = 10;

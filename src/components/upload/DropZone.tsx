@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import styles from './DropZone.module.css';
 
 interface DropZoneProps {
-  onUpload: (file: File) => void;
+  onUpload: (files: File[]) => void; // Changed to support multiple files
   disabled?: boolean;
 }
 
@@ -11,10 +11,14 @@ export default function DropZone({ onUpload, disabled = false }: DropZoneProps) 
   const [error, setError] = useState<string | null>(null);
 
   const validateFile = (file: File): boolean => {
-    setError(null);
+    // Accept ZIP, HTML, PDF files
+    const validExtensions = ['.zip', '.html', '.htm', '.pdf'];
+    const hasValidExtension = validExtensions.some(ext =>
+      file.name.toLowerCase().endsWith(ext)
+    );
 
-    if (!file.name.endsWith('.zip')) {
-      setError('Please upload a ZIP file from Google Takeout');
+    if (!hasValidExtension) {
+      setError('Please upload a ZIP, HTML, or PDF file from your UPI app');
       return false;
     }
 
@@ -27,9 +31,13 @@ export default function DropZone({ onUpload, disabled = false }: DropZoneProps) 
     return true;
   };
 
-  const handleFile = (file: File) => {
-    if (validateFile(file)) {
-      onUpload(file);
+  const handleFiles = (files: File[]) => {
+    setError(null);
+
+    const validFiles = files.filter(validateFile);
+
+    if (validFiles.length > 0) {
+      onUpload(validFiles);
     }
   };
 
@@ -41,9 +49,7 @@ export default function DropZone({ onUpload, disabled = false }: DropZoneProps) 
       if (disabled) return;
 
       const files = Array.from(e.dataTransfer.files);
-      if (files.length > 0) {
-        handleFile(files[0]);
-      }
+      handleFiles(files);
     },
     [disabled, onUpload]
   );
@@ -61,7 +67,7 @@ export default function DropZone({ onUpload, disabled = false }: DropZoneProps) 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      handleFile(files[0]);
+      handleFiles(Array.from(files));
     }
   };
 
@@ -82,7 +88,8 @@ export default function DropZone({ onUpload, disabled = false }: DropZoneProps) 
         <input
           type="file"
           id="file-upload"
-          accept=".zip"
+          accept=".zip,.html,.htm,.pdf"
+          multiple
           onChange={handleFileInput}
           disabled={disabled}
           className="hidden"
@@ -90,8 +97,12 @@ export default function DropZone({ onUpload, disabled = false }: DropZoneProps) 
 
         <label htmlFor="file-upload" className={styles.label}>
           <div className={styles.icon}>📦</div>
-          <h3 className={styles.title}>Upload Your Google Pay Data</h3>
-          <p className={styles.description}>Drag and drop your Google Takeout ZIP file here</p>
+          <h3 className={styles.title}>Upload Your UPI Data</h3>
+          <p className={styles.description}>
+            Drag and drop your export files here
+            <br />
+            <small>Google Pay (ZIP), BHIM (HTML), PhonePe (PDF)</small>
+          </p>
           <p className={styles.or}>or</p>
           <button
             type="button"
