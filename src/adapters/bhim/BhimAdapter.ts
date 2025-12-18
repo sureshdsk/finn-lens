@@ -46,14 +46,24 @@ export class BhimAdapter extends BaseAppAdapter {
         return { canHandle: false, confidence: 0 };
       }
 
-      // Look for BHIM-specific markers in HTML
-      const hasBhimMarkers =
+      // Check for new XML format (var DATA = '<?xml...')
+      const hasXmlFormat =
+        htmlToCheck.includes('var DATA') &&
+        htmlToCheck.includes('<UPITransactions') &&
+        htmlToCheck.includes('BHIM - Bharat Interface For Money');
+
+      if (hasXmlFormat) {
+        return { canHandle: true, confidence: 0.95 };
+      }
+
+      // Check for old table format
+      const hasTableFormat =
         htmlToCheck.includes('Bank Name') &&
         htmlToCheck.includes('Payment ID') &&
         htmlToCheck.includes('Pay/Collect') &&
         htmlToCheck.includes('DR/CR');
 
-      if (hasBhimMarkers) {
+      if (hasTableFormat) {
         return { canHandle: true, confidence: 0.9 };
       }
 
@@ -94,7 +104,8 @@ export class BhimAdapter extends BaseAppAdapter {
   }
 
   /**
-   * Parse BHIM HTML table into unified Transaction format
+   * Parse BHIM HTML into unified Transaction format
+   * Supports both XML-embedded format and HTML table format
    */
   async parse(rawData: Record<string, string>): Promise<ParseResult> {
     try {
@@ -103,23 +114,163 @@ export class BhimAdapter extends BaseAppAdapter {
         return { success: false, error: 'No BHIM HTML data found' };
       }
 
-      const transactions = this.parseBhimHtmlTable(html);
+      // Check if HTML table exists (preferred format as it has status info)
+      // Try table format first because it contains complete status information
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const table = doc.querySelector('table');
+
+      if (table) {
+        // Use HTML table parser - it has status information
+        const transactions = this.parseBhimHtmlTable(html);
+        return {
+          success: true,
+          data: {
+            transactions,
+            groupExpenses: [],
+            cashbackRewards: [],
+            voucherRewards: [],
+            activities: [],
+          },
+        };
+      }
+
+      // Fall back to XML format if table not found
+      if (html.includes('var DATA') && html.includes('<UPITransactions')) {
+        const transactions = this.parseBhimXml(html);
+        return {
+          success: true,
+          data: {
+            transactions,
+            groupExpenses: [],
+            cashbackRewards: [],
+            voucherRewards: [],
+            activities: [],
+          },
+        };
+      }
 
       return {
-        success: true,
-        data: {
-          transactions,
-          groupExpenses: [],
-          cashbackRewards: [],
-          voucherRewards: [],
-          activities: [],
-        },
+        success: false,
+        error: 'Unrecognized BHIM file format',
       };
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to parse BHIM data',
       };
+    }
+  }
+
+  /**
+   * Parse BHIM XML format (embedded in JavaScript variable)
+   * XML structure: <UPITransactions><Transactions><Transaction .../></Transactions></UPITransactions>
+   */
+  private parseBhimXml(html: string): Transaction[] {
+    const transactions: Transaction[] = [];
+
+    try {
+      // Extract XML from JavaScript variable
+      const match = html.match(/var DATA\s*=\s*'(.*?)';/s);
+      if (!match || !match[1]) {
+        console.warn('Could not find DATA variable in BHIM HTML');
+        return [];
+      }
+
+      const xmlString = match[1];
+
+      // Parse XML
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+
+      // Check for parsing errors
+      const parserError = xmlDoc.querySelector('parsererror');
+      if (parserError) {
+        console.error('XML parsing error:', parserError.textContent);
+        return [];
+      }
+
+      // Get all transaction elements
+      const transactionElements = xmlDoc.querySelectorAll('Transaction');
+
+      // Use a Set to track transaction IDs and avoid duplicates
+      // BHIM exports sometimes contain duplicate transactions
+      const seenIds = new Set<string>();
+
+      for (const element of transactionElements) {
+        try {
+          // Extract attributes
+          const accountNumber = element.getAttribute('AccountNumber') || '';
+          const amountStr = element.getAttribute('Amount') || '0';
+          const bank = element.getAttribute('Bank') || '';
+          const benefitType = element.getAttribute('BenefitType') || ''; // CR (credit) or DR (debit)
+          const id = element.getAttribute('Id') || '';
+          const payeeVpa = element.getAttribute('PayeeVpa') || '';
+          const payerVpa = element.getAttribute('PayerVpa') || '';
+          const timeStr = element.getAttribute('Time') || '';
+          const type = element.getAttribute('Type') || '';
+
+          // Skip duplicate transactions
+          if (seenIds.has(id)) {
+            continue;
+          }
+          seenIds.add(id);
+
+          // Parse time (ISO format: 2025-12-18T17:31:13.559Z)
+          const transactionDate = new Date(timeStr);
+
+          // Parse amount
+          const amountValue = parseFloat(amountStr);
+          const amount: Currency = { value: amountValue, currency: 'INR' };
+
+          // Extract names from VPA (format: xxxxx@upi(NAME))
+          const extractName = (vpa: string): string => {
+            const nameMatch = vpa.match(/\((.*?)\)/);
+            return nameMatch ? nameMatch[1] : vpa;
+          };
+
+          const payeeName = extractName(payeeVpa);
+          const payerName = extractName(payerVpa);
+
+          // Build description based on credit/debit
+          const isCredit = benefitType === 'CR';
+          const otherParty = isCredit ? payerName : payeeName;
+          const description = `${type} - ${isCredit ? 'From' : 'To'} ${otherParty}`;
+
+          // IMPORTANT: Only add DEBIT transactions to the transactions array
+          // Transactions array is meant for expenses/spending only
+          // Credits (money received) should not be included
+          if (benefitType !== 'DR') {
+            continue;
+          }
+
+          // Classify transaction
+          const category = classifyTransaction(description, amountValue);
+
+          // Create transaction
+          const transaction: Transaction = {
+            time: transactionDate,
+            id: id,
+            description: description,
+            product: 'BHIM',
+            method: `${bank} (${accountNumber})`,
+            status: 'Completed', // XML format doesn't have explicit status
+            amount: amount,
+            category: category as TransactionCategory | undefined,
+            sourceApp: this.appId,
+          };
+
+          transactions.push(transaction);
+        } catch (error) {
+          console.error('Error parsing BHIM XML transaction:', error);
+          continue;
+        }
+      }
+
+      return transactions;
+    } catch (error) {
+      console.error('Error parsing BHIM XML:', error);
+      return [];
     }
   }
 
@@ -142,6 +293,10 @@ export class BhimAdapter extends BaseAppAdapter {
 
     const rows = table.querySelectorAll('tr');
 
+    // Use a Set to track transaction IDs and avoid duplicates
+    // BHIM exports sometimes contain duplicate transactions
+    const seenIds = new Set<string>();
+
     // Skip header row (first row)
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
@@ -163,6 +318,12 @@ export class BhimAdapter extends BaseAppAdapter {
         const drCr = cells[9].textContent?.trim() || '';
         const status = cells[10].textContent?.trim() || '';
 
+        // Skip duplicate transactions
+        if (seenIds.has(paymentId)) {
+          continue;
+        }
+        seenIds.add(paymentId);
+
         // Parse date (DD/MM/YYYY format)
         const [day, month, year] = dateStr.split('/').map(Number);
         const [hours, minutes, seconds] = timeStr.split(':').map(Number);
@@ -175,6 +336,19 @@ export class BhimAdapter extends BaseAppAdapter {
         // Build description
         const otherParty = drCr === 'DR' ? receiver : sender;
         const description = `${payCollect} - ${drCr === 'DR' ? 'To' : 'From'} ${otherParty}`;
+
+        // IMPORTANT: Only add SUCCESSFUL DEBIT transactions to the transactions array
+        // Transactions array is meant for expenses/spending only
+        // Skip:
+        // 1. Credits (money received) - drCr !== 'DR'
+        // 2. Failed transactions - status !== 'SUCCESS'
+        if (drCr !== 'DR') {
+          continue;
+        }
+
+        if (status !== 'SUCCESS') {
+          continue;
+        }
 
         // Create transaction
         const category = classifyTransaction(description, amountValue);
