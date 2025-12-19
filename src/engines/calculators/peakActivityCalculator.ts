@@ -70,6 +70,14 @@ export function calculatePeakActivityInsight(
     (nightTransactions / allPayments.length) * 100
   );
 
+  // Convert 24-hour format to 12-hour AM/PM format
+  const formatHour = (hour: number): string => {
+    if (hour === 0) return '12 AM';
+    if (hour < 12) return `${hour} AM`;
+    if (hour === 12) return '12 PM';
+    return `${hour - 12} PM`;
+  };
+
   return {
     type: 'peak_activity',
     title: 'Peak Activity Times',
@@ -84,6 +92,6 @@ export function calculatePeakActivityInsight(
     message:
       nightOwlScore > 30
         ? `Night owl alert! ${nightOwlScore}% of payments after 10pm`
-        : `${peakDay}s at ${peakHour}:00 is your payment time`,
+        : `${peakDay}s at ${formatHour(peakHour)} is your payment time`,
   };
 }
