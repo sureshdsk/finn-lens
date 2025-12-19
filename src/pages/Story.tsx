@@ -12,7 +12,6 @@ import {
 import NoDataRedirect from '../components/NoDataRedirect';
 import Footer from '../components/Footer';
 import ThemeSwitcher from '../components/ThemeSwitcher';
-import FilterBar from '../components/filters/FilterBar';
 import { animate as anime } from 'animejs';
 import styles from './Story.module.css';
 
@@ -263,9 +262,6 @@ export default function Story() {
       </nav>
 
       <div className={styles.container}>
-        {/* Filter Bar */}
-        <FilterBar />
-
         {/* Hero Section */}
         <div className={styles.hero} ref={heroRef}>
           <div className={styles.heroIcon}>💸</div>
