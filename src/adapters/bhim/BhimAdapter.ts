@@ -163,6 +163,19 @@ export class BhimAdapter extends BaseAppAdapter {
   }
 
   /**
+   * Clean merchant name - returns the full VPA as-is for better context
+   * The masked VPA shows the payment provider and gives hints about the merchant
+   * Examples:
+   * - "gpay-xxxxxx52728@okbizaxis(xxxxxxxxTORE)" -> "gpay-xxxxxx52728@okbizaxis(xxxxxxxxTORE)"
+   * - "paytm.xxtamnp@pty(xxxxxxxxUGAN)" -> "paytm.xxtamnp@pty(xxxxxxxxUGAN)"
+   * - "ppfas.xommon.mf@validicici(PPFASMF)" -> "ppfas.xommon.mf@validicici(PPFASMF)"
+   */
+  private cleanMerchantName(name: string): string {
+    // Return as-is to preserve full VPA context
+    return name;
+  }
+
+  /**
    * Parse BHIM XML format (embedded in JavaScript variable)
    * XML structure: <UPITransactions><Transactions><Transaction .../></Transactions></UPITransactions>
    */
@@ -223,14 +236,9 @@ export class BhimAdapter extends BaseAppAdapter {
           const amountValue = parseFloat(amountStr);
           const amount: Currency = { value: amountValue, currency: 'INR' };
 
-          // Extract names from VPA (format: xxxxx@upi(NAME))
-          const extractName = (vpa: string): string => {
-            const nameMatch = vpa.match(/\((.*?)\)/);
-            return nameMatch ? nameMatch[1] : vpa;
-          };
-
-          const payeeName = extractName(payeeVpa);
-          const payerName = extractName(payerVpa);
+          // Use full VPA for merchant display (keeps provider context)
+          const payeeName = this.cleanMerchantName(payeeVpa);
+          const payerName = this.cleanMerchantName(payerVpa);
 
           // Build description based on credit/debit
           const isCredit = benefitType === 'CR';
@@ -335,7 +343,8 @@ export class BhimAdapter extends BaseAppAdapter {
 
         // Build description
         const otherParty = drCr === 'DR' ? receiver : sender;
-        const description = `${payCollect} - ${drCr === 'DR' ? 'To' : 'From'} ${otherParty}`;
+        const cleanedParty = this.cleanMerchantName(otherParty);
+        const description = `${payCollect} - ${drCr === 'DR' ? 'To' : 'From'} ${cleanedParty}`;
 
         // IMPORTANT: Only add SUCCESSFUL DEBIT transactions to the transactions array
         // Transactions array is meant for expenses/spending only
