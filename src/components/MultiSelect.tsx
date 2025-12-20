@@ -8,6 +8,7 @@ interface MultiSelectProps {
   onChange: (values: string[]) => void;
   placeholder?: string;
   disabled?: boolean;
+  optionCounts?: Record<string, number>;
 }
 
 export default function MultiSelect({
@@ -17,6 +18,7 @@ export default function MultiSelect({
   onChange,
   placeholder = 'Select...',
   disabled = false,
+  optionCounts,
 }: MultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -107,6 +109,7 @@ export default function MultiSelect({
             ) : (
               options.map(option => {
                 const isSelected = selectedValues.includes(option);
+                const count = optionCounts?.[option];
                 return (
                   <label
                     key={option}
@@ -118,7 +121,12 @@ export default function MultiSelect({
                       onChange={() => handleToggleOption(option)}
                       className={styles.checkbox}
                     />
-                    <span className={styles.optionLabel}>{option}</span>
+                    <span className={styles.optionLabel}>
+                      <span>{option}</span>
+                      {count !== undefined && (
+                        <span className={styles.optionCount}>({count})</span>
+                      )}
+                    </span>
                     {isSelected && <span className={styles.checkmark}>✓</span>}
                   </label>
                 );

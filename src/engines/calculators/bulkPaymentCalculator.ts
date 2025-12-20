@@ -11,27 +11,37 @@ export interface BulkPaymentInsightData {
 }
 
 /**
- * Calculate bulk payment insight from activities
+ * Calculate bulk payment insight from activities and transactions
  * Shows transaction velocity and burst patterns
  */
 export function calculateBulkPaymentInsight(
   data: ParsedData
 ): Insight<BulkPaymentInsightData> | null {
-  const { activities } = data;
+  const { activities, transactions } = data;
 
+  // Combine activities and transactions
   const financialActivities = activities.filter(
     a => a.amount && a.transactionType !== 'other'
   );
 
-  if (financialActivities.length === 0) return null;
+  // Convert transactions to activity-like objects for processing
+  const transactionActivities = transactions.map(t => ({
+    time: t.time,
+    amount: t.amount,
+    transactionType: 'paid' as const,
+  }));
+
+  const allPayments = [...financialActivities, ...transactionActivities];
+
+  if (allPayments.length === 0) return null;
 
   // Group by hour and day
   const hourGroups = new Map<string, number>(); // "2025-12-04T10" -> count
   const dayGroups = new Map<string, number>(); // "2025-12-04" -> count
 
-  financialActivities.forEach(activity => {
-    const hourKey = activity.time.toISOString().slice(0, 13); // YYYY-MM-DDTHH
-    const dayKey = activity.time.toISOString().slice(0, 10); // YYYY-MM-DD
+  allPayments.forEach(payment => {
+    const hourKey = payment.time.toISOString().slice(0, 13); // YYYY-MM-DDTHH
+    const dayKey = payment.time.toISOString().slice(0, 10); // YYYY-MM-DD
 
     hourGroups.set(hourKey, (hourGroups.get(hourKey) || 0) + 1);
     dayGroups.set(dayKey, (dayGroups.get(dayKey) || 0) + 1);
@@ -54,7 +64,7 @@ export function calculateBulkPaymentInsight(
   });
 
   const velocityScore = Math.round(
-    financialActivities.length / dayGroups.size
+    allPayments.length / dayGroups.size
   );
 
   return {

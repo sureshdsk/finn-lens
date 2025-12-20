@@ -12,22 +12,28 @@ import { convertToINR } from '../../utils/categoryUtils';
 export function calculateSmallestPaymentInsight(
   data: ParsedData
 ): Insight<SmallestPaymentInsightData> | null {
-  const { activities } = data;
+  const { activities, transactions } = data;
 
+  // Combine activities and transactions
   const financialActivities = activities.filter(
     a => a.amount && a.amount.value > 0 && (a.transactionType === 'sent' || a.transactionType === 'paid')
   );
 
-  if (financialActivities.length === 0) return null;
+  const allPayments = [
+    ...financialActivities.map(a => ({ amount: a.amount!, description: a.title, time: a.time })),
+    ...transactions.filter(t => t.amount.value > 0).map(t => ({ amount: t.amount, description: t.description, time: t.time })),
+  ];
+
+  if (allPayments.length === 0) return null;
 
   // Find smallest payment
-  let smallest = financialActivities[0];
-  let smallestINR = convertToINR(smallest.amount!);
+  let smallest = allPayments[0];
+  let smallestINR = convertToINR(smallest.amount);
 
-  financialActivities.forEach(a => {
-    const amountINR = convertToINR(a.amount!);
+  allPayments.forEach(payment => {
+    const amountINR = convertToINR(payment.amount);
     if (amountINR < smallestINR) {
-      smallest = a;
+      smallest = payment;
       smallestINR = amountINR;
     }
   });
@@ -51,7 +57,7 @@ export function calculateSmallestPaymentInsight(
     tone: 'funny',
     data: {
       amount: { value: smallestINR, currency: 'INR' },
-      description: smallest.title,
+      description: smallest.description,
       date: smallest.time,
     },
     message: getMessage(),

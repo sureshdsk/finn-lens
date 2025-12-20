@@ -12,28 +12,34 @@ export interface PeakActivityInsightData {
 }
 
 /**
- * Calculate peak activity times insight from activities
+ * Calculate peak activity times insight from activities and transactions
  * Shows when user is most active with payments
  */
 export function calculatePeakActivityInsight(
   data: ParsedData
 ): Insight<PeakActivityInsightData> | null {
-  const { activities } = data;
+  const { activities, transactions } = data;
 
+  // Combine activities and transactions
   const financialActivities = activities.filter(
     a => a.amount && a.transactionType !== 'other'
   );
 
-  if (financialActivities.length === 0) return null;
+  const allPayments = [
+    ...financialActivities.map(a => ({ time: a.time })),
+    ...transactions.map(t => ({ time: t.time })),
+  ];
+
+  if (allPayments.length === 0) return null;
 
   // Count by hour
   const hourCounts = new Map<number, number>();
   const dayCounts = new Map<string, number>();
   let nightTransactions = 0;
 
-  financialActivities.forEach(activity => {
-    const hour = activity.time.getHours();
-    const day = activity.time.toLocaleDateString('en-US', { weekday: 'long' });
+  allPayments.forEach(payment => {
+    const hour = payment.time.getHours();
+    const day = payment.time.toLocaleDateString('en-US', { weekday: 'long' });
 
     hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
     dayCounts.set(day, (dayCounts.get(day) || 0) + 1);
@@ -61,8 +67,16 @@ export function calculatePeakActivityInsight(
   });
 
   const nightOwlScore = Math.round(
-    (nightTransactions / financialActivities.length) * 100
+    (nightTransactions / allPayments.length) * 100
   );
+
+  // Convert 24-hour format to 12-hour AM/PM format
+  const formatHour = (hour: number): string => {
+    if (hour === 0) return '12 AM';
+    if (hour < 12) return `${hour} AM`;
+    if (hour === 12) return '12 PM';
+    return `${hour - 12} PM`;
+  };
 
   return {
     type: 'peak_activity',
@@ -78,6 +92,6 @@ export function calculatePeakActivityInsight(
     message:
       nightOwlScore > 30
         ? `Night owl alert! ${nightOwlScore}% of payments after 10pm`
-        : `${peakDay}s at ${peakHour}:00 is your payment time`,
+        : `${peakDay}s at ${formatHour(peakHour)} is your payment time`,
   };
 }

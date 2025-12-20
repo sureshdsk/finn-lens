@@ -1,62 +1,92 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDataStore } from '../stores/dataStore';
-import { extractZipFile } from '../utils/zipParser';
+import { MultiAppManager } from '../services/MultiAppManager';
+import PasswordModal from '../components/upload/PasswordModal';
 import styles from './Processing.module.css';
 
-type ProcessingStage = 'extracting' | 'parsing' | 'calculating' | 'complete' | 'error';
+type ProcessingStage = 'detecting' | 'extracting' | 'parsing' | 'calculating' | 'complete' | 'error';
 
 export default function Processing() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [stage, setStage] = useState<ProcessingStage>('extracting');
+  const [stage, setStage] = useState<ProcessingStage>('detecting');
   const [error, setError] = useState<string | null>(null);
+  const [pendingPasswordFile, setPendingPasswordFile] = useState<File | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [processedFiles, setProcessedFiles] = useState<Set<string>>(new Set());
 
-  const { setRawData, parseRawData, recalculateInsights, selectedYear } = useDataStore();
+  const { addAppData } = useDataStore();
+
+  const multiAppManager = new MultiAppManager();
 
   useEffect(() => {
-    processFile();
+    processFiles();
   }, []);
 
-  const processFile = async () => {
+  const processFiles = async () => {
     try {
-      // Get file from navigation state
-      const file = location.state?.file as File | undefined;
+      // Get files from navigation state
+      const files = location.state?.files as File[] | undefined;
 
-      if (!file) {
-        setError('No file provided');
+      if (!files || files.length === 0) {
+        setError('No files provided');
         setStage('error');
         return;
       }
 
-      // Stage 1: Extract zip file
-      setStage('extracting');
-      await sleep(500); // Small delay for UX
+      // Stage 1: Detect and extract each file
+      setStage('detecting');
+      await sleep(300);
 
-      const extractResult = await extractZipFile(file);
+      for (const file of files) {
+        // Skip already processed files
+        if (processedFiles.has(file.name)) {
+          continue;
+        }
 
-      if (!extractResult.success || !extractResult.data) {
-        setError(extractResult.error || 'Failed to extract zip file');
-        setStage('error');
-        return;
+        // Skip file that's currently pending password (prevent double prompt)
+        if (pendingPasswordFile && pendingPasswordFile.name === file.name) {
+          continue;
+        }
+
+        const result = await multiAppManager.processFile(file);
+
+        if (!result.success) {
+          // Check if password required
+          if (result.error?.includes('password')) {
+            setPendingPasswordFile(file);
+            setPasswordError(null); // Clear any previous password errors
+            return; // Wait for password input
+          }
+
+          setError(result.error || 'Failed to process file');
+          setStage('error');
+          return;
+        }
+
+        // Stage 2: Extract (happens inside processFile)
+        setStage('extracting');
+        await sleep(200);
+
+        if (result.appId && result.rawData) {
+          // Add app data to store (this also triggers parsing)
+          await addAppData(result.appId, result.rawData);
+        }
+
+        // Mark file as processed
+        setProcessedFiles(prev => new Set(prev).add(file.name));
       }
 
-      // Store raw data
-      setRawData(extractResult.data);
-
-      // Stage 2: Parse data
+      // Stage 3: Parsing (auto-triggered by addAppData)
       setStage('parsing');
       await sleep(500);
 
-      parseRawData();
-
-      // Stage 3: Calculate insights
+      // Stage 4: Calculate insights (auto-triggered by store)
       setStage('calculating');
       await sleep(500);
 
-      recalculateInsights(selectedYear);
-
-      // Stage 4: Complete
+      // Stage 5: Complete
       setStage('complete');
       await sleep(500);
 
@@ -68,9 +98,57 @@ export default function Processing() {
     }
   };
 
+  const handlePasswordSubmit = async (password: string) => {
+    if (!pendingPasswordFile) return;
+
+    setPasswordError(null); // Clear any previous errors
+
+    try {
+      const result = await multiAppManager.processFile(pendingPasswordFile, password);
+
+      if (!result.success) {
+        // Check if it's a password error
+        if (result.error?.toLowerCase().includes('password')) {
+          setPasswordError(result.error);
+          return; // Keep modal open for retry
+        }
+
+        setError(result.error || 'Failed to process file');
+        setStage('error');
+        setPendingPasswordFile(null);
+        return;
+      }
+
+      if (result.appId && result.rawData) {
+        await addAppData(result.appId, result.rawData);
+      }
+
+      // Mark file as processed
+      setProcessedFiles(prev => new Set(prev).add(pendingPasswordFile.name));
+      setPendingPasswordFile(null);
+      setPasswordError(null);
+
+      // Continue processing remaining files
+      processFiles();
+    } catch (error) {
+      setPasswordError(error instanceof Error ? error.message : 'Failed to unlock file');
+    }
+  };
+
   const handleRetry = () => {
     navigate('/');
   };
+
+  if (pendingPasswordFile) {
+    return (
+      <PasswordModal
+        fileName={pendingPasswordFile.name}
+        onSubmit={handlePasswordSubmit}
+        onCancel={() => navigate('/')}
+        error={passwordError}
+      />
+    );
+  }
 
   if (stage === 'error') {
     return (
@@ -94,6 +172,12 @@ export default function Processing() {
         <p className={styles.subtitle}>This will only take a moment...</p>
 
         <div className={styles.stagesContainer}>
+          <ProcessingStage
+            icon="🔍"
+            label="Detecting apps"
+            active={stage === 'detecting'}
+            complete={['extracting', 'parsing', 'calculating', 'complete'].includes(stage)}
+          />
           <ProcessingStage
             icon="📦"
             label="Extracting files"

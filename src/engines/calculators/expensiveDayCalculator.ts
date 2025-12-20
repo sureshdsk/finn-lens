@@ -25,7 +25,11 @@ export function calculateExpensiveDayInsight(
 
   // Add transaction amounts to the map
   transactions.forEach(transaction => {
-    const dateKey = transaction.time.toISOString().slice(0, 10);
+    // Use local timezone for date grouping (YYYY-MM-DD format)
+    const year = transaction.time.getFullYear();
+    const month = String(transaction.time.getMonth() + 1).padStart(2, '0');
+    const day = String(transaction.time.getDate()).padStart(2, '0');
+    const dateKey = `${year}-${month}-${day}`;
     const amount = convertToINR(transaction.amount);
 
     if (!spendingByDate.has(dateKey)) {
@@ -40,7 +44,11 @@ export function calculateExpensiveDayInsight(
   // Add activity amounts (only spent/paid, not received)
   activities.forEach(activity => {
     if (activity.amount && (activity.transactionType === 'sent' || activity.transactionType === 'paid')) {
-      const dateKey = activity.time.toISOString().slice(0, 10);
+      // Use local timezone for date grouping (YYYY-MM-DD format)
+      const year = activity.time.getFullYear();
+      const month = String(activity.time.getMonth() + 1).padStart(2, '0');
+      const day = String(activity.time.getDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
       const amount = convertToINR(activity.amount);
 
       if (!spendingByDate.has(dateKey)) {

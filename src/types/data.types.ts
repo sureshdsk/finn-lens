@@ -1,6 +1,7 @@
-// Core data structure types for Google Pay export data
+// Core data structure types for multi-app UPI exports
 
 import type { TransactionCategory } from '../utils/categoryUtils';
+import type { UpiAppId } from './app.types';
 
 export interface Currency {
   value: number;
@@ -16,6 +17,7 @@ export interface Transaction {
   status: string;
   amount: Currency;
   category?: TransactionCategory;
+  sourceApp: UpiAppId; // Track which app this transaction came from
 }
 
 export interface GroupExpenseItem {
@@ -32,6 +34,7 @@ export interface GroupExpense {
   state: 'ONGOING' | 'COMPLETED' | 'CLOSED';
   title: string;
   items: GroupExpenseItem[];
+  sourceApp: UpiAppId; // Track which app this group expense came from
 }
 
 export interface CashbackReward {
@@ -39,6 +42,7 @@ export interface CashbackReward {
   currency: 'INR' | 'USD';
   amount: number;
   description: string;
+  sourceApp: UpiAppId; // Track which app this cashback came from
 }
 
 export interface Voucher {
@@ -46,6 +50,7 @@ export interface Voucher {
   details: string;
   summary: string;
   expiryDate: Date;
+  sourceApp: UpiAppId; // Track which app this voucher came from
 }
 
 export interface ActivityRecord {
@@ -54,12 +59,13 @@ export interface ActivityRecord {
   description?: string;
   products?: string[];
 
-  // NEW STRUCTURED FIELDS
+  // STRUCTURED FIELDS
   transactionType?: 'sent' | 'received' | 'paid' | 'request' | 'other';
   amount?: Currency;
   recipient?: string;
   sender?: string;
   category?: TransactionCategory;
+  sourceApp: UpiAppId; // Track which app this activity came from
 }
 
 export interface ParsedData {
@@ -68,6 +74,7 @@ export interface ParsedData {
   cashbackRewards: CashbackReward[];
   voucherRewards: Voucher[];
   activities: ActivityRecord[];
+  sources: UpiAppId[]; // Track which apps contributed data
 }
 
 export interface RawExtractedData {
@@ -77,4 +84,13 @@ export interface RawExtractedData {
   voucherRewards?: string;
   remittances?: string;
   myActivity?: string;
+}
+
+/**
+ * App-specific raw data container
+ */
+export interface AppRawData {
+  app: UpiAppId;
+  rawData: Record<string, string>; // Flexible key-value pairs for different file formats
+  uploadedAt: Date;
 }

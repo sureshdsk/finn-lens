@@ -17,7 +17,7 @@ import styles from './Story.module.css';
 
 export default function Story() {
   const navigate = useNavigate();
-  const { parsedData, insights, selectedYear } = useDataStore();
+  const { parsedData, insights, filterContext } = useDataStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
@@ -28,13 +28,13 @@ export default function Story() {
   const filteredData = useMemo(() => {
     if (!parsedData) return null;
     return {
-      transactions: filterTransactionsByYear(parsedData.transactions, selectedYear),
-      activities: filterActivitiesByYear(parsedData.activities, selectedYear),
-      groupExpenses: filterGroupExpensesByYear(parsedData.groupExpenses, selectedYear),
-      cashbackRewards: filterCashbackRewardsByYear(parsedData.cashbackRewards, selectedYear),
-      voucherRewards: filterVouchersByYear(parsedData.voucherRewards, selectedYear),
+      transactions: filterTransactionsByYear(parsedData.transactions, filterContext.year),
+      activities: filterActivitiesByYear(parsedData.activities, filterContext.year),
+      groupExpenses: filterGroupExpensesByYear(parsedData.groupExpenses, filterContext.year),
+      cashbackRewards: filterCashbackRewardsByYear(parsedData.cashbackRewards, filterContext.year),
+      voucherRewards: filterVouchersByYear(parsedData.voucherRewards, filterContext.year),
     };
-  }, [parsedData, selectedYear]);
+  }, [parsedData, filterContext.year]);
 
   // Calculate total spent
   const totalSpent = useMemo(() => {
@@ -269,7 +269,7 @@ export default function Story() {
             Your payments in a year, wrapped!
           </h1>
           <div className={styles.heroYear}>
-            {selectedYear === 'all' ? 'All Time' : selectedYear}
+            {filterContext.year === 'all' ? 'All Time' : filterContext.year}
           </div>
           <div className={styles.heroAmountWrapper}>
             <div className={styles.heroLabel}>Total Spent</div>

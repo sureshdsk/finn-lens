@@ -11,20 +11,27 @@ import { Insight, PaymentStreakInsightData } from '../../types/insight.types';
 export function calculatePaymentStreakInsight(
   data: ParsedData
 ): Insight<PaymentStreakInsightData> | null {
-  const { activities } = data;
+  const { activities, transactions } = data;
 
+  // Combine activities and transactions
   const financialActivities = activities.filter(
     a => a.amount && (a.transactionType === 'sent' || a.transactionType === 'paid')
   );
 
-  if (financialActivities.length === 0) return null;
+  // Get all payment dates from both sources
+  const allPaymentDates = [
+    ...financialActivities.map(a => a.time),
+    ...transactions.map(t => t.time),
+  ];
+
+  if (allPaymentDates.length === 0) return null;
 
   // Sort by date
-  const sorted = [...financialActivities].sort((a, b) => a.time.getTime() - b.time.getTime());
+  const sorted = [...allPaymentDates].sort((a, b) => a.getTime() - b.getTime());
 
   // Get unique dates (YYYY-MM-DD)
   const uniqueDates = new Set(
-    sorted.map(a => a.time.toISOString().split('T')[0])
+    sorted.map(d => d.toISOString().split('T')[0])
   );
   const dates = Array.from(uniqueDates).sort();
 

@@ -247,6 +247,12 @@
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+/* Merchant filter - wider to show full VPA addresses */
+.filters :global(.merchantFilter) {
+  grid-column: span 2;
+  min-width: 400px;
+}
+
 .filterGroup {
   display: flex;
   flex-direction: column;
@@ -670,6 +676,12 @@
 
   .filters {
     grid-template-columns: 1fr;
+  }
+
+  /* On mobile, merchant filter takes full width */
+  .filters :global(.merchantFilter) {
+    grid-column: span 1;
+    min-width: auto;
   }
 
   .tableWrapper {

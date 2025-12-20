@@ -42,9 +42,26 @@ type ViewType = 'activity' | 'transaction' | 'group_expense';
 export default function DataTable() {
   const navigate = useNavigate();
   const { parsedData } = useDataStore();
+
+  // Determine default view based on available data
+  const getDefaultView = (): ViewType => {
+    if (!parsedData) return 'activity';
+
+    // Check if there's any activity data
+    const hasActivityData = parsedData.activities.length > 0;
+
+    // If no activity data, default to transaction view
+    // (BHIM, Paytm, PhonePe only have transaction data)
+    if (!hasActivityData) {
+      return 'transaction';
+    }
+
+    return 'activity';
+  };
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [activeView, setActiveView] = useState<ViewType>('activity');
+  const [activeView, setActiveView] = useState<ViewType>(getDefaultView());
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [yearFilter, setYearFilter] = useState<string>('2025');
   const [monthFilter, setMonthFilter] = useState<string>('all');
@@ -205,8 +222,12 @@ export default function DataTable() {
     // Merchant filter (multi-select)
     if (merchantFilter.length > 0) {
       filtered = filtered.filter(row => {
-        // Extract merchant name from the description which already contains "To X" or "From X"
-        const merchantName = row.description.replace(/^(To |From )/i, '').trim();
+        // Extract merchant name from the description
+        // Same extraction logic as merchantsData
+        const merchantName = row.description
+          .replace(/^(PAY|COLLECT)\s*-\s*(To|From)\s+/i, '') // Remove "PAY - To " or "COLLECT - From "
+          .replace(/^(To|From)\s+/i, '') // Remove "To " or "From "
+          .trim();
         return merchantFilter.includes(merchantName);
       });
     }
@@ -225,7 +246,7 @@ export default function DataTable() {
   }, [tableData, activeView, categoryFilter, yearFilter, monthFilter, merchantFilter, settlementFilter, payerFilter, directionFilter, statusFilter]);
 
   // Get unique merchants for filter (based on currently filtered data, excluding merchant filter itself)
-  const merchants = useMemo(() => {
+  const merchantsData = useMemo(() => {
     // Filter data by year, month, category, and active view (but NOT merchant filter)
     let dataForMerchants = tableData;
 
@@ -251,11 +272,18 @@ export default function DataTable() {
       dataForMerchants = dataForMerchants.filter(row => row.category && categoryFilter.includes(row.category));
     }
 
-    // Extract unique merchants from the filtered data
-    const merchantSet = new Set<string>();
+    // Count transactions per merchant
+    const merchantCounts = new Map<string, number>();
     dataForMerchants.forEach(row => {
-      // Extract merchant name from the description which already contains "To X" or "From X"
-      let merchantName = row.description.replace(/^(To |From )/i, '').trim();
+      // Extract merchant name from the description
+      // Handle formats:
+      // - "To X" or "From X" (Google Pay activities)
+      // - "PAY - To X" or "COLLECT - From X" (BHIM transactions)
+      // - "X" (PhonePe, Paytm transactions)
+      let merchantName = row.description
+        .replace(/^(PAY|COLLECT)\s*-\s*(To|From)\s+/i, '') // Remove "PAY - To " or "COLLECT - From "
+        .replace(/^(To|From)\s+/i, '') // Remove "To " or "From "
+        .trim();
 
       // Filter out invalid merchant names that are just generic transaction descriptions
       // These patterns indicate no actual merchant name:
@@ -270,11 +298,28 @@ export default function DataTable() {
         merchantName === '';
 
       if (!isInvalid && merchantName) {
-        merchantSet.add(merchantName);
+        merchantCounts.set(merchantName, (merchantCounts.get(merchantName) || 0) + 1);
       }
     });
 
-    return Array.from(merchantSet).sort();
+    // Sort merchants by count (descending), then alphabetically
+    const sortedMerchants = Array.from(merchantCounts.entries())
+      .sort((a, b) => {
+        // First sort by count (descending)
+        if (b[1] !== a[1]) {
+          return b[1] - a[1];
+        }
+        // Then alphabetically
+        return a[0].localeCompare(b[0]);
+      })
+      .map(([name]) => name);
+
+    const countsRecord = Object.fromEntries(merchantCounts);
+
+    return {
+      merchants: sortedMerchants,
+      counts: countsRecord,
+    };
   }, [tableData, yearFilter, monthFilter, categoryFilter, activeView]);
 
   // Get unique payers for filter (only from group expenses)
@@ -733,13 +778,16 @@ export default function DataTable() {
               placeholder="All Directions"
             />
 
-            <MultiSelect
-              label={`Merchant (${merchants.length})`}
-              options={merchants}
-              selectedValues={merchantFilter}
-              onChange={setMerchantFilter}
-              placeholder="All Merchants"
-            />
+            <div className="merchantFilter">
+              <MultiSelect
+                label={`Merchant (${merchantsData.merchants.length})`}
+                options={merchantsData.merchants}
+                selectedValues={merchantFilter}
+                onChange={setMerchantFilter}
+                placeholder="All Merchants"
+                optionCounts={merchantsData.counts}
+              />
+            </div>
           </>
         )}
 
@@ -754,13 +802,16 @@ export default function DataTable() {
               placeholder="All Status"
             />
 
-            <MultiSelect
-              label={`Merchant (${merchants.length})`}
-              options={merchants}
-              selectedValues={merchantFilter}
-              onChange={setMerchantFilter}
-              placeholder="All Merchants"
-            />
+            <div className="merchantFilter">
+              <MultiSelect
+                label={`Merchant (${merchantsData.merchants.length})`}
+                options={merchantsData.merchants}
+                selectedValues={merchantFilter}
+                onChange={setMerchantFilter}
+                placeholder="All Merchants"
+                optionCounts={merchantsData.counts}
+              />
+            </div>
           </>
         )}
 
