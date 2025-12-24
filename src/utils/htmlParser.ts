@@ -59,8 +59,8 @@ function extractPersonFromDescription(description: string, type: string): {
 
   if (type === 'sent' || type === 'paid') {
     // Look for "to [Name]" - capture until "using" keyword or end of string
-    // This handles full merchant names like "M S ARASU CHICKEN CENTRE"
-    const toMatch = description.match(/to\s+([A-Z][A-Z\s]+?)(?:\s+using|\s*$)/i);
+    // This handles full merchant names like "M S ARASU CHICKEN CENTRE", special chars like "M.K.SYED &CO", and numbers like "SAIDAPET 5"
+    const toMatch = description.match(/to\s+([A-Z][A-Z0-9\s.&]+?)(?:\s+using|\s*$)/i);
     if (toMatch) result.recipient = toMatch[1].trim();
   }
 
@@ -123,8 +123,10 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
         // Failed transactions contain the word "Failed" somewhere in the FULL cell content
         const failureKeywords = ['failed', 'declined', 'cancelled', 'canceled', 'rejected', 'unsuccessful'];
 
-        // Create a regex pattern to match failure keywords as whole words
-        const failurePattern = new RegExp(`\\b(${failureKeywords.join('|')})\\b`, 'i');
+        // Create a regex pattern to match failure keywords
+        // Note: Don't use \b word boundaries because HTML entities like &emsp; create Unicode spaces
+        // that may not be recognized as word boundaries
+        const failurePattern = new RegExp(`(${failureKeywords.join('|')})`, 'i');
 
         // Check the full cell text (not just content-cell) for failure status
         const isFailed = failurePattern.test(fullCellText);
@@ -133,6 +135,24 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
           failedCount++;
           // Skip failed transactions - don't add them to activities
           return;
+        }
+
+        // Extract transaction ID and status from Details section early
+        // Pattern: Details:<br>&emsp;TRANSACTION_ID<br>&emsp;Status
+        // Look for the Details section - it should have transaction ID followed by status
+        const hasDetailsSection = /Details:/i.test(fullCellText);
+
+        if (hasDetailsSection) {
+          // If Details section exists, check for valid status (Completed, Failed, or Pending)
+          const detailsMatchEarly = fullCellText.match(/Details:.*?([A-Za-z0-9\-@\/+]+)\s+(Completed|Failed|Pending)/s);
+
+          // Skip transactions with Details section but no valid status (empty or missing status)
+          // Google Pay app also filters these out
+          if (!detailsMatchEarly) {
+            failedCount++;
+            // Skip transactions without valid status
+            return;
+          }
         }
 
         // Split content by newlines, line breaks, or use child elements
@@ -197,9 +217,23 @@ export function parseMyActivityHTML(htmlString: string): HTMLParseResult {
           title = contentText.substring(0, contentText.indexOf(dateMatch[0])).trim();
         }
 
+        // Extract transaction ID from Details section
+        // Pattern: Details:<br>&emsp;TRANSACTION_ID<br>&emsp;Status
+        const detailsMatch = fullCellText.match(/Details:.*?([A-Za-z0-9\-@\/+]+)\s+(Completed|Failed|Pending)/s);
+        const transactionId = detailsMatch ? detailsMatch[1].trim() : '';
+
         // NEW: Parse transaction data
-        const { type: transactionType, amount } = parseTransactionFromTitle(title);
+        let { type: transactionType, amount } = parseTransactionFromTitle(title);
         const { recipient, sender } = extractPersonFromDescription(contentText, transactionType);
+
+        // FIX: P2P UPI collect/request transactions
+        // Google labels received money as "Paid ₹X using Bank Account" (without recipient)
+        // We use transaction ID pattern to distinguish received vs sent:
+        // - 35-char alphanumeric IDs (no dashes) = RECEIVED via P2P UPI collect
+        // - Examples: YBN..., KOT..., AXL..., UPI..., PTM..., YESB..., INB...
+        if (transactionType === 'paid' && !recipient && /^[A-Za-z0-9]{35}$/.test(transactionId)) {
+          transactionType = 'received';
+        }
 
         // Only add if we have a valid title
         if (title) {

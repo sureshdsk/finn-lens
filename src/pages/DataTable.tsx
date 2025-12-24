@@ -13,6 +13,7 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { convertToINR } from '../utils/categoryUtils';
+import { filterTransactionsByYear, filterActivitiesByYear } from '../utils/dateUtils';
 import Tooltip from '../components/Tooltip';
 import NoDataRedirect from '../components/NoDataRedirect';
 import Footer from '../components/Footer';
@@ -77,8 +78,12 @@ export default function DataTable() {
 
     const rows: TableRow[] = [];
 
+    // Filter out failed transactions and activities
+    const successfulActivities = filterActivitiesByYear(parsedData.activities, 'all');
+    const successfulTransactions = filterTransactionsByYear(parsedData.transactions, 'all');
+
     // Add activities (both sent and received)
-    parsedData.activities.forEach(activity => {
+    successfulActivities.forEach(activity => {
       if (activity.amount && activity.transactionType) {
         const isReceived = activity.transactionType === 'received';
         const displayAmount = convertToINR(activity.amount);
@@ -100,7 +105,7 @@ export default function DataTable() {
     });
 
     // Add transactions
-    parsedData.transactions.forEach(transaction => {
+    successfulTransactions.forEach(transaction => {
       rows.push({
         date: transaction.time,
         type: 'transaction',

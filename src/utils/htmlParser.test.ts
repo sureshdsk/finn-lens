@@ -3,6 +3,64 @@ import { parseMyActivityHTML } from './htmlParser';
 
 describe('htmlParser', () => {
   describe('parseMyActivityHTML', () => {
+    it('should exclude failed transactions from parsing', () => {
+      const htmlContent = `
+<!DOCTYPE html>
+<html>
+<body>
+  <div class="outer-cell mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+    <div class="mdl-grid">
+      <div class="header-cell mdl-cell mdl-cell--12-col">
+        <p class="mdl-typography--title">Google Pay<br></p>
+      </div>
+      <div class="content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1">
+        Received ₹60.00<br>4 Dec 2025, 23:07:41 GMT+05:30<br>
+      </div>
+      <div class="content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1 mdl-typography--text-right"></div>
+      <div class="content-cell mdl-cell mdl-cell--12-col mdl-typography--caption">
+        <b>Products:</b><br> Google Pay<br><b>Details:</b><br> ldfqyOcETOmpNlWY<br> Failed<br>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      const result = parseMyActivityHTML(htmlContent);
+
+      expect(result.success).toBe(true);
+      // Failed transaction should be excluded
+      expect(result.data).toHaveLength(0);
+    });
+
+    it('should exclude transactions with empty or missing status', () => {
+      const htmlContent = `
+<!DOCTYPE html>
+<html>
+<body>
+  <div class="outer-cell mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+    <div class="mdl-grid">
+      <div class="header-cell mdl-cell mdl-cell--12-col">
+        <p class="mdl-typography--title">Google Pay<br></p>
+      </div>
+      <div class="content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1">
+        Received ₹60.00<br>4 Dec 2025, 23:07:32 GMT+05:30<br>
+      </div>
+      <div class="content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1 mdl-typography--text-right"></div>
+      <div class="content-cell mdl-cell mdl-cell--12-col mdl-typography--caption">
+        <b>Products:</b><br> Google Pay<br><b>Details:</b><br> nRZ9V8FVTc+UWqPL<br> <br>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      const result = parseMyActivityHTML(htmlContent);
+
+      expect(result.success).toBe(true);
+      // Transaction with empty status should be excluded
+      expect(result.data).toHaveLength(0);
+    });
+
     it('should parse valid My Activity HTML with single transaction', () => {
       const htmlContent = `
 <!DOCTYPE html>
@@ -527,6 +585,243 @@ describe('htmlParser', () => {
       // Verify all years are present
       const years = result.data!.map(d => d.time.getFullYear());
       expect(years).toEqual([2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]);
+    });
+
+    it('should reclassify "Paid using Bank Account" with 35-char transaction ID as received', () => {
+      // This tests the fix for P2P transactions where Google labels received money as "Paid"
+      // Pattern: 35-char alphanumeric transaction IDs = RECEIVED via UPI collect
+      const htmlContent = `
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹690.00 using Bank Account XXXXXXXX5601<br>
+    19 Dec 2025, 15:24:27 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    YBN20251219152416743865243676672000<br>
+    Completed<br>
+  </div>
+</div>
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹2867.00 using Bank Account XXXXXXXX5601<br>
+    21 Nov 2025, 21:57:42 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    KOT19640634730HJV09LFYW2S34TVHZBSW7<br>
+    Completed<br>
+  </div>
+</div>
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹400.00 using Bank Account XXXXXXXX5601<br>
+    6 Dec 2025, 16:37:19 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    AXL762a419436d040b69d6de76be192cbb8<br>
+    Completed<br>
+  </div>
+</div>
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹2858.00 using Bank Account XXXXXXXX5601<br>
+    16 Oct 2019, 12:08:46 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    PTMd3c485f560f04d55b7940cf50edaf38c<br>
+    Completed<br>
+  </div>
+</div>`;
+
+      const result = parseMyActivityHTML(htmlContent);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(4);
+
+      // All should be reclassified as 'received' based on 35-char transaction ID
+      expect(result.data![0].transactionType).toBe('received');
+      expect(result.data![0].amount?.value).toBe(690);
+      expect(result.data![0].recipient).toBeUndefined();
+
+      expect(result.data![1].transactionType).toBe('received');
+      expect(result.data![1].amount?.value).toBe(2867);
+      expect(result.data![1].recipient).toBeUndefined();
+
+      expect(result.data![2].transactionType).toBe('received');
+      expect(result.data![2].amount?.value).toBe(400);
+      expect(result.data![2].recipient).toBeUndefined();
+
+      expect(result.data![3].transactionType).toBe('received');
+      expect(result.data![3].amount?.value).toBe(2858);
+      expect(result.data![3].recipient).toBeUndefined();
+    });
+
+    it('should NOT reclassify "Paid to [NAME] using Bank Account" as received', () => {
+      // This ensures we don't break normal paid transactions that have a recipient
+      const htmlContent = `
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹942.00 to BSNL BILLDESK using Bank Account XXXXXXXX5601<br>
+    21 Dec 2025, 18:51:26 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    QbsH7PDJRuy2F01E<br>
+    Completed<br>
+  </div>
+</div>`;
+
+      const result = parseMyActivityHTML(htmlContent);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(1);
+
+      // Should remain as 'paid' because it has a recipient
+      expect(result.data![0].transactionType).toBe('paid');
+      expect(result.data![0].amount?.value).toBe(942);
+      expect(result.data![0].recipient).toBe('BSNL BILLDESK');
+    });
+
+    it('should correctly handle merchant payments with numbers in name', () => {
+      // Real example: Payment to restaurant should stay as 'paid' (outgoing expense)
+      const htmlContent = `
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹380.00 to SS HYDERABAD BIRYANI SAIDAPET 5 using Bank Account XXXXXXXX5601<br>
+    19 Dec 2025, 15:23:56 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    TFfOnXp4SnyhmPlC<br>
+    Completed<br>
+  </div>
+</div>`;
+
+      const result = parseMyActivityHTML(htmlContent);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(1);
+
+      // Should remain as 'paid' because it has a recipient name
+      expect(result.data![0].transactionType).toBe('paid');
+      expect(result.data![0].amount?.value).toBe(380);
+      expect(result.data![0].recipient).toBe('SS HYDERABAD BIRYANI SAIDAPET 5');
+    });
+
+    it('should NOT reclassify UUID format (36-char with dashes) as received', () => {
+      // 36-char UUIDs with dashes should remain as 'paid' (not P2P received)
+      const htmlContent = `
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹10,497.76 using Bank Account XXXXXXXX5601<br>
+    4 Nov 2020, 08:51:18 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    E0290455-7E1E-4FC4-9446-46B7105EE2E3<br>
+    Completed<br>
+  </div>
+</div>
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹2000.00 using Bank Account XXXXXXXX5601<br>
+    19 Aug 2019, 11:33:59 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    EF04868F-9327-4C27-9547-B05D7EDAA613<br>
+    Completed<br>
+  </div>
+</div>`;
+
+      const result = parseMyActivityHTML(htmlContent);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(2);
+
+      // Both should remain as 'paid' because UUIDs contain dashes (not 35-char alphanumeric)
+      expect(result.data![0].transactionType).toBe('paid');
+      expect(result.data![0].amount?.value).toBe(10497.76);
+
+      expect(result.data![1].transactionType).toBe('paid');
+      expect(result.data![1].amount?.value).toBe(2000);
+    });
+
+    it('should differentiate between paid-to-merchant vs received-via-collect (comprehensive test)', () => {
+      // Side-by-side comparison of the two patterns
+      const htmlContent = `
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹380.00 to SS HYDERABAD BIRYANI SAIDAPET 5 using Bank Account XXXXXXXX5601<br>
+    19 Dec 2025, 15:23:56 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    TFfOnXp4SnyhmPlC<br>
+    Completed<br>
+  </div>
+</div>
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹690.00 using Bank Account XXXXXXXX5601<br>
+    19 Dec 2025, 15:24:27 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    YBN20251219152416743865243676672000<br>
+    Completed<br>
+  </div>
+</div>
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹942.00 to BSNL BILLDESK using Bank Account XXXXXXXX5601<br>
+    21 Dec 2025, 18:51:26 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    QbsH7PDJRuy2F01E<br>
+    Completed<br>
+  </div>
+</div>
+<div class="outer-cell">
+  <div class="content-cell">
+    Paid ₹2867.00 using Bank Account XXXXXXXX5601<br>
+    21 Nov 2025, 21:57:42 GMT+05:30<br>
+  </div>
+  <div class="content-cell">
+    <b>Details:</b><br>
+    KOT19640634730HJV09LFYW2S34TVHZBSW7<br>
+    Completed<br>
+  </div>
+</div>`;
+
+      const result = parseMyActivityHTML(htmlContent);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(4);
+
+      // Transaction 1: Paid to merchant (has recipient) → PAID (expense)
+      expect(result.data![0].transactionType).toBe('paid');
+      expect(result.data![0].amount?.value).toBe(380);
+      expect(result.data![0].recipient).toBe('SS HYDERABAD BIRYANI SAIDAPET 5');
+
+      // Transaction 2: Paid using bank account (no recipient) → RECEIVED (income)
+      expect(result.data![1].transactionType).toBe('received');
+      expect(result.data![1].amount?.value).toBe(690);
+      expect(result.data![1].recipient).toBeUndefined();
+
+      // Transaction 3: Paid to merchant (has recipient) → PAID (expense)
+      expect(result.data![2].transactionType).toBe('paid');
+      expect(result.data![2].amount?.value).toBe(942);
+      expect(result.data![2].recipient).toBe('BSNL BILLDESK');
+
+      // Transaction 4: Paid using bank account (no recipient) → RECEIVED (income)
+      expect(result.data![3].transactionType).toBe('received');
+      expect(result.data![3].amount?.value).toBe(2867);
+      expect(result.data![3].recipient).toBeUndefined();
     });
   });
 });
