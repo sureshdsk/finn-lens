@@ -236,6 +236,29 @@
   opacity: 0.9;
 }
 
+/* Thanks Section */
+.thanksList {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 1rem;
+}
+
+.thanksList li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+  line-height: 1.6;
+}
+
+.thanksList li:last-child {
+  border-bottom: none;
+}
+
+.thanksName {
+  color: #667eea;
+  font-weight: 700;
+  font-size: 1.0625rem;
+}
+
 /* Buttons */
 .buttonGroup {
   display: flex;

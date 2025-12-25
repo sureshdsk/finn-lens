@@ -86,7 +86,7 @@ export default function About() {
             </h2>
             <div className={styles.text}>
               <p>
-                We vibe-coded this entire project with{' '}
+                We built this entire project using{' '}
                 <a
                   href="https://claude.ai/code"
                   target="_blank"
@@ -95,12 +95,18 @@ export default function About() {
                 >
                   Claude Code
                 </a>
+                {' '}and{' '}
+                <a
+                  href="https://antigravity.google/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.link}
+                >
+                  Antigravity
+                </a>
                 , leveraging AI-powered development to move fast and iterate quickly.
               </p>
-              <p>
-                The experience felt like coding with antigravity — ideas flowed into working features
-                with minimal friction.
-              </p>
+              
             </div>
           </section>
 
@@ -240,7 +246,7 @@ export default function About() {
           {/* Credits */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              <span className={styles.emoji}>🎵</span> Credits
+              <span className={styles.emoji}>🎨</span> Credits
             </h2>
             <div className={styles.text}>
               <p>
@@ -255,6 +261,38 @@ export default function About() {
                 </a>
                 , a copyright-free music label offering high-quality tracks for creators.
               </p>
+              <p>
+                Beautiful gradient backgrounds courtesy of{' '}
+                <a
+                  href="https://unsplash.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.link}
+                >
+                  Unsplash
+                </a>
+                , the internet's source of freely usable images.
+              </p>
+            </div>
+          </section>
+
+          {/* Special Thanks */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <span className={styles.emoji}>🙏</span> Special Thanks
+            </h2>
+            <div className={styles.text}>
+              <p>
+                A huge thank you to these amazing individuals who helped validate the app,
+                shared their transaction data for debugging, and provided invaluable design feedback:
+              </p>
+              <ul className={styles.thanksList}>
+                <li><strong className={styles.thanksName}>Paarthan</strong> - BHIM data validation & testing</li>
+                <li><strong className={styles.thanksName}>Mohammed Shazad Basha</strong> - BHIM & Google Pay debugging</li>
+                <li><strong className={styles.thanksName}>Ayush</strong> - BHIM data validation & testing</li>
+                <li><strong className={styles.thanksName}>Selvakumar Duraipandian</strong> - Google Pay data validation</li>
+                <li><strong className={styles.thanksName}>Aravind Sekar</strong> - Design improvements & feedback</li>
+              </ul>
             </div>
           </section>
 

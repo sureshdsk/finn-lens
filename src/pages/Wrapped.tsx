@@ -43,23 +43,24 @@ const getCategoryIcon = (category: string): string => {
 const BG_IMAGES = {
   INTRO_OUTRO: '/bg/codioful-formerly-gradienta-7E5kq_sW0Ew-unsplash.jpg', // Used for first and last slide
   OTHERS: [
+    '/bg/codioful-formerly-gradienta-1LirzgcpY2c-unsplash.jpg',
     '/bg/codioful-formerly-gradienta-Mx688PpeE2A-unsplash.jpg',
-    '/bg/dave-hoefler-PEkfSAxeplg-unsplash.jpg',
     '/bg/luke-chesser-CxBx_J3yp9g-unsplash.jpg',
     '/bg/mymind-wHJ5L9KGTl4-unsplash.jpg',
+    '/bg/thomas-lefebvre-mT1uxKaegSQ-unsplash.jpg',
   ]
 };
 
-// Assign background images to slides
+// Assign background images to slides - randomly select for middle slides
 const assignBackgroundImage = (_slideId: string, slideIndex: number, totalSlides: number): string => {
   // First and last slides get the intro/outro image
   if (slideIndex === 0 || slideIndex === totalSlides - 1) {
     return BG_IMAGES.INTRO_OUTRO;
   }
 
-  // For other slides, cycle through the 4 available backgrounds
-  const bgIndex = (slideIndex - 1) % BG_IMAGES.OTHERS.length;
-  return BG_IMAGES.OTHERS[bgIndex];
+  // For other slides, randomly select from available backgrounds
+  const randomIndex = Math.floor(Math.random() * BG_IMAGES.OTHERS.length);
+  return BG_IMAGES.OTHERS[randomIndex];
 };
 
 export default function Wrapped() {
