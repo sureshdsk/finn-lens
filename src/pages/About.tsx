@@ -246,7 +246,7 @@ export default function About() {
           {/* Credits */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              <span className={styles.emoji}>🎵</span> Credits
+              <span className={styles.emoji}>🎨</span> Credits
             </h2>
             <div className={styles.text}>
               <p>
@@ -260,6 +260,18 @@ export default function About() {
                   NCS (NoCopyrightSounds)
                 </a>
                 , a copyright-free music label offering high-quality tracks for creators.
+              </p>
+              <p>
+                Beautiful gradient backgrounds courtesy of{' '}
+                <a
+                  href="https://unsplash.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.link}
+                >
+                  Unsplash
+                </a>
+                , the internet's source of freely usable images.
               </p>
             </div>
           </section>
