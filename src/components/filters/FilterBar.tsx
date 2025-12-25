@@ -18,6 +18,14 @@ export default function FilterBar() {
   // Only show filter bar if there's data to filter
   if (uploadedApps.length === 0) return null;
 
+  // Check if Google Pay is in the uploaded apps
+  const hasGooglePay = uploadedApps.includes('googlepay');
+
+  // Don't render anything if no Google Pay and single app (BHIM only)
+  if (!hasGooglePay && uploadedApps.length === 1) {
+    return null;
+  }
+
   // Handle year change
   const handleYearChange = (year: YearFilter) => {
     setFilterContext({
@@ -69,25 +77,27 @@ export default function FilterBar() {
 
   return (
     <div className={styles.filterBar}>
-      {/* Year Filter - Compact inline */}
-      <div className={styles.yearFilter}>
-        {availableYears.map(year => (
-          <button
-            key={year}
-            className={`${styles.yearChip} ${
-              filterContext.year === year ? styles.activeYear : ''
-            }`}
-            onClick={() => handleYearChange(year)}
-          >
-            {year === 'all' ? 'All Time' : year}
-          </button>
-        ))}
-      </div>
+      {/* Year Filter - Only show for Google Pay */}
+      {hasGooglePay && (
+        <div className={styles.yearFilter}>
+          {availableYears.map(year => (
+            <button
+              key={year}
+              className={`${styles.yearChip} ${
+                filterContext.year === year ? styles.activeYear : ''
+              }`}
+              onClick={() => handleYearChange(year)}
+            >
+              {year === 'all' ? 'All Time' : year}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* App Filter - Only show if multiple apps uploaded */}
       {uploadedApps.length > 1 && (
         <>
-          <div className={styles.divider} />
+          {hasGooglePay && <div className={styles.divider} />}
           <div className={styles.appFilter}>
             <button
               className={`${styles.appChip} ${

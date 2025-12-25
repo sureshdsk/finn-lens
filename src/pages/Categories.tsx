@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useDataStore } from '../stores/dataStore';
 import { useNavigate } from 'react-router-dom';
 import { convertToINR, TransactionCategory, categorizeTransaction } from '../utils/categoryUtils';
@@ -8,6 +8,7 @@ import NoDataRedirect from '../components/NoDataRedirect';
 import Footer from '../components/Footer';
 import ThemeSwitcher from '../components/ThemeSwitcher';
 import FilterBar from '../components/filters/FilterBar';
+import SpendingCharts from '../components/charts/SpendingCharts';
 import { animate as anime } from 'animejs';
 import styles from './Categories.module.css';
 
@@ -61,13 +62,17 @@ const CATEGORY_ICONS: Record<TransactionCategory, string> = {
 export default function Categories() {
   const navigate = useNavigate();
   const { parsedData, filterContext } = useDataStore();
-  const [expandedCategory, setExpandedCategory] = useState<TransactionCategory | null>(null);
+
+  // Filtered transactions for charts
+  const filteredTransactions = useMemo(() => {
+    if (!parsedData) return [];
+    return filterTransactionsByYear(parsedData.transactions, filterContext.year);
+  }, [parsedData, filterContext.year]);
 
   // Get all items with their category
   const allItemsWithCategory = useMemo(() => {
     if (!parsedData) return [];
 
-    const filteredTransactions = filterTransactionsByYear(parsedData.transactions, filterContext.year);
     const filteredActivities = filterActivitiesByYear(parsedData.activities, filterContext.year);
 
     const items: (TransactionItem & { category: TransactionCategory })[] = [
@@ -76,7 +81,7 @@ export default function Categories() {
         amount: t.amount,
         date: t.time,
         source: 'transaction' as const,
-        category: categorizeTransaction(t.description),
+        category: t.category || categorizeTransaction(t.description),
       })),
       ...filteredActivities
         .filter(a => a.amount && (a.transactionType === 'sent' || a.transactionType === 'paid'))
@@ -85,12 +90,12 @@ export default function Categories() {
           amount: a.amount!,
           date: a.time,
           source: 'activity' as const,
-          category: categorizeTransaction(a.title),
+          category: a.category || categorizeTransaction(a.title),
         })),
     ];
 
     return items;
-  }, [parsedData, filterContext.year]);
+  }, [parsedData, filterContext.year, filteredTransactions]);
 
   const categoryData = useMemo(() => {
     if (allItemsWithCategory.length === 0) return [];
@@ -120,13 +125,6 @@ export default function Categories() {
       .sort((a, b) => b.amount - a.amount);
   }, [allItemsWithCategory]);
 
-  // Get transactions for a specific category
-  const getTransactionsForCategory = (category: TransactionCategory) => {
-    return allItemsWithCategory
-      .filter(item => item.category === category)
-      .sort((a, b) => convertToINR(b.amount) - convertToINR(a.amount));
-  };
-
   const totalSpent = useMemo(() => {
     return categoryData.reduce((sum, cat) => sum + cat.amount, 0);
   }, [categoryData]);
@@ -153,39 +151,10 @@ export default function Categories() {
 
   // Animations
   const containerRef = useRef<HTMLDivElement>(null);
-  const heroRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
-
-    // Hero animation
-    if (heroRef.current) {
-      anime(heroRef.current, {
-        opacity: [0, 1],
-        y: [-50, 0],
-        duration: 1200,
-        ease: 'out(3)',
-      });
-
-      // Animate the amount with counting effect
-      const amountElement = heroRef.current.querySelector(`.${styles.heroAmount}`);
-      if (amountElement) {
-        let currentValue = 0;
-        const animateCounter = () => {
-          const increment = totalSpent / 60;
-          const timer = setInterval(() => {
-            currentValue += increment;
-            if (currentValue >= totalSpent) {
-              currentValue = totalSpent;
-              clearInterval(timer);
-            }
-            amountElement.innerHTML = `₹${formatAmount(Math.round(currentValue))}`;
-          }, 16);
-        };
-        setTimeout(animateCounter, 500);
-      }
-    }
 
     // Category cards animation
     if (categoriesRef.current) {
@@ -194,13 +163,13 @@ export default function Categories() {
         anime(card, {
           opacity: [0, 1],
           y: [30, 0],
-          delay: 800 + (index * 100),
+          delay: 200 + (index * 100),
           duration: 600,
           ease: 'out(3)',
         });
       });
     }
-  }, [totalSpent]);
+  }, []);
 
   return (
     <div className={styles.categories} ref={containerRef}>
@@ -221,6 +190,10 @@ export default function Categories() {
                 <span className={styles.navIcon}>✨</span>
                 <span>Story</span>
               </button>
+              <button onClick={() => navigate('/categories')} className={`${styles.navLink} ${styles.active}`}>
+                <span className={styles.navIcon}>🏷️</span>
+                <span>Categories</span>
+              </button>
               <button onClick={() => navigate('/explore-data')} className={styles.navLink}>
                 <span className={styles.navIcon}>🔍</span>
                 <span>Explore</span>
@@ -235,20 +208,11 @@ export default function Categories() {
         {/* Filter Bar */}
         <FilterBar />
 
-        {/* Hero Section */}
-        <div className={styles.hero} ref={heroRef}>
-          <div className={styles.heroIcon}>🏷️</div>
-          <h1 className={styles.heroTitle}>
-            Spending Categories
-          </h1>
-          <div className={styles.heroYear}>
-            {filterContext.year === 'all' ? 'All Time' : filterContext.year}
-          </div>
-          <div className={styles.heroAmountWrapper}>
-            <div className={styles.heroLabel}>Total Spent</div>
-            <div className={styles.heroAmount}>₹0</div>
-          </div>
-        </div>
+        {/* Spending Charts */}
+        <SpendingCharts
+          categoryData={categoryData}
+          transactions={allItemsWithCategory}
+        />
 
         {/* Top 10 Categories */}
         <div className={styles.categoriesSection} ref={categoriesRef}>
@@ -264,88 +228,35 @@ export default function Categories() {
 
           {top10Categories.length > 0 ? (
             <div className={styles.categoryList}>
-              {top10Categories.map((item, index) => {
-                const isExpanded = expandedCategory === item.category;
-                const transactions = isExpanded ? getTransactionsForCategory(item.category) : [];
-
-                return (
-                  <div
-                    key={item.category}
-                    className={`${styles.categoryCard} ${isExpanded ? styles.expanded : ''}`}
-                    style={{
-                      '--category-color': CATEGORY_COLORS[item.category],
-                    } as React.CSSProperties}
-                  >
-                    <div className={styles.categoryRank}>#{index + 1}</div>
-                    <div
-                      className={styles.categoryHeader}
-                      onClick={() => setExpandedCategory(isExpanded ? null : item.category)}
-                    >
-                      <span className={styles.categoryIcon}>
-                        {CATEGORY_ICONS[item.category]}
-                      </span>
-                      <span className={styles.categoryName}>{item.category}</span>
-                      <span className={styles.categoryPercentage}>
-                        {item.percentage.toFixed(1)}%
-                      </span>
-                    </div>
-
-                    <div className={styles.progressBarContainer}>
-                      <div
-                        className={styles.progressBar}
-                        style={{
-                          width: `${item.percentage}%`,
-                          backgroundColor: CATEGORY_COLORS[item.category],
-                        }}
-                      />
-                    </div>
-
-                    <div className={styles.categoryDetails}>
-                      <span className={styles.categoryAmount}>
-                        ₹{formatAmount(item.amount)}
-                      </span>
-                      <span className={styles.categoryCount}>
-                        {item.count} transaction{item.count !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-
-                    {isExpanded && (
-                      <div className={styles.transactionList}>
-                        <div className={styles.transactionListHeader}>
-                          <span>Top Transactions</span>
-                          <span>{transactions.length} items</span>
-                        </div>
-                        {transactions.slice(0, 5).map((txn, txnIndex) => (
-                          <div key={txnIndex} className={styles.transactionItem}>
-                            <div className={styles.transactionInfo}>
-                              <span className={styles.transactionDesc}>
-                                {txn.description.length > 40
-                                  ? txn.description.substring(0, 40) + '...'
-                                  : txn.description}
-                              </span>
-                              <span className={styles.transactionMeta}>
-                                {txn.date.toLocaleDateString('en-IN', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric',
-                                })}
-                              </span>
-                            </div>
-                            <span className={styles.transactionAmount}>
-                              ₹{formatAmount(convertToINR(txn.amount))}
-                            </span>
-                          </div>
-                        ))}
-                        {transactions.length > 5 && (
-                          <div className={styles.moreItems}>
-                            +{transactions.length - 5} more • Click "Explore All Data" to see everything
-                          </div>
-                        )}
-                      </div>
-                    )}
+              {top10Categories.map((item, index) => (
+                <div
+                  key={item.category}
+                  className={styles.categoryCard}
+                  style={{
+                    '--category-color': CATEGORY_COLORS[item.category],
+                  } as React.CSSProperties}
+                >
+                  <div className={styles.categoryRank}>#{index + 1}</div>
+                  <div className={styles.categoryHeader}>
+                    <span className={styles.categoryIcon}>
+                      {CATEGORY_ICONS[item.category]}
+                    </span>
+                    <span className={styles.categoryName}>{item.category}</span>
+                    <span className={styles.categoryPercentage}>
+                      {item.percentage.toFixed(1)}%
+                    </span>
                   </div>
-                );
-              })}
+
+                  <div className={styles.categoryStats}>
+                    <div className={styles.categoryAmount}>
+                      ₹{formatAmount(item.amount)}
+                    </div>
+                    <div className={styles.categoryCount}>
+                      {item.count} transaction{item.count !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className={styles.noData}>

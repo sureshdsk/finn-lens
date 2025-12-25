@@ -35,6 +35,11 @@
   @apply text-sm text-primary-500 my-2;
 }
 
+.alphaText {
+  @apply text-xs italic opacity-75;
+  color: #ff9800;
+}
+
 .or {
   @apply text-xs text-primary-400 my-5 font-medium uppercase tracking-wider;
 }

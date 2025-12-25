@@ -6,6 +6,7 @@ import styles from './Landing.module.css';
 
 export default function Landing() {
   const [uploading, setUploading] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const navigate = useNavigate();
 
   const handleFileUpload = async (files: File[]) => {
@@ -46,36 +47,16 @@ export default function Landing() {
 
       <main className={styles.main}>
         <DropZone onUpload={handleFileUpload} disabled={uploading} />
+
+        <button
+          className={styles.exportGuideButton}
+          onClick={() => setShowExportModal(true)}
+        >
+          📥 How to export your data
+        </button>
       </main>
 
       <footer className={styles.footer}>
-        <div className={styles.howToSection}>
-          <h3 className={styles.howToTitle}>📥 How to get your data:</h3>
-
-          <h4>Google Pay:</h4>
-          <ol className={styles.howToSteps}>
-            <li className={styles.howToStep}>Visit <a href="https://takeout.google.com/" target="_blank" rel="noopener noreferrer" className={styles.howToLink}>Google Takeout</a></li>
-            <li className={styles.howToStep}>Select only "Google Pay" from the list</li>
-            <li className={styles.howToStep}>Download your data as a ZIP file</li>
-          </ol>
-
-          <h4>BHIM App:</h4>
-          <ol className={styles.howToSteps}>
-            <li className={styles.howToStep}>Open BHIM app and go to Transaction History</li>
-            <li className={styles.howToStep}>Export as HTML file</li>
-          </ol>
-
-          <h4>Paytm:</h4>
-          <ol className={styles.howToSteps}>
-            <li className={styles.howToStep}>Open Paytm app → Passbook</li>
-            <li className={styles.howToStep}>Tap on "Download Statement"</li>
-            <li className={styles.howToStep}>Select date range and export as XLSX file</li>
-          </ol>
-
-          <p className={styles.multiFileNote}>
-            💡 You can upload files from multiple apps at once!
-          </p>
-        </div>
 
         <div className={styles.privacyBadge}>
           <span className={styles.badgeIcon}>🔒</span>
@@ -87,17 +68,20 @@ export default function Landing() {
 
         <div className={styles.disclaimers}>
           <p className={styles.disclaimer}>
-            <span className={styles.disclaimerIcon}>ℹ️</span>
-            Not affiliated with Google or Google Pay. This is an independent,{' '}
-            <a
-              href="https://github.com/sureshdsk/finn-lens"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.projectLink}
-            >
-              open-source project
-            </a>
-            .
+            <span>
+              Not affiliated with Google, Google Pay, BHIM, Paytm, or PhonePe.
+              <br />
+              This is an independent{' '}
+              <a
+                href="https://github.com/sureshdsk/finn-lens"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.projectLink}
+              >
+                open-source project
+              </a>
+              .
+            </span>
           </p>
         </div>
 
@@ -109,6 +93,88 @@ export default function Landing() {
           </p>
         </div>
       </footer>
+
+      {showExportModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowExportModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>📥 How to export your data</h2>
+              <button
+                className={styles.modalClose}
+                onClick={() => setShowExportModal(false)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <details className={styles.appAccordion} open>
+                <summary className={styles.appSummary}>
+                  <span className={styles.appIcon}>💳</span>
+                  <span className={styles.appLabel}>Google Pay</span>
+                  <span className={styles.fileFormat}>.ZIP</span>
+                </summary>
+                <ol className={styles.howToSteps}>
+                  <li className={styles.howToStep}>Visit <a href="https://takeout.google.com/" target="_blank" rel="noopener noreferrer" className={styles.howToLink}>Google Takeout</a></li>
+                  <li className={styles.howToStep}>Select only "Google Pay" from the list</li>
+                  <li className={styles.howToStep}>Download your data as a ZIP file</li>
+                </ol>
+              </details>
+
+              <details className={styles.appAccordion}>
+                <summary className={styles.appSummary}>
+                  <span className={styles.appIcon}>🏦</span>
+                  <span className={styles.appLabel}>BHIM App</span>
+                  <span className={styles.fileFormat}>.HTML</span>
+                </summary>
+                <ol className={styles.howToSteps}>
+                  <li className={styles.howToStep}>Open BHIM app and go to Transaction History</li>
+                  <li className={styles.howToStep}>Export as HTML file</li>
+                </ol>
+              </details>
+
+              <details className={styles.appAccordion}>
+                <summary className={styles.appSummary}>
+                  <span className={styles.appIcon}>💰</span>
+                  <span className={styles.appLabel}>Paytm</span>
+                  <span className={styles.alphaBadge}>Alpha</span>
+                  <span className={styles.fileFormat}>.XLSX</span>
+                </summary>
+                <ol className={styles.howToSteps}>
+                  <li className={styles.howToStep}>Open Paytm app → Passbook</li>
+                  <li className={styles.howToStep}>Tap on "Download Statement"</li>
+                  <li className={styles.howToStep}>Select date range and export as XLSX file</li>
+                </ol>
+              </details>
+
+              <details className={styles.appAccordion}>
+                <summary className={styles.appSummary}>
+                  <span className={styles.appIcon}>📱</span>
+                  <span className={styles.appLabel}>PhonePe</span>
+                  <span className={styles.alphaBadge}>Alpha</span>
+                  <span className={styles.fileFormat}>.PDF</span>
+                </summary>
+                <ol className={styles.howToSteps}>
+                  <li className={styles.howToStep}>Open PhonePe app → History</li>
+                  <li className={styles.howToStep}>Tap on "Download Statement"</li>
+                  <li className={styles.howToStep}>Select date range and download as PDF</li>
+                </ol>
+              </details>
+
+              <div className={styles.modalFooter}>
+                <p className={styles.multiFileNote}>
+                  💡 You can upload files from multiple apps at once!
+                </p>
+
+                <p className={styles.alphaNotice}>
+                  ⚠️ Paytm and PhonePe are in alpha - accuracy may vary
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

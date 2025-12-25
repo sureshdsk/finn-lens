@@ -640,7 +640,11 @@ export default function DataTable() {
                 <span className={styles.navIcon}>✨</span>
                 <span>Story</span>
               </button>
-              <button onClick={() => navigate('/explore-data')} className={styles.navLink}>
+              <button onClick={() => navigate('/categories')} className={styles.navLink}>
+                <span className={styles.navIcon}>🏷️</span>
+                <span>Categories</span>
+              </button>
+              <button onClick={() => navigate('/explore-data')} className={`${styles.navLink} ${styles.active}`}>
                 <span className={styles.navIcon}>🔍</span>
                 <span>Explore</span>
               </button>

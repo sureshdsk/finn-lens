@@ -101,7 +101,9 @@ export default function DropZone({ onUpload, disabled = false }: DropZoneProps) 
           <p className={styles.description}>
             Drag and drop your export files here
             <br />
-            <small>Google Pay (ZIP), BHIM (HTML), Paytm (XLSX), PhonePe (PDF)</small>
+            <small>Google Pay (ZIP), BHIM (HTML), Paytm (XLSX)*, PhonePe (PDF)*</small>
+            <br />
+            <small className={styles.alphaText}>* Alpha: may have accuracy issues</small>
           </p>
           <p className={styles.or}>or</p>
           <button

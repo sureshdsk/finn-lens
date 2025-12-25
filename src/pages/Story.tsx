@@ -243,13 +243,17 @@ export default function Story() {
           </div>
           <div className={styles.navActions}>
             <div className={styles.navLinks}>
-              <button onClick={() => navigate('/insights')} className={styles.navLink}>
+              <button onClick={() => navigate('/insights')} className={`${styles.navLink} ${styles.active}`}>
                 <span className={styles.navIcon}>💡</span>
                 <span>Insights</span>
               </button>
               <button onClick={() => navigate('/story')} className={styles.navLink}>
                 <span className={styles.navIcon}>✨</span>
                 <span>Story</span>
+              </button>
+              <button onClick={() => navigate('/categories')} className={styles.navLink}>
+                <span className={styles.navIcon}>🏷️</span>
+                <span>Categories</span>
               </button>
               <button onClick={() => navigate('/explore-data')} className={styles.navLink}>
                 <span className={styles.navIcon}>🔍</span>

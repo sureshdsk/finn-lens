@@ -221,3 +221,74 @@ export function groupTransactionsByDate(
 
   return grouped;
 }
+
+/**
+ * Aggregate monthly spending from transactions
+ * Returns array of {month, amount} for the last 12 months or specified year
+ */
+export interface MonthlySpending {
+  month: string;
+  monthIndex: number;
+  amount: number;
+  count: number;
+}
+
+export function getMonthlySpending(
+  transactions: Transaction[],
+  year?: number
+): MonthlySpending[] {
+  const monthlyData = new Map<string, { amount: number; count: number }>();
+
+  // Determine year range
+  let targetYear = year;
+  if (!targetYear && transactions.length > 0) {
+    // Use the most recent transaction year if not specified
+    const maxDate = new Date(Math.max(...transactions.map(t => t.time.getTime())));
+    targetYear = maxDate.getFullYear();
+  }
+
+  // Initialize all 12 months
+  for (let i = 0; i < 12; i++) {
+    const monthKey = `${targetYear}-${String(i + 1).padStart(2, '0')}`;
+    monthlyData.set(monthKey, { amount: 0, count: 0 });
+  }
+
+  // Aggregate transactions by month
+  transactions.forEach(transaction => {
+    const transactionYear = transaction.time.getFullYear();
+    const transactionMonth = transaction.time.getMonth() + 1;
+
+    // Only include if matches target year (if specified)
+    if (targetYear && transactionYear !== targetYear) {
+      return;
+    }
+
+    const monthKey = `${transactionYear}-${String(transactionMonth).padStart(2, '0')}`;
+
+    if (monthlyData.has(monthKey)) {
+      const current = monthlyData.get(monthKey)!;
+      monthlyData.set(monthKey, {
+        amount: current.amount + transaction.amount.value,
+        count: current.count + 1
+      });
+    }
+  });
+
+  // Convert to array format for charts
+  const result: MonthlySpending[] = [];
+  monthlyData.forEach((value, key) => {
+    const [yearStr, monthStr] = key.split('-');
+    const monthIndex = parseInt(monthStr) - 1;
+    const monthName = new Date(parseInt(yearStr), monthIndex, 1).toLocaleString('en-US', { month: 'short' });
+
+    result.push({
+      month: monthName,
+      monthIndex,
+      amount: Math.round(value.amount * 100) / 100, // Round to 2 decimals
+      count: value.count
+    });
+  });
+
+  // Sort by month index
+  return result.sort((a, b) => a.monthIndex - b.monthIndex);
+}

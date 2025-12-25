@@ -97,6 +97,13 @@
   transform: translateY(0);
 }
 
+.navLink.active {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 2px 10px rgba(255, 255, 255, 0.2);
+  font-weight: 700;
+}
+
 .navIcon {
   font-size: 1.125rem;
   line-height: 1;

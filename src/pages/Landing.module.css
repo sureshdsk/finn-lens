@@ -48,7 +48,26 @@
 }
 
 .main {
-  @apply flex-1 flex items-center justify-center p-5;
+  @apply flex-1 flex flex-col items-center justify-center p-5 gap-6;
+}
+
+.exportGuideButton {
+  @apply px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200;
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  cursor: pointer;
+}
+
+.exportGuideButton:hover {
+  background-color: var(--color-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.exportGuideButton:active {
+  transform: translateY(0);
 }
 
 .footer {
@@ -84,20 +103,159 @@
   color: var(--color-textSecondary);
 }
 
-.howToSection {
-  @apply rounded-2xl px-6 py-5 max-w-2xl shadow-sm;
-  background-color: var(--color-surface);
-  border: 2px solid var(--color-surfaceBorder);
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.howToTitle {
-  @apply m-0 mb-4 text-lg font-bold;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  @apply rounded-2xl shadow-2xl;
+  background-color: var(--color-surface);
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  @apply flex items-center justify-between px-6 py-4;
+  border-bottom: 2px solid var(--color-surfaceBorder);
+}
+
+.modalTitle {
+  @apply m-0 text-xl font-bold;
   color: var(--color-text);
-  text-align: center;
+}
+
+.modalClose {
+  @apply w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold transition-all duration-200;
+  background-color: transparent;
+  color: var(--color-textMuted);
+  border: none;
+  cursor: pointer;
+}
+
+.modalClose:hover {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.modalBody {
+  @apply px-6 py-4;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modalBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modalBody::-webkit-scrollbar-track {
+  background: var(--color-background);
+  border-radius: 4px;
+}
+
+.modalBody::-webkit-scrollbar-thumb {
+  background: var(--color-surfaceBorder);
+  border-radius: 4px;
+}
+
+.modalBody::-webkit-scrollbar-thumb:hover {
+  background: var(--color-textMuted);
+}
+
+.modalFooter {
+  @apply mt-4 pt-4;
+  border-top: 1px solid var(--color-surfaceBorder);
+}
+
+.appAccordion {
+  @apply rounded-lg border-2 transition-all duration-200 mb-3;
+  background-color: var(--color-background);
+  border-color: var(--color-surfaceBorder);
+}
+
+.appAccordion[open] {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface);
+}
+
+.appAccordion:last-of-type {
+  margin-bottom: 0;
+}
+
+.appSummary {
+  @apply flex items-center gap-3 px-4 py-3 cursor-pointer select-none;
+  list-style: none;
+  transition: all 0.2s ease;
+}
+
+.appSummary::-webkit-details-marker {
+  display: none;
+}
+
+.appSummary:hover {
+  background-color: var(--color-surface);
+}
+
+.appIcon {
+  @apply text-xl flex-shrink-0;
+}
+
+.appLabel {
+  @apply font-semibold text-sm flex-1;
+  color: var(--color-text);
+}
+
+.fileFormat {
+  @apply text-xs font-mono px-2 py-1 rounded;
+  background-color: var(--color-background);
+  color: var(--color-textMuted);
+  border: 1px solid var(--color-surfaceBorder);
+}
+
+.alphaBadge {
+  @apply text-xs px-2 py-0.5 rounded-full font-medium;
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #f57c00;
+  border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
 .howToSteps {
-  @apply m-0 pl-5 space-y-2.5;
+  @apply m-0 px-4 pb-4 pt-2 pl-9 space-y-2;
   list-style: decimal;
 }
 
@@ -118,20 +276,47 @@
   text-decoration-color: var(--color-primary);
 }
 
+.multiFileNote {
+  @apply mt-4 mb-0 text-sm text-center px-4 py-3 rounded-lg;
+  background-color: var(--color-background);
+  color: var(--color-textSecondary);
+  border: 1px solid var(--color-surfaceBorder);
+}
+
+.alphaNotice {
+  @apply mt-3 mb-0 text-sm text-center px-4 py-3 rounded-lg;
+  background-color: rgba(255, 193, 7, 0.1);
+  color: var(--color-textSecondary);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
 .disclaimers {
-  @apply flex flex-col items-center gap-3 max-w-2xl px-4;
+  @apply flex flex-col items-center gap-3 px-4;
+  max-width: 48rem;
 }
 
 .disclaimer {
-  @apply m-0 text-sm flex items-center gap-2.5;
+  @apply m-0 text-sm flex items-start gap-2.5;
   color: var(--color-textMuted);
   text-align: center;
   line-height: 1.6;
+  max-width: 100%;
 }
 
 .disclaimerIcon {
   @apply text-base;
   flex-shrink: 0;
+}
+
+.projectLink {
+  @apply font-semibold transition-colors duration-200 underline;
+  color: var(--color-primary);
+  text-decoration-color: var(--color-primaryLight);
+}
+
+.projectLink:hover {
+  color: var(--color-primaryHover);
+  text-decoration-color: var(--color-primary);
 }
 
 .attribution {
@@ -175,6 +360,14 @@
     @apply text-base;
   }
 
+  .main {
+    @apply gap-4;
+  }
+
+  .exportGuideButton {
+    @apply px-5 py-2.5 text-xs;
+  }
+
   .themeSwitcherContainer {
     bottom: 1.5rem;
     right: 1.5rem;
@@ -189,6 +382,27 @@
   .githubButton svg {
     width: 14px;
     height: 14px;
+  }
+
+  .modalContent {
+    max-height: 90vh;
+    margin: 0.5rem;
+  }
+
+  .modalHeader {
+    @apply px-4 py-3;
+  }
+
+  .modalTitle {
+    @apply text-lg;
+  }
+
+  .modalBody {
+    @apply px-4 py-3;
+  }
+
+  .modalFooter {
+    @apply mt-3 pt-3;
   }
 
   .footer {
@@ -216,15 +430,39 @@
   }
 
   .howToSection {
-    @apply px-5 py-4;
+    @apply px-4 py-4;
   }
 
   .howToTitle {
-    @apply text-base mb-3;
+    @apply text-base mb-4;
+  }
+
+  .appTabs {
+    @apply gap-2 mb-3;
+  }
+
+  .appSummary {
+    @apply gap-2 px-3 py-2.5;
+  }
+
+  .appIcon {
+    @apply text-lg;
+  }
+
+  .appLabel {
+    @apply text-xs;
+  }
+
+  .fileFormat {
+    @apply text-xs px-1.5 py-0.5;
+  }
+
+  .alphaBadge {
+    @apply text-xs px-1.5 py-0.5;
   }
 
   .howToSteps {
-    @apply pl-4 space-y-2;
+    @apply px-3 pb-3 pt-2 pl-7 space-y-1.5;
   }
 
   .howToStep {
