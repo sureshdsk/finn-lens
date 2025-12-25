@@ -455,7 +455,15 @@ export default function Wrapped() {
     if (!slideRef.current || !slide.bgImage) return;
 
     setIsSharing(true);
+
+    // Add class to disable animations during export
+    const slideElement = slideRef.current;
+    slideElement.classList.add(styles.exportingSlide);
+
     try {
+      // Wait for animations to stop
+      await new Promise(resolve => setTimeout(resolve, 50));
+
       // Canvas dimensions (9:16 aspect ratio for social media)
       const canvasWidth = 1080;
       const canvasHeight = 1920;
@@ -582,6 +590,8 @@ export default function Wrapped() {
     } catch (error) {
       console.error('Error sharing:', error);
     } finally {
+      // Remove the export class to re-enable animations
+      slideElement.classList.remove(styles.exportingSlide);
       setIsSharing(false);
     }
   }, [currentSlide, slides]);
@@ -658,6 +668,48 @@ export default function Wrapped() {
                 }}
               />
             )}
+
+            {/* Decorative animated elements - only visible in browser */}
+            <div className={styles.decorativeElements}>
+              {/* Floating particles */}
+              <div className={styles.particlesLayer}>
+                {[...Array(12)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={styles.floatingParticle}
+                    style={{
+                      left: `${Math.random() * 100}%`,
+                      top: `${Math.random() * 100}%`,
+                      animationDelay: `${Math.random() * 5}s`,
+                      animationDuration: `${8 + Math.random() * 8}s`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Blob shapes */}
+              <div className={styles.blobsLayer}>
+                <div className={styles.decorativeBlob1} style={{ background: `${slide.bgColor}40` }} />
+                <div className={styles.decorativeBlob2} style={{ background: `${slide.bgColor}30` }} />
+              </div>
+
+              {/* Sparkles/stars */}
+              <div className={styles.sparklesLayer}>
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={styles.sparkle}
+                    style={{
+                      left: `${10 + Math.random() * 80}%`,
+                      top: `${10 + Math.random() * 80}%`,
+                      animationDelay: `${Math.random() * 3}s`,
+                    }}
+                  >
+                    ✨
+                  </div>
+                ))}
+              </div>
+            </div>
 
             <div className={styles.slideContent}>
               <div className={styles.slideIcon}>{slide.icon}</div>

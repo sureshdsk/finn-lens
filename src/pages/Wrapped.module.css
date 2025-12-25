@@ -262,11 +262,15 @@
   @apply w-full rounded-2xl overflow-hidden shadow-xl relative;
   aspect-ratio: 9 / 16;
   max-height: 100%;
-  animation: slideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1), floatCard 4s ease-in-out infinite;
   opacity: 1;
   isolation: isolate;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transform-style: preserve-3d;
+}
+
+/* Enable animations only in browser (not during export) */
+.slide:not(.exportingSlide) {
+  animation: slideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1), floatCard 4s ease-in-out infinite;
 }
 
 @keyframes floatCard {
@@ -277,6 +281,137 @@
   50% { 
     transform: translateY(-8px) rotateX(2deg) rotateY(-2deg);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Disable all animations during export */
+.exportingSlide,
+.exportingSlide * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Hide decorative elements during export */
+.exportingSlide .decorativeElements {
+  display: none !important;
+}
+
+/* Decorative animated elements */
+.decorativeElements {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Particles layer */
+.particlesLayer {
+  position: absolute;
+  inset: 0;
+}
+
+.floatingParticle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: floatParticle linear infinite;
+  filter: blur(0.5px);
+}
+
+@keyframes floatParticle {
+  0% {
+    transform: translateY(100vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20vh) translateX(30px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Blobs layer */
+.blobsLayer {
+  position: absolute;
+  inset: 0;
+}
+
+.decorativeBlob1 {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(60px);
+  top: -100px;
+  right: -100px;
+  animation: blobFloat1 20s ease-in-out infinite;
+  opacity: 0.4;
+}
+
+.decorativeBlob2 {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  filter: blur(50px);
+  bottom: -80px;
+  left: -80px;
+  animation: blobFloat2 18s ease-in-out infinite;
+  opacity: 0.3;
+}
+
+@keyframes blobFloat1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-30px, 40px) scale(1.1);
+  }
+  66% {
+    transform: translate(20px, -30px) scale(0.9);
+  }
+}
+
+@keyframes blobFloat2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(40px, -40px) scale(1.15);
+  }
+}
+
+/* Sparkles layer */
+.sparklesLayer {
+  position: absolute;
+  inset: 0;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 1.2rem;
+  animation: sparkleAnimation 3s ease-in-out infinite;
+  opacity: 0;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+}
+
+@keyframes sparkleAnimation {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
   }
 }
 
@@ -823,6 +958,10 @@
   gap: 0;
   opacity: 1;
   z-index: 10;
+}
+
+/* Enable animations only in browser (not during export) */
+.slide:not(.exportingSlide) .slideContent {
   animation: fadeInUp 0.8s ease-out 0.3s both;
 }
 
@@ -843,13 +982,17 @@
 
 .slideIcon {
   @apply text-7xl mb-5;
-  animation: zoomPulse 2s ease-in-out infinite alternate;
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.4));
   transform-origin: center;
   display: inline-block;
   will-change: transform;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Enable animations only in browser (not during export) */
+.slide:not(.exportingSlide) .slideIcon {
+  animation: zoomPulse 2s ease-in-out infinite alternate;
 }
 
 @keyframes zoomPulse {
@@ -886,8 +1029,6 @@
 .slideValue {
   @apply font-bold;
   font-size: 3.2rem;
-  animation: elasticScale 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s both,
-             shimmerText 3s ease-in-out infinite 1.5s;
   font-weight: 900;
   letter-spacing: -0.03em;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 2px 12px rgba(0, 0, 0, 0.4);
@@ -897,6 +1038,12 @@
   margin-bottom: 20px;
   padding-bottom: 4px;
   position: relative;
+}
+
+/* Enable animations only in browser (not during export) */
+.slide:not(.exportingSlide) .slideValue {
+  animation: elasticScale 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s both,
+             shimmerText 3s ease-in-out infinite 1.5s;
 }
 
 /* Removed animated underline */
