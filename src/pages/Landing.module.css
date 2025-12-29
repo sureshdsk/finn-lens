@@ -11,6 +11,27 @@
   z-index: 50;
 }
 
+.productHuntBadge {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 10;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.productHuntBadge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.productHuntBadge img {
+  display: block;
+  border-radius: 12px;
+}
+
 .githubButton {
   @apply flex items-center gap-2.5 px-5 py-3
          text-white rounded-xl
@@ -371,6 +392,16 @@
   .themeSwitcherContainer {
     bottom: 1.5rem;
     right: 1.5rem;
+  }
+
+  .productHuntBadge {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .productHuntBadge img {
+    width: 180px;
+    height: auto;
   }
 
   .githubButton {

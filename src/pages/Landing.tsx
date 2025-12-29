@@ -29,6 +29,21 @@ export default function Landing() {
       </div>
 
       <a
+        href="https://www.producthunt.com/products/finnlens-your-year-in-payments?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-finnlens-your-year-in-payments-wrapped"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.productHuntBadge}
+        aria-label="FinnLens - Your Year in Payments Wrapped on Product Hunt"
+      >
+        <img
+          alt="FinnLens - Your Year in Payments Wrapped - Like Spotify Wrapped but for UPI transactions - 100% private | Product Hunt"
+          width="250"
+          height="54"
+          src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1054571&theme=light&t=1767024246276"
+        />
+      </a>
+
+      <a
         href="https://github.com/sureshdsk/finn-lens"
         target="_blank"
         rel="noopener noreferrer"
