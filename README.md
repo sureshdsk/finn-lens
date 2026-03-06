@@ -1,210 +1,94 @@
 # FinnLens
 
-Your year in payments, privacy-first. A 100% offline web application that analyzes your Google Pay transaction history and creates personalized insights in a Spotify Wrapped-style story format.
+A personal finance intelligence platform. Upload bank statements, connect accounts, and get AI-powered insights into your spending, subscriptions, net worth, and financial health.
 
-## Features
+## Stack
 
-- **100% Private & Offline**: All data processing happens in your browser. Your financial data never leaves your device.
-- **Interactive Story Mode**: Swipe through 8-10 personalized insights about your spending habits
-- **Year Filtering**: View insights for specific years or all-time data
-- **Social Sharing**: Export beautiful 1080x1080 images for Instagram, Story format, and Twitter
-- **Real-time Processing**: Upload your Google Takeout export and get insights in seconds
-- **Zero Tracking**: No analytics, no cookies, no external network calls
+| Layer | Tech |
+|-------|------|
+| Frontend | React 19, Vite, Tailwind CSS v4, shadcn/ui, Zustand, React Query |
+| Backend | Django 6, Django Bolt (Rust-powered API server) |
+| Auth | JWT via `django-bolt` |
+| Task queue | arq + Redis (scaffold) |
+| Package managers | `pnpm` (frontend), `uv` (backend) |
 
-## Privacy Guarantees
+## Project Structure
 
-- All data processing happens client-side in your browser
-- No data is sent to any server
-- Data is stored temporarily in sessionStorage and cleared when you close the tab
-- No tracking, analytics, or third-party scripts
-- Open source - you can audit the code yourself
+```
+finn-lens/
+├── frontend/          # React app (Vite + Tailwind v4 + shadcn/ui)
+└── backend/           # Django + Django Bolt API
+    ├── accounts/      # Auth viewsets (login, me)
+    ├── finnlens/      # Django settings, urls, wsgi
+    └── worker.py      # arq worker scaffold
+```
 
-## How to Use
-
-### 1. Export Your Google Pay Data
-
-1. Go to [Google Takeout](https://takeout.google.com/)
-2. Click "Deselect all"
-3. Scroll down and select only "Google Pay"
-4. Click "Next step" → "Create export"
-5. Wait for the export email (usually within minutes)
-6. Download the `.zip` file
-
-### 2. Upload to FinnLens
-
-1. Visit the FinnLens app
-2. Drag and drop your downloaded `.zip` file, or click to browse
-3. Wait a few seconds for processing
-4. Browse your personalized insights!
-
-### 3. Share Your Story
-
-- Swipe through insights using arrow keys, navigation buttons, or touch gestures
-- Click the share button to export any insight as an image
-- Choose from multiple formats: Instagram Post (1080x1080), Story (1080x1920), or Twitter (1200x675)
-
-## Insights Provided
-
-FinnLens analyzes your data to provide insights like:
-
-- **Domain Collector**: Track your domain purchases and renewals
-- **Group Expense Champion**: See your reliability in paying group bills
-- **Voucher Hoarder**: Find out how many vouchers you let expire
-- **Spending Timeline**: Your complete payment history timeline
-- **Split Partner**: Your most frequent bill-splitting friend
-- **Reward Hunter**: Total cashback and rewards earned
-- **Expensive Day**: Your biggest spending day on record
-- **Responsible One**: How many group expenses you organized
-- **Money Network**: Your payment social circle
-
-## Tech Stack
-
-- **React 19** with TypeScript
-- **Vite** for build tooling
-- **Zustand** for state management
-- **JSZip** for processing Google Takeout files
-- **PapaParse** for CSV parsing
-- **html2canvas** for image generation
-- **React Router** for navigation
-- **Tailwind CSS** for styling
-
-## Development
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm
-- Git
+- Python 3.12+
+- Node.js 20+
+- `uv` — `pip install uv`
+- `pnpm` — `npm install -g pnpm`
 
-### Getting Started
+### Backend
 
 ```bash
-# Clone the repository
-git clone git@github.com:sureshdsk/finn-lens.git
-OR
-git clone https://github.com/sureshdsk/finn-lens.git
-cd finnlens
+cd backend
 
 # Install dependencies
-npm install
+uv sync
 
-# Start development server
-npm run dev
+# Copy and configure environment
+cp .env.example .env   # edit SECRET_KEY, BOLT_JWT_SECRET
+
+# Run migrations and create a user
+uv run python manage.py migrate
+uv run python manage.py createsuperuser
+
+# Start the API server (port 8000)
+uv run python manage.py runbolt --dev
 ```
 
-The app will be available at `http://localhost:5173`
-
-### Available Scripts
+### Frontend
 
 ```bash
-# Start development server with hot reload
-npm run dev
+cd frontend
 
-# Type check and lint
-npm run lint
+# Install dependencies
+pnpm install
 
-# Run tests
-npm test                # Run tests in watch mode
-npm run test:ui         # Run tests with UI
-npm run test:coverage   # Run tests with coverage report
+# Copy and configure environment
+cp .env.local.example .env.local   # set VITE_API_URL if needed
 
-# Build for production
-npm run build
-
-# Preview production build locally
-npm run preview
+# Start dev server (port 5173)
+pnpm dev
 ```
 
-### Development Workflow
+Open `http://localhost:5173` and sign in with your superuser credentials.
 
-1. **Clone and Install**: Clone the repository and run `npm install`
-2. **Start Dev Server**: Run `npm run dev` to start the development server
-3. **Make Changes**: Edit files in the `src/` directory
-4. **Test Locally**: Upload a Google Pay Takeout export to test your changes
-5. **Build**: Run `npm run build` to create a production build
-6. **Preview**: Run `npm run preview` to test the production build locally
+## API
 
-### Project Structure
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/auth/` | Login — returns JWT token |
+| GET | `/api/auth/me/` | Current user info (JWT required) |
 
+## Environment Variables
+
+**`backend/.env`**
 ```
-src/
-├── components/
-│   ├── upload/          # File upload components
-│   └── story/           # Story mode components
-├── pages/
-│   ├── Landing.tsx      # Upload page
-│   ├── Processing.tsx   # Loading/processing page
-│   └── Story.tsx        # Main story display
-├── stores/
-│   └── dataStore.ts     # Zustand state management
-├── types/
-│   ├── data.types.ts    # Data structure types
-│   ├── insight.types.ts # Insight types
-│   ├── storage.types.ts # Storage types
-│   └── export.types.ts  # Export types
-├── utils/
-│   ├── zipParser.ts     # ZIP file extraction
-│   ├── csvParser.ts     # CSV parsing
-│   ├── jsonParser.ts    # JSON parsing
-│   └── currencyUtils.ts # Currency handling
-└── App.tsx              # Root component
+SECRET_KEY=
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+BOLT_JWT_SECRET=          # min 32 chars
+BOLT_JWT_EXPIRATION=3600
+CORS_ALLOWED_ORIGINS=http://localhost:5173
+REDIS_URL=redis://localhost:6379
 ```
 
-## Data Format
-
-FinnLens processes the following files from your Google Takeout export:
-
-- `Google transactions/transactions_*.csv` - Transaction history
-- `Google Pay/Group expenses/Group expenses.json` - Split bills
-- `Google Pay/Rewards earned/Cashback rewards.csv` - Cashback history
-- `Google Pay/Rewards earned/Voucher rewards.json` - Voucher history
-- `Google Pay/Money remittances and requests/*.csv` - Money transfers
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-### Development Guidelines
-
-1. All data processing must remain client-side
-2. No external network calls (except for CDN resources)
-3. Maintain TypeScript strict mode compliance
-4. Follow existing code style and structure
-5. Test with real Google Pay data exports
-
-## Future Enhancements
-
-- AI-generated personalized narratives using local LLMs
-- More insight types based on spending patterns
-- Comparison with previous years
-- Dark mode
-- Additional export formats
-
-## License
-
-MIT License - feel free to use this project however you'd like!
-
-## Acknowledgments
-
-- Inspired by Spotify Wrapped
-- Built with privacy-first principles
-- No affiliation with Google Pay or Google
-
-## Support
-
-If you encounter any issues or have questions:
-
-1. Check that your Google Takeout export includes Google Pay data
-2. Ensure the ZIP file is not corrupted
-3. Try a different browser
-4. Open an issue on GitHub with details about your problem
-
----
-
-Made with privacy in mind. Your data stays yours.
+**`frontend/.env.local`**
+```
+VITE_API_URL=http://localhost:8000
+```

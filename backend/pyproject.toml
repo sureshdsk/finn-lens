@@ -1,0 +1,11 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12.8"
+dependencies = [
+    "arq>=0.27.0",
+    "django-bolt>=0.6.5",
+    "django-cors-headers>=4.9.0",
+    "python-dotenv>=1.2.2",
+]
