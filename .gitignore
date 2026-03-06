@@ -1,28 +1,54 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
 
-node_modules
-dist
-dist-ssr
-*.local
-*.tsbuildinfo
-
-# Editor directories and files
+# ── Editor ────────────────────────────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# ── Frontend ──────────────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env.local
+frontend/*.tsbuildinfo
+
+# ── Backend ───────────────────────────────────────────────────────────────────
+backend/.venv/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/.env
+backend/db.sqlite3
+backend/staticfiles/
+backend/media/
+
+# ── Legacy v1 (root-level) ────────────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.tsbuildinfo
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Data / secrets ────────────────────────────────────────────────────────────
+sample-data/
 Google Pay/
 data/
+
+# ── Claude ────────────────────────────────────────────────────────────────────
 .claude/settings.local.json
+
+.env
