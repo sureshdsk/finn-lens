@@ -29,7 +29,7 @@ class MeViewSet(ViewSet):
         from django.contrib.auth import get_user_model
         User = get_user_model()
         ctx = request.context
-        user = await User.objects.aget(pk=ctx["user_id"])
+        user = await User.objects.aget(pk=int(ctx["user_id"]))
         return UserSchema(
             id=user.pk,
             username=user.username,

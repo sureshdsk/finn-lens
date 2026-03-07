@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "django_bolt",
     "corsheaders",
     "accounts",
+    "banking",
 ]
 
 MIDDLEWARE = [
