@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "accounts",
     "banking",
+    "classifier",
 ]
 
 MIDDLEWARE = [
@@ -83,3 +84,11 @@ BOLT_JWT_EXPIRATION = int(os.environ.get("BOLT_JWT_EXPIRATION", "3600"))
 # CORS
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 CORS_ALLOW_CREDENTIALS = True
+
+# Classifier
+CLASSIFIER_PROVIDER = os.environ.get("CLASSIFIER_PROVIDER", "local")
+CLASSIFIER_API_KEY = os.environ.get("CLASSIFIER_API_KEY", "")
+CLASSIFIER_MODEL_CACHE_DIR = os.environ.get(
+    "CLASSIFIER_MODEL_CACHE_DIR",
+    str(Path.home() / ".cache" / "finnlens" / "models"),
+)

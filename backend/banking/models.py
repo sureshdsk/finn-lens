@@ -35,6 +35,22 @@ class BankAccount(models.Model):
 
 
 class Transaction(models.Model):
+    CATEGORY_CHOICES = [
+        ("food", "Food"),
+        ("groceries", "Groceries"),
+        ("clothing", "Clothing"),
+        ("entertainment", "Entertainment"),
+        ("ecommerce", "E-commerce"),
+        ("travel_transport", "Travel & Transport"),
+        ("bills_utilities", "Bills & Utilities"),
+        ("healthcare", "Healthcare"),
+        ("education", "Education"),
+        ("investment_finance", "Investment & Finance"),
+        ("services_misc", "Services & Misc"),
+        ("transfers_payments", "Transfers & Payments"),
+        ("uncategorized", "Uncategorized"),
+    ]
+
     account = models.ForeignKey(BankAccount, on_delete=models.CASCADE, related_name="transactions")
     transaction_date = models.DateField()
     value_date = models.DateField()
@@ -44,6 +60,13 @@ class Transaction(models.Model):
     credit = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     balance = models.DecimalField(max_digits=14, decimal_places=2)
     raw_reference = models.CharField(max_length=64, db_index=True)
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default="uncategorized", db_index=True)
+    category_confidence = models.FloatField(default=0.0)
+    merchant_name = models.CharField(max_length=255, blank=True, default="")
+    payment_channel = models.CharField(max_length=20, blank=True, default="")
+    recipient_name = models.CharField(max_length=255, blank=True, default="")
+    upi_handle = models.CharField(max_length=255, blank=True, default="")
+    is_user_categorized = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

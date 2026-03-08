@@ -27,6 +27,13 @@ export interface Transaction {
   debit: string | null
   credit: string | null
   balance: string
+  category: string
+  category_confidence: number
+  merchant_name: string
+  payment_channel: string
+  recipient_name: string
+  upi_handle: string
+  is_user_categorized: boolean
 }
 
 export interface TransactionList {
@@ -46,6 +53,7 @@ export interface MonthlySummary {
 
 export interface UploadResult {
   imported: number
+  classified: number
   account_id: number
 }
 
@@ -84,6 +92,10 @@ export async function getTransactionsApi(
     month?: number
     type?: 'debit' | 'credit'
     search?: string
+    category?: string
+    date_from?: string
+    date_to?: string
+    sort?: string
   } = {}
 ): Promise<TransactionList> {
   const qs = new URLSearchParams()

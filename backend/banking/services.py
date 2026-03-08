@@ -15,6 +15,10 @@ class TransactionFilters:
     month: int | None = None
     txn_type: str | None = None  # 'debit' | 'credit'
     search: str | None = None
+    category: str | None = None
+    date_from: date | None = None
+    date_to: date | None = None
+    sort: str = "-transaction_date"  # "transaction_date" or "-transaction_date"
     page: int = 1
     page_size: int = 50
 
@@ -45,7 +49,15 @@ def get_transactions(account_id: int, filters: TransactionFilters) -> tuple[list
         qs = qs.filter(credit__isnull=False)
     if filters.search:
         qs = qs.filter(description__icontains=filters.search)
+    if filters.category:
+        qs = qs.filter(category=filters.category)
+    if filters.date_from:
+        qs = qs.filter(transaction_date__gte=filters.date_from)
+    if filters.date_to:
+        qs = qs.filter(transaction_date__lte=filters.date_to)
 
+    if filters.sort in ("transaction_date", "-transaction_date"):
+        qs = qs.order_by(filters.sort, "created_at")
     total = qs.count()
     offset = (filters.page - 1) * filters.page_size
     rows = list(qs[offset : offset + filters.page_size])
