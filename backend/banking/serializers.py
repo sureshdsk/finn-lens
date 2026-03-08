@@ -27,6 +27,13 @@ class TransactionSchema(msgspec.Struct):
     debit: Optional[str]
     credit: Optional[str]
     balance: str
+    category: str = "uncategorized"
+    category_confidence: float = 0.0
+    merchant_name: str = ""
+    payment_channel: str = ""
+    recipient_name: str = ""
+    upi_handle: str = ""
+    is_user_categorized: bool = False
 
 
 class TransactionListSchema(msgspec.Struct):
@@ -46,4 +53,5 @@ class MonthlySummarySchema(msgspec.Struct):
 
 class UploadResultSchema(msgspec.Struct):
     imported: int
+    classified: int
     account_id: int

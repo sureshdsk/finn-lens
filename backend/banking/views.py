@@ -99,12 +99,25 @@ class TransactionListViewSet(ViewSet):
         """GET /api/banking/accounts/{id}/transactions/ — paginated transactions"""
         await _assert_account_owner(id, int(request.context["user_id"]))
 
+        from datetime import date as date_type
+
         params = request.query
+        date_from = None
+        date_to = None
+        if "date_from" in params:
+            date_from = date_type.fromisoformat(params["date_from"])
+        if "date_to" in params:
+            date_to = date_type.fromisoformat(params["date_to"])
+
         filters = TransactionFilters(
             year=int(params["year"]) if "year" in params else None,
             month=int(params["month"]) if "month" in params else None,
             txn_type=params.get("type"),
             search=params.get("search"),
+            category=params.get("category"),
+            date_from=date_from,
+            date_to=date_to,
+            sort=params.get("sort", "-transaction_date"),
             page=int(params.get("page", 1)),
             page_size=int(params.get("page_size", 50)),
         )
@@ -120,6 +133,13 @@ class TransactionListViewSet(ViewSet):
                 debit=str(t.debit) if t.debit is not None else None,
                 credit=str(t.credit) if t.credit is not None else None,
                 balance=str(t.balance),
+                category=t.category,
+                category_confidence=t.category_confidence,
+                merchant_name=t.merchant_name,
+                payment_channel=t.payment_channel,
+                recipient_name=t.recipient_name,
+                upi_handle=t.upi_handle,
+                is_user_categorized=t.is_user_categorized,
             )
             for t in txns
         ]
@@ -146,7 +166,13 @@ class UploadViewSet(ViewSet):
 
         file_bytes = await file.read()
         count = await _run_sync(import_statement, acc, parser, file_bytes)
-        return UploadResultSchema(imported=count, account_id=id)
+
+        classified = 0
+        if count > 0:
+            from classifier.services import classify_account_transactions
+            classified = await _run_sync(classify_account_transactions, acc.pk)
+
+        return UploadResultSchema(imported=count, classified=classified, account_id=id)
 
 
 @api.viewset("/summary")
