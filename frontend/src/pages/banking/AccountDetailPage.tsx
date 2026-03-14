@@ -73,7 +73,7 @@ function CategoryBadge({ txn, onOverride }: { txn: Transaction; onOverride: (id:
       <Select
         defaultValue={txn.category}
         onValueChange={(val) => {
-          onOverride(txn.id, val)
+          if (val) onOverride(txn.id, val)
           setEditing(false)
         }}
       >
@@ -215,8 +215,8 @@ function FilterBar({
 
         {/* Category */}
         <Select
-          value={filters.category || undefined}
-          onValueChange={(val) => onChange({ ...filters, category: val === '__all__' ? '' : val })}
+          value={filters.category ?? undefined}
+          onValueChange={(val) => onChange({ ...filters, category: val === '__all__' ? '' : (val ?? '') })}
         >
           <SelectTrigger size="sm" className="h-8 min-w-28 text-xs">
             <SelectValue placeholder="Category" />
