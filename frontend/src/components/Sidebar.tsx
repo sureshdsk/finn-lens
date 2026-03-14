@@ -1,95 +1,89 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { useState } from 'react'
+import {
+  LayoutDashboard, Wallet, ArrowDownUp, BarChart3, CreditCard,
+  Calculator, Bell, LineChart, Settings, LogOut, TrendingUp,
+  ChevronLeft, ChevronRight, Milestone, ShoppingCart, Radio, Landmark
+} from 'lucide-react'
 
-const navItems = [
-  {
-    label: 'Account Management',
-    children: [
-      { label: 'Bank Accounts', route: '/banking' },
-    ],
-  },
-  {
-    label: 'Transaction Management',
-    children: [
-      { label: 'Statement Upload', route: '/banking' },
-      { label: 'Filtering & Search', route: '/banking' },
-    ],
-  },
-  {
-    label: 'Financial Management',
-    children: [
-      { label: 'Credit Cards', route: '/financial/credit-cards' },
-      { label: 'Budget Planning', route: '/financial/budget' },
-      { label: 'Subscriptions', route: '/financial/subscriptions' },
-      { label: 'Debt & Loans', route: '/financial/debt' },
-    ],
-  },
-  {
-    label: 'Financial Insights',
-    children: [
-      { label: 'Core Insights', route: '/insights/core' },
-      { label: 'Net Worth Tracking', route: '/insights/net-worth' },
-      { label: 'Story Mode', route: '/insights/story' },
-    ],
-  },
-  {
-    label: 'Analytics & Reports',
-    children: [
-      { label: 'Trends', route: '/analytics/trends' },
-      { label: 'Comparisons', route: '/analytics/comparisons' },
-      { label: 'Export Reports', route: '/analytics/export' },
-    ],
-  },
-  {
-    label: 'Life-Event Intelligence',
-    children: [
-      { label: 'Major Decision Portal', route: '/life-events/decisions' },
-      { label: 'Goal-Lock Friction', route: '/life-events/goals' },
-    ],
-  },
+const menuItems = [
+  { icon: LayoutDashboard, label: "Overview", route: "/overview" },
+  { icon: Wallet, label: "Accounts", route: "/banking" },
+  { icon: ArrowDownUp, label: "Transactions", route: "/transactions" },
+  { icon: BarChart3, label: "Analytics", route: "/analytics" },
+  { icon: CreditCard, label: "Credit Cards", route: "/credit-cards" },
+  { icon: Calculator, label: "Budgets", route: "/budgets" },
+  { icon: Bell, label: "Subscriptions", route: "/subscriptions" },
+  { icon: LineChart, label: "Investments", route: "/investments" },
+  { icon: Landmark, label: "Assets", route: "/assets" },
+  { icon: Milestone, label: "Life Events", route: "/life-events" },
+  { icon: ShoppingCart, label: "Waitlist", route: "/waitlist" },
+  { icon: Radio, label: "Control Center", route: "/notifications" },
 ]
 
 export default function Sidebar() {
   const logout = useAuthStore((s) => s.logout)
+  const navigate = useNavigate()
+  const [collapsed, setCollapsed] = useState(false)
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
-    <aside className="w-56 shrink-0 border-r flex flex-col h-full overflow-y-auto">
-      <div className="px-5 py-4 border-b">
-        <span className="font-bold text-lg tracking-tight">FinnLens</span>
-        <p className="text-xs text-muted-foreground mt-0.5">2.0</p>
+    <aside className={`${collapsed ? "w-16" : "w-56"} h-screen terminal border-r neon-border flex flex-col transition-all duration-300 shrink-0`}>
+      <div className="p-3 flex items-center gap-2 border-b border-border">
+        <TrendingUp className="w-4 h-4 neon-text shrink-0" />
+        {!collapsed && <span className="font-display font-bold text-[10px] neon-text tracking-[0.2em]">FINNLENS</span>}
       </div>
-      <nav className="flex-1 flex flex-col gap-4 p-3 pt-4">
-        {navItems.map((section) => (
-          <div key={section.label}>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
-              {section.label}
-            </p>
-            <div className="flex flex-col gap-0.5">
-              {section.children.map((item) => (
-                <NavLink
-                  key={item.label}
-                  to={item.route}
-                  className={({ isActive }) =>
-                    `px-3 py-1.5 rounded-md text-sm transition-colors ${
-                      isActive
-                        ? 'bg-accent text-accent-foreground font-medium'
-                        : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-          </div>
+
+      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+        {menuItems.map((item) => (
+          <NavLink
+            key={item.route}
+            to={item.route}
+            className={({ isActive }) =>
+              `w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm text-xs font-mono uppercase tracking-wider transition-all ${
+                isActive
+                  ? "neon-text bg-[hsl(var(--neon-cyan))]/[0.08] neon-border border"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              }`
+            }
+          >
+            <item.icon className="w-4 h-4 shrink-0" />
+            {!collapsed && <span>{item.label}</span>}
+          </NavLink>
         ))}
       </nav>
-      <div className="p-3 border-t">
-        <button
-          onClick={logout}
-          className="w-full text-left px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-colors"
+
+      <div className="p-2 border-t border-border space-y-0.5">
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm text-xs font-mono uppercase tracking-wider transition-all ${
+              isActive
+                ? "neon-text bg-primary/[0.08] neon-border border"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            }`
+          }
         >
-          Sign out
+          <Settings className="w-4 h-4 shrink-0" />
+          {!collapsed && <span>Settings</span>}
+        </NavLink>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm text-xs font-mono uppercase tracking-wider text-muted-foreground hover:neon-magenta hover:bg-[hsl(var(--neon-magenta))]/[0.05] transition-all"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          {!collapsed && <span>Logout</span>}
+        </button>
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="w-full flex items-center justify-center py-1.5 text-muted-foreground hover:neon-text transition-colors"
+        >
+          {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
         </button>
       </div>
     </aside>
