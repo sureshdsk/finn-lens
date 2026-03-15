@@ -1,216 +1,139 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, CreditCard, ArrowUpRight, ArrowDownLeft, AlertTriangle } from "lucide-react";
-import { mockCreditCards, mockTransactions, fmt, daysUntil } from "@/data/mockData";
+import { useNavigate } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getCardsApi, materializeCardsApi, type CreditCard } from '@/api/creditCards'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { CreditCard as CreditCardIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
-const chargeTypeStyles: Record<string, { label: string; accent: string }> = {
-  fee: { label: "FEE", accent: "text-[hsl(var(--neon-amber))]" },
-  interest: { label: "INT", accent: "neon-magenta" },
-  penalty: { label: "PEN", accent: "text-destructive" },
-  surcharge: { label: "SUR", accent: "text-[hsl(var(--neon-amber))]" },
-};
+function fmt(n: string | number) {
+  return `₹${Number(n).toLocaleString('en-IN')}`
+}
 
-const CreditCardsPage = () => {
-  const [selectedCard, setSelectedCard] = useState(mockCreditCards[0].id);
-  const [showDetails, setShowDetails] = useState(false);
+const ISSUER_LABELS: Record<string, string> = {
+  HDFC: 'HDFC Bank',
+  ICICI: 'ICICI Bank',
+  AXIS: 'Axis Bank',
+  SBI: 'SBI Card',
+  KOTAK: 'Kotak Mahindra',
+  INDUSIND: 'IndusInd',
+  RBL: 'RBL Bank',
+  YES: 'Yes Bank',
+  AMEX: 'Amex',
+  CITI: 'Citibank',
+  SC: 'Standard Chartered',
+  HSBC: 'HSBC',
+  OTHER: 'Other',
+}
 
-  const card = mockCreditCards.find((c) => c.id === selectedCard)!;
-  const utilPct = (card.outstanding / card.limit) * 100;
-  const days = daysUntil(card.dueDate);
+export default function CreditCardsPage() {
+  const navigate = useNavigate()
+  const qc = useQueryClient()
 
-  const cardTxns = mockTransactions
-    .filter((t) => t.accountId === selectedCard)
-    .slice(0, 8);
+  const { data: cards = [], isLoading } = useQuery({
+    queryKey: ['credit-cards'],
+    queryFn: getCardsApi,
+  })
 
-  const totalOutstanding = mockCreditCards.reduce((s, c) => s + c.outstanding, 0);
-  const totalLimit = mockCreditCards.reduce((s, c) => s + c.limit, 0);
-  const totalRewards = mockCreditCards.reduce((s, c) => s + c.rewardPoints, 0);
+  const materializeMutation = useMutation({
+    mutationFn: materializeCardsApi,
+    onSuccess: (result) => {
+      const parts: string[] = []
+      if (result.cards > 0) parts.push(`${result.cards} cards`)
+      if (result.bills > 0) parts.push(`${result.bills} bills`)
+      if (result.transactions > 0) parts.push(`${result.transactions} transactions`)
+      toast.success(parts.length > 0 ? `Synced: ${parts.join(', ')}` : 'Already up to date')
+      qc.invalidateQueries({ queryKey: ['credit-cards'] })
+    },
+    onError: (err) => toast.error((err as Error).message),
+  })
+
+  const totalTxns = cards.reduce((s, c) => s + c.transaction_count, 0)
 
   return (
-    <div className="space-y-5">
-      {/* Summary */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        {[
-          { label: "Total Outstanding", value: fmt(totalOutstanding), accent: "neon-magenta" },
-          { label: "Total Credit Limit", value: fmt(totalLimit), accent: "neon-text" },
-          { label: "Reward Points", value: totalRewards.toLocaleString("en-IN"), accent: "neon-green" },
-        ].map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="terminal neon-border rounded-sm p-4 crt-overlay">
-            <div className="relative z-10">
-              <div className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest mb-1">{s.label}</div>
-              <div className={`text-lg font-display font-bold ${s.accent}`}>{s.value}</div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Card selector */}
-      <div className="flex gap-3">
-        {mockCreditCards.map((c) => (
-          <button key={c.id} onClick={() => setSelectedCard(c.id)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-[10px] font-mono uppercase tracking-wider transition-all ${
-              selectedCard === c.id ? "neon-text neon-border border terminal" : "text-muted-foreground hover:text-foreground"
-            }`}>
-            <CreditCard className="w-3 h-3" /> {c.name}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid lg:grid-cols-5 gap-5">
-        {/* Card visual */}
-        <motion.div key={card.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="lg:col-span-2">
-          <div className="rounded-sm p-5 aspect-[1.6/1] flex flex-col justify-between border border-border relative overflow-hidden"
-            style={{ background: card.gradient }}>
-            <div className="absolute inset-0 opacity-10"
-              style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)" }} />
-            <div className="relative z-10 flex items-start justify-between">
-              <div>
-                <div className="text-[9px] font-mono uppercase tracking-widest text-foreground/60">{card.bank}</div>
-                <div className="text-[11px] font-display font-bold text-foreground mt-0.5">{card.name}</div>
-              </div>
-              <button onClick={() => setShowDetails(!showDetails)} className="text-foreground/50 hover:text-foreground transition-colors">
-                {showDetails ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-            <div className="relative z-10">
-              <div className="text-sm font-mono tracking-[0.15em] text-foreground mb-3">
-                {showDetails ? card.number.replace(/••••/g, "1234") : card.number}
-              </div>
-              <div className="flex items-center gap-4">
-                <div>
-                  <div className="text-[8px] font-mono uppercase text-foreground/40">Exp</div>
-                  <div className="text-[10px] font-mono text-foreground">{card.expiry}</div>
-                </div>
-                <div>
-                  <div className="text-[8px] font-mono uppercase text-foreground/40">CVV</div>
-                  <div className="text-[10px] font-mono text-foreground">{showDetails ? "482" : "•••"}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Card details */}
-        <div className="lg:col-span-3 space-y-4">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="terminal neon-border rounded-sm p-4 crt-overlay">
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest">Credit Utilization</span>
-                <span className={`text-[10px] font-mono font-bold ${utilPct > 75 ? "neon-magenta" : utilPct > 50 ? "text-[hsl(var(--neon-amber))]" : "neon-green"}`}>
-                  {utilPct.toFixed(1)}%
-                </span>
-              </div>
-              <div className="terminal rounded-sm h-2.5 overflow-hidden mb-2">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${utilPct}%` }} transition={{ duration: 0.6 }}
-                  className="h-full rounded-sm"
-                  style={{
-                    background: `linear-gradient(90deg, ${card.color}, ${card.color})`,
-                    boxShadow: `0 0 6px ${card.color.replace(")", " / 0.4)")}`,
-                  }} />
-              </div>
-              <div className="flex justify-between text-[9px] font-mono text-muted-foreground">
-                <span>{fmt(card.outstanding)} used</span>
-                <span>{fmt(card.limit - card.outstanding)} available</span>
-              </div>
-            </div>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-3 gap-3">
-            {[
-              { label: "Due Date", value: new Date(card.dueDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
-                sub: `${days} days left`, accent: days <= 5 ? "neon-magenta" : "neon-text" },
-              { label: "Min Due", value: fmt(card.minDue), sub: "minimum payment", accent: "text-[hsl(var(--neon-amber))]" },
-              { label: "Rewards", value: card.rewardPoints.toLocaleString("en-IN"), sub: "points earned", accent: "neon-green" },
-            ].map((item, i) => (
-              <motion.div key={item.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.06 }}
-                className="terminal neon-border rounded-sm p-3 crt-overlay">
-                <div className="relative z-10">
-                  <div className="text-[8px] text-muted-foreground font-mono uppercase tracking-widest mb-1">{item.label}</div>
-                  <div className={`text-sm font-display font-bold ${item.accent}`}>{item.value}</div>
-                  <div className="text-[8px] text-muted-foreground font-mono mt-0.5">{item.sub}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+    <div className="flex flex-col gap-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Credit Cards</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {cards.length} card{cards.length !== 1 ? 's' : ''} · {totalTxns.toLocaleString()} transactions
+          </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => materializeMutation.mutate()}
+          disabled={materializeMutation.isPending}
+        >
+          {materializeMutation.isPending ? 'Syncing...' : 'Sync from Email'}
+        </Button>
       </div>
 
-      {/* Hidden charges */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-        className="terminal neon-border rounded-sm p-5 crt-overlay border-destructive/30">
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
-              <h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground">Hidden Charges</h3>
-            </div>
-            <span className="text-[10px] font-mono font-bold neon-magenta">
-              Total: {fmt(card.hiddenCharges.reduce((s, c) => s + c.amount, 0))}
-            </span>
-          </div>
-          {card.hiddenCharges.length === 0 ? (
-            <p className="text-[10px] text-muted-foreground font-mono text-center py-4">No hidden charges detected.</p>
-          ) : (
-            <div className="space-y-2">
-              {card.hiddenCharges.map((charge, i) => {
-                const style = chargeTypeStyles[charge.type];
-                return (
-                  <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.04 }}
-                    className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <div className="flex items-center gap-3">
-                      <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm terminal neon-border ${style.accent}`}>
-                        {style.label}
-                      </span>
-                      <div>
-                        <div className="text-[10px] font-mono text-foreground">{charge.label}</div>
-                        <div className="text-[8px] text-muted-foreground font-mono">{charge.date}</div>
-                      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {isLoading
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-5 flex flex-col gap-3">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                  <Skeleton className="h-3 w-20" />
+                </CardContent>
+              </Card>
+            ))
+          : cards.map((card) => (
+              <Card
+                key={card.id}
+                className="cursor-pointer hover:bg-accent/10 transition-colors"
+                onClick={() => navigate(`/credit-cards/${card.id}`)}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CreditCardIcon className="size-4 text-muted-foreground" />
+                      <CardTitle className="text-base">
+                        {ISSUER_LABELS[card.issuer] ?? card.issuer}
+                      </CardTitle>
                     </div>
-                    <span className="text-[10px] font-mono font-bold neon-magenta">-{fmt(charge.amount)}</span>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Card transactions */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-        className="terminal neon-border rounded-sm p-5 crt-overlay">
-        <div className="relative z-10">
-          <h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground mb-4">
-            {'>'} Recent Card Transactions
-          </h3>
-          {cardTxns.length === 0 ? (
-            <p className="text-[10px] text-muted-foreground font-mono text-center py-6">No transactions found for this card.</p>
-          ) : (
-            <div className="space-y-2">
-              {cardTxns.map((t, i) => (
-                <motion.div key={t.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 + i * 0.04 }}
-                  className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 rounded-sm flex items-center justify-center ${t.type === "credit" ? "bg-[hsl(var(--neon-green))]/10" : "bg-[hsl(var(--neon-magenta))]/10"}`}>
-                      {t.type === "credit" ? <ArrowDownLeft className="w-3 h-3 neon-green" /> : <ArrowUpRight className="w-3 h-3 neon-magenta" />}
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-mono text-foreground">{t.label}</div>
-                      <div className="text-[8px] text-muted-foreground font-mono">{t.category} • {t.date}</div>
-                    </div>
+                    <Badge variant="secondary">{card.currency}</Badge>
                   </div>
-                  <span className={`text-[10px] font-mono font-bold ${t.type === "credit" ? "neon-green" : "neon-magenta"}`}>
-                    {t.type === "credit" ? "+" : "-"}{fmt(t.amount)}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-      </motion.div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-sm text-muted-foreground">
+                    ••••{card.card_last4}
+                    {card.card_name && <> · {card.card_name}</>}
+                  </p>
+                  <div className="flex items-center justify-between mt-3">
+                    <p className="text-sm font-medium">
+                      {card.transaction_count.toLocaleString()} transactions
+                    </p>
+                    {card.last_bill_total && (
+                      <p className="text-xs text-muted-foreground">
+                        Last bill: {fmt(card.last_bill_total)}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+        {!isLoading && cards.length === 0 && (
+          <div className="col-span-3 flex flex-col items-center justify-center py-16 gap-3 text-center">
+            <CreditCardIcon className="size-8 text-muted-foreground" />
+            <p className="font-medium">No credit cards found</p>
+            <p className="text-sm text-muted-foreground">
+              Sync your Gmail to discover credit cards from email alerts
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => materializeMutation.mutate()}
+              disabled={materializeMutation.isPending}
+            >
+              Sync from Email
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
-  );
-};
-
-export default CreditCardsPage;
+  )
+}

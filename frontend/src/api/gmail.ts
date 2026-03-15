@@ -1,13 +1,4 @@
-import { useAuthStore } from '@/stores/authStore'
-
-const API_URL = import.meta.env.VITE_API_URL ?? ''
-
-function authHeaders() {
-  const token = useAuthStore.getState().token
-  return {
-    Authorization: `Bearer ${token}`,
-  }
-}
+import { API_URL, authHeaders, apiFetch } from './client'
 
 // --- Types ---
 
@@ -72,7 +63,7 @@ export interface ExtractedData {
 // --- OAuth ---
 
 export async function getGoogleAuthUrl(): Promise<{ url: string; code_verifier: string }> {
-  const res = await fetch(`${API_URL}/api/oauth/google/auth-url`, {
+  const res = await apiFetch(`${API_URL}/api/oauth/google/auth-url`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to get auth URL')
@@ -80,7 +71,7 @@ export async function getGoogleAuthUrl(): Promise<{ url: string; code_verifier: 
 }
 
 export async function exchangeGoogleCode(code: string, codeVerifier: string): Promise<{ email: string; connected: boolean }> {
-  const res = await fetch(`${API_URL}/api/oauth/google/callback`, {
+  const res = await apiFetch(`${API_URL}/api/oauth/google/callback`, {
     method: 'POST',
     headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ code, code_verifier: codeVerifier }),
@@ -95,7 +86,7 @@ export async function exchangeGoogleCode(code: string, codeVerifier: string): Pr
 // --- Gmail Status ---
 
 export async function getGmailStatus(): Promise<GmailStatus> {
-  const res = await fetch(`${API_URL}/api/gmail/status`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/status`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch Gmail status')
@@ -103,7 +94,7 @@ export async function getGmailStatus(): Promise<GmailStatus> {
 }
 
 export async function disconnectGmail(): Promise<void> {
-  const res = await fetch(`${API_URL}/api/gmail/disconnect`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/disconnect`, {
     method: 'POST',
     headers: authHeaders(),
   })
@@ -113,7 +104,7 @@ export async function disconnectGmail(): Promise<void> {
 // --- Sync ---
 
 export async function triggerSync(): Promise<SyncTriggerResponse> {
-  const res = await fetch(`${API_URL}/api/gmail/sync`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/sync`, {
     method: 'POST',
     headers: authHeaders(),
   })
@@ -125,7 +116,7 @@ export async function triggerSync(): Promise<SyncTriggerResponse> {
 }
 
 export async function getSyncJob(id: number): Promise<SyncJob> {
-  const res = await fetch(`${API_URL}/api/gmail/sync/${id}`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/sync/${id}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch sync job')
@@ -143,7 +134,7 @@ export async function getMessages(params: {
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) qs.set(k, String(v))
   })
-  const res = await fetch(`${API_URL}/api/gmail/messages?${qs}`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/messages?${qs}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch messages')
@@ -153,7 +144,7 @@ export async function getMessages(params: {
 // --- Sender Rules ---
 
 export async function getSenderRules(): Promise<SenderRule[]> {
-  const res = await fetch(`${API_URL}/api/gmail/rules`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/rules`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch sender rules')
@@ -165,7 +156,7 @@ export async function createSenderRule(data: {
   source_type: string
   is_enabled?: boolean
 }): Promise<SenderRule> {
-  const res = await fetch(`${API_URL}/api/gmail/rules`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/rules`, {
     method: 'POST',
     headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -178,7 +169,7 @@ export async function updateSenderRule(id: number, data: {
   is_enabled?: boolean
   source_type?: string
 }): Promise<SenderRule> {
-  const res = await fetch(`${API_URL}/api/gmail/rules/${id}`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/rules/${id}`, {
     method: 'PATCH',
     headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -188,7 +179,7 @@ export async function updateSenderRule(id: number, data: {
 }
 
 export async function deleteSenderRule(id: number): Promise<void> {
-  const res = await fetch(`${API_URL}/api/gmail/rules/${id}`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/rules/${id}`, {
     method: 'DELETE',
     headers: authHeaders(),
   })
@@ -202,7 +193,7 @@ export async function getExtractedData(params: {
 } = {}): Promise<ExtractedData[]> {
   const qs = new URLSearchParams()
   if (params.data_type) qs.set('data_type', params.data_type)
-  const res = await fetch(`${API_URL}/api/gmail/extracted?${qs}`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/extracted?${qs}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch extracted data')
@@ -240,7 +231,7 @@ export interface InvestmentSummary {
 }
 
 export async function getInvestmentSummary(): Promise<InvestmentSummary> {
-  const res = await fetch(`${API_URL}/api/gmail/investments`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/investments`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch investment summary')
@@ -248,7 +239,7 @@ export async function getInvestmentSummary(): Promise<InvestmentSummary> {
 }
 
 export async function verifyExtractedData(id: number): Promise<void> {
-  const res = await fetch(`${API_URL}/api/gmail/extracted/${id}/verify`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/extracted/${id}/verify`, {
     method: 'POST',
     headers: authHeaders(),
   })

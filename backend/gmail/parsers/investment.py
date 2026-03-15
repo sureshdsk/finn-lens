@@ -43,7 +43,7 @@ class GrowwInvestmentParser:
             return False
         return any(kw in subject_lower for kw in PARSEABLE_SUBJECTS.values())
 
-    def parse(self, sender: str, subject: str, body: str) -> list[ExtractionResult]:
+    def parse(self, sender: str, subject: str, body: str, attachments: list[bytes] | None = None) -> list[ExtractionResult]:
         subject_lower = subject.lower()
 
         # Strip HTML

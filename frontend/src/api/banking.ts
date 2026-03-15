@@ -1,13 +1,4 @@
-import { useAuthStore } from '@/stores/authStore'
-
-const API_URL = import.meta.env.VITE_API_URL ?? ''
-
-function authHeaders() {
-  const token = useAuthStore.getState().token
-  return {
-    Authorization: `Bearer ${token}`,
-  }
-}
+import { API_URL, authHeaders, apiFetch } from './client'
 
 export interface BankAccount {
   id: number
@@ -58,7 +49,7 @@ export interface UploadResult {
 }
 
 export async function getAccountsApi(): Promise<BankAccount[]> {
-  const res = await fetch(`${API_URL}/api/banking/accounts/`, {
+  const res = await apiFetch(`${API_URL}/api/banking/accounts/`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch accounts')
@@ -71,7 +62,7 @@ export async function createAccountApi(data: {
   account_holder_name?: string
   currency?: string
 }): Promise<BankAccount> {
-  const res = await fetch(`${API_URL}/api/banking/accounts/`, {
+  const res = await apiFetch(`${API_URL}/api/banking/accounts/`, {
     method: 'POST',
     headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -102,7 +93,7 @@ export async function getTransactionsApi(
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) qs.set(k, String(v))
   })
-  const res = await fetch(`${API_URL}/api/banking/accounts/${accountId}/transactions/?${qs}`, {
+  const res = await apiFetch(`${API_URL}/api/banking/accounts/${accountId}/transactions/?${qs}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch transactions')
@@ -112,7 +103,7 @@ export async function getTransactionsApi(
 export async function uploadStatementApi(accountId: number, file: File): Promise<UploadResult> {
   const form = new FormData()
   form.append('file', file)
-  const res = await fetch(`${API_URL}/api/banking/accounts/${accountId}/upload/`, {
+  const res = await apiFetch(`${API_URL}/api/banking/accounts/${accountId}/upload/`, {
     method: 'POST',
     headers: authHeaders(),
     body: form,
@@ -125,7 +116,7 @@ export async function uploadStatementApi(accountId: number, file: File): Promise
 }
 
 export async function getMonthlySummaryApi(year: number): Promise<MonthlySummary[]> {
-  const res = await fetch(`${API_URL}/api/banking/summary/?year=${year}`, {
+  const res = await apiFetch(`${API_URL}/api/banking/summary/?year=${year}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch summary')
