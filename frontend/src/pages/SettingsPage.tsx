@@ -1,18 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { useDarkMode } from "@/contexts/DarkModeContext";
 import { useStyleTheme, type StyleTheme } from "@/contexts/StyleThemeContext";
-import { User, Palette, Bell, Shield, Globe, Monitor, Sun, Moon, Save, Check, Zap, Square } from "lucide-react";
+import { User, Palette, Bell, Shield, Globe, Monitor, Sun, Moon, Save, Check, Zap, Square, Link2, RefreshCw, Trash2, Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-type SettingsTab = "profile" | "appearance" | "notifications" | "privacy" | "general";
+import {
+  getGmailStatus, getGoogleAuthUrl, disconnectGmail, triggerSync, getSyncJob,
+  getSenderRules, createSenderRule, updateSenderRule, deleteSenderRule,
+  type GmailStatus, type SyncJob, type SenderRule,
+} from "@/api/gmail";
+
+type SettingsTab = "profile" | "appearance" | "integrations" | "notifications" | "privacy" | "general";
 
 const tabs: { id: SettingsTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "profile", label: "Profile", icon: User },
   { id: "appearance", label: "Appearance", icon: Palette },
+  { id: "integrations", label: "Integrations", icon: Link2 },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "privacy", label: "Privacy", icon: Shield },
   { id: "general", label: "General", icon: Globe },
@@ -36,6 +43,108 @@ const SettingsPage = () => {
   const [compactMode, setCompactMode] = useState(false);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [language, setLanguage] = useState("en");
+
+  // Gmail integration state
+  const [gmailStatus, setGmailStatus] = useState<GmailStatus>({ connected: false, email: "", last_sync_at: null, is_active: false });
+  const [gmailLoading, setGmailLoading] = useState(false);
+  const [syncJob, setSyncJob] = useState<SyncJob | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [senderRules, setSenderRules] = useState<SenderRule[]>([]);
+  const [newRulePattern, setNewRulePattern] = useState("");
+  const [newRuleType, setNewRuleType] = useState("credit_card");
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const loadGmailStatus = useCallback(async () => {
+    try {
+      const status = await getGmailStatus();
+      setGmailStatus(status);
+      if (status.connected) {
+        const rules = await getSenderRules();
+        setSenderRules(rules);
+      }
+    } catch { /* not connected */ }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "integrations") loadGmailStatus();
+  }, [activeTab, loadGmailStatus]);
+
+  useEffect(() => {
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, []);
+
+  const handleConnectGmail = async () => {
+    setGmailLoading(true);
+    try {
+      const { url, code_verifier } = await getGoogleAuthUrl();
+      sessionStorage.setItem("gmail_code_verifier", code_verifier);
+      window.location.href = url;
+    } catch (err) {
+      toast.error("Failed to start Gmail connection");
+      setGmailLoading(false);
+    }
+  };
+
+  const handleDisconnectGmail = async () => {
+    try {
+      await disconnectGmail();
+      setGmailStatus({ connected: false, email: "", last_sync_at: null, is_active: false });
+      setSenderRules([]);
+      toast.success("Gmail disconnected");
+    } catch { toast.error("Failed to disconnect"); }
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncJob(null);
+    try {
+      const { sync_job_id } = await triggerSync();
+      // Poll for progress
+      pollRef.current = setInterval(async () => {
+        try {
+          const job = await getSyncJob(sync_job_id);
+          setSyncJob(job);
+          if (job.status === "completed" || job.status === "failed") {
+            if (pollRef.current) clearInterval(pollRef.current);
+            setSyncing(false);
+            if (job.status === "completed") {
+              toast.success(`Sync complete: ${job.new_messages} new emails, ${job.extracted_count} extracted`);
+              loadGmailStatus();
+            } else {
+              toast.error(`Sync failed: ${job.error_message}`);
+            }
+          }
+        } catch { /* ignore poll errors */ }
+      }, 2000);
+    } catch (err) {
+      setSyncing(false);
+      toast.error(err instanceof Error ? err.message : "Sync failed");
+    }
+  };
+
+  const handleAddRule = async () => {
+    if (!newRulePattern.trim()) return;
+    try {
+      const rule = await createSenderRule({ sender_pattern: newRulePattern, source_type: newRuleType });
+      setSenderRules(prev => [...prev, rule]);
+      setNewRulePattern("");
+      toast.success("Rule added");
+    } catch { toast.error("Failed to add rule"); }
+  };
+
+  const handleToggleRule = async (rule: SenderRule) => {
+    try {
+      const updated = await updateSenderRule(rule.id, { is_enabled: !rule.is_enabled });
+      setSenderRules(prev => prev.map(r => r.id === rule.id ? updated : r));
+    } catch { toast.error("Failed to update rule"); }
+  };
+
+  const handleDeleteRule = async (id: number) => {
+    try {
+      await deleteSenderRule(id);
+      setSenderRules(prev => prev.filter(r => r.id !== id));
+    } catch { toast.error("Failed to delete rule"); }
+  };
 
   const handleSave = () => { toast.success("Settings saved successfully"); };
 
@@ -97,6 +206,100 @@ const SettingsPage = () => {
               </div>
               <SettingsRow label="Compact Mode" description="Reduce spacing and padding throughout the UI" checked={compactMode} onChange={setCompactMode} />
               <SettingsRow label="Animations" description="Enable motion effects and transitions" checked={animationsEnabled} onChange={setAnimationsEnabled} />
+            </div>
+          )}
+          {activeTab === "integrations" && (
+            <div className="space-y-6">
+              <div><h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground mb-1">Integrations</h3><p className="text-[10px] text-muted-foreground font-mono">{'>'} connect external services to auto-import data</p></div>
+
+              {/* Gmail Connection */}
+              <div className="space-y-4">
+                <Label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Gmail</Label>
+                {!gmailStatus.connected ? (
+                  <div className="flex items-center gap-4">
+                    <button onClick={handleConnectGmail} disabled={gmailLoading}
+                      className="retro-button-solid rounded-sm text-[10px] flex items-center gap-2">
+                      <Link2 className="w-3.5 h-3.5" />{gmailLoading ? "Redirecting..." : "Connect Gmail"}
+                    </button>
+                    <span className="text-[10px] text-muted-foreground font-mono">Read-only access to financial emails</span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-mono font-medium text-foreground">{gmailStatus.email}</div>
+                        <div className="text-[10px] text-muted-foreground font-mono">
+                          {gmailStatus.last_sync_at ? `Last sync: ${new Date(gmailStatus.last_sync_at).toLocaleString()}` : "Never synced"}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={handleSync} disabled={syncing}
+                          className="retro-button-solid rounded-sm text-[10px] flex items-center gap-2">
+                          <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />{syncing ? "Syncing..." : "Sync Now"}
+                        </button>
+                        <button onClick={handleDisconnectGmail}
+                          className="retro-button rounded-sm text-[10px] text-destructive border-destructive/30 flex items-center gap-2">
+                          <Trash2 className="w-3.5 h-3.5" />Disconnect
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Sync Progress */}
+                    {syncJob && syncing && (
+                      <div className="terminal neon-border rounded-sm p-4 space-y-2">
+                        <div className="flex justify-between text-[10px] font-mono">
+                          <span className="neon-text uppercase">{syncJob.status}</span>
+                          <span className="text-muted-foreground">{syncJob.processed_messages}/{syncJob.total_messages}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-primary transition-all duration-300 rounded-full"
+                            style={{ width: syncJob.total_messages ? `${(syncJob.processed_messages / syncJob.total_messages) * 100}%` : "0%" }} />
+                        </div>
+                      </div>
+                    )}
+                    {syncJob && !syncing && syncJob.status === "completed" && (
+                      <div className="text-[10px] font-mono text-muted-foreground">
+                        Last sync: {syncJob.new_messages} new emails, {syncJob.extracted_count} data points extracted
+                      </div>
+                    )}
+
+                    {/* Sender Rules */}
+                    <div className="pt-3 border-t border-border space-y-3">
+                      <Label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Sender Rules</Label>
+                      <div className="space-y-1 max-h-48 overflow-y-auto">
+                        {senderRules.map(rule => (
+                          <div key={rule.id} className="flex items-center justify-between py-1.5 px-2 rounded-sm hover:bg-secondary/30">
+                            <div className="flex items-center gap-2">
+                              <Switch checked={rule.is_enabled} onCheckedChange={() => handleToggleRule(rule)} />
+                              <span className="text-[10px] font-mono text-foreground">{rule.sender_pattern}</span>
+                              <span className="text-[9px] font-mono text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">{rule.source_type}</span>
+                            </div>
+                            <button onClick={() => handleDeleteRule(rule.id)} className="text-muted-foreground hover:text-destructive">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input value={newRulePattern} onChange={e => setNewRulePattern(e.target.value)}
+                          placeholder="*@bank.com" className="terminal neon-border text-[10px] font-mono flex-1" />
+                        <select value={newRuleType} onChange={e => setNewRuleType(e.target.value)}
+                          className="h-10 rounded-md terminal neon-border bg-card px-2 text-[10px] font-mono text-foreground">
+                          <option value="credit_card">Credit Card</option>
+                          <option value="bank">Bank</option>
+                          <option value="subscription">Subscription</option>
+                          <option value="ecommerce">E-commerce</option>
+                          <option value="bill">Bill</option>
+                          <option value="investment">Investment</option>
+                        </select>
+                        <button onClick={handleAddRule} className="retro-button rounded-sm text-[10px] flex items-center gap-1">
+                          <Plus className="w-3 h-3" />Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
           {activeTab === "notifications" && (

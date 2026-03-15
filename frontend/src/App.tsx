@@ -20,6 +20,7 @@ import LifeEventsPage from '@/pages/LifeEventsPage'
 import WaitlistPage from '@/pages/WaitlistPage'
 import NotificationsPage from '@/pages/NotificationsPage'
 import SettingsPage from '@/pages/SettingsPage'
+import OAuthCallbackPage from '@/pages/OAuthCallbackPage'
 
 const queryClient = new QueryClient()
 
@@ -48,6 +49,7 @@ export default function App() {
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
+              <Route path="/oauth/google/callback" element={<OAuthCallbackPage />} />
               <Route path="*" element={<Navigate to="/overview" replace />} />
             </Routes>
           </BrowserRouter>
