@@ -87,6 +87,7 @@ class EmailSenderRule(models.Model):
 class ExtractedFinancialData(models.Model):
     DATA_TYPE_CHOICES = [
         ("cc_transaction", "CC Transaction"),
+        ("cc_bill", "CC Bill/Statement"),
         ("subscription_renewal", "Subscription Renewal"),
         ("investment_update", "Investment Update"),
         ("bill_notice", "Bill Notice"),
@@ -103,3 +104,16 @@ class ExtractedFinancialData(models.Model):
 
     def __str__(self):
         return f"{self.data_type}: {self.email.subject[:40]}"
+
+
+class EmailAttachment(models.Model):
+    email = models.ForeignKey(EmailMessage, on_delete=models.CASCADE, related_name="attachments")
+    filename = models.CharField(max_length=500)
+    content_type = models.CharField(max_length=100)
+    attachment_id = models.CharField(max_length=500)
+    size_bytes = models.IntegerField(default=0)
+    pdf_bytes = models.BinaryField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.filename} ({self.email.subject[:40]})"

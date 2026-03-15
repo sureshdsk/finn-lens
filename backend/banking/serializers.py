@@ -55,3 +55,66 @@ class UploadResultSchema(msgspec.Struct):
     imported: int
     classified: int
     account_id: int
+
+
+# ── Credit Card schemas ──────────────────────────────────────────────────────
+
+
+class CreateCardSchema(msgspec.Struct):
+    issuer: str
+    card_last4: str
+    card_name: str = ""
+    billing_day: Optional[int] = None
+    credit_limit: Optional[str] = None
+    currency: str = "INR"
+
+
+class CardSchema(msgspec.Struct):
+    id: int
+    issuer: str
+    card_last4: str
+    card_name: str
+    billing_day: Optional[int]
+    credit_limit: Optional[str]
+    currency: str
+    transaction_count: int
+    last_bill_total: Optional[str] = None
+    last_bill_date: Optional[str] = None
+
+
+class CreditCardBillSchema(msgspec.Struct):
+    id: int
+    statement_date: str
+    due_date: Optional[str]
+    total_due: Optional[str]
+    min_due: Optional[str]
+    billing_period_start: Optional[str]
+    billing_period_end: Optional[str]
+    is_paid: bool
+
+
+class CreditCardTransactionSchema(msgspec.Struct):
+    id: int
+    transaction_date: str
+    transaction_time: Optional[str]
+    amount: str
+    currency: str
+    description: str
+    merchant_name: str
+    category: str
+    category_confidence: float
+    is_user_categorized: bool
+    source_type: str
+
+
+class CCTransactionListSchema(msgspec.Struct):
+    items: list[CreditCardTransactionSchema]
+    total: int
+    page: int
+    page_size: int
+
+
+class MaterializeResultSchema(msgspec.Struct):
+    cards: int
+    bills: int
+    transactions: int

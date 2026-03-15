@@ -8,6 +8,7 @@ from typing import Protocol
 
 class DataType(str, Enum):
     CC_TRANSACTION = "cc_transaction"
+    CC_BILL = "cc_bill"
     SUBSCRIPTION_RENEWAL = "subscription_renewal"
     INVESTMENT_UPDATE = "investment_update"
     BILL_NOTICE = "bill_notice"
@@ -53,4 +54,4 @@ class ExtractionResult:
 
 class BaseEmailParser(Protocol):
     def can_parse(self, sender: str, subject: str) -> bool: ...
-    def parse(self, sender: str, subject: str, body: str) -> list[ExtractionResult]: ...
+    def parse(self, sender: str, subject: str, body: str, attachments: list[bytes] | None = None) -> list[ExtractionResult]: ...
