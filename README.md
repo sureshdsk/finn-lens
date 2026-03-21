@@ -1,4 +1,4 @@
-# FinnLens
+# FinnLens - Beta
 
 A personal finance intelligence platform. Upload bank statements, connect accounts, and get AI-powered insights into your spending, subscriptions, net worth, and financial health.
 
