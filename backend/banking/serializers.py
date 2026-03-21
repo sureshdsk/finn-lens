@@ -118,3 +118,47 @@ class MaterializeResultSchema(msgspec.Struct):
     cards: int
     bills: int
     transactions: int
+
+
+# ── Subscription schemas ───────────────────────────────────────────────────
+
+
+class SubscriptionSchema(msgspec.Struct):
+    id: int
+    name: str
+    category: str
+    cost: str
+    currency: str
+    cycle: str
+    renew_date: Optional[str]
+    status: str
+    icon: str
+    color: str
+    description: str
+    start_date: Optional[str]
+    payment_method: str
+    plan: str
+    total_spent: Optional[str]
+    last_billed: Optional[str]
+    auto_renew: bool
+    source: str
+    confidence: float
+    payment_count: int
+
+
+class SubscriptionListSchema(msgspec.Struct):
+    items: list[SubscriptionSchema]
+    total: int
+
+
+class SubscriptionUpdateSchema(msgspec.Struct):
+    status: Optional[str] = None
+    auto_renew: Optional[bool] = None
+    category: Optional[str] = None
+    name: Optional[str] = None
+
+
+class SubscriptionDetectResultSchema(msgspec.Struct):
+    detected: int
+    created: int
+    payments_linked: int

@@ -50,8 +50,10 @@ def parse_email(
 from .cc_statement import CreditCardStatementParser
 from .credit_card import CreditCardParser
 from .investment import GrowwInvestmentParser
+from .subscription import SubscriptionParser
 
 _cc_statement_parser = CreditCardStatementParser()
 register(_cc_statement_parser)
 register(CreditCardParser())
 register(GrowwInvestmentParser())
+register(SubscriptionParser())
