@@ -91,6 +91,85 @@ class Transaction(models.Model):
         return f"{self.transaction_date} {self.description[:40]}"
 
 
+class Subscription(models.Model):
+    CATEGORY_CHOICES = [
+        ("streaming", "Streaming"),
+        ("music", "Music"),
+        ("cloud", "Cloud Storage"),
+        ("productivity", "Productivity"),
+        ("gaming", "Gaming"),
+        ("news", "News"),
+        ("fitness", "Fitness"),
+        ("education", "Education"),
+        ("finance", "Finance"),
+        ("shopping", "Shopping"),
+        ("entertainment", "Entertainment"),
+        ("other", "Other"),
+    ]
+    CYCLE_CHOICES = [("monthly", "Monthly"), ("yearly", "Yearly")]
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("cancelled", "Cancelled"),
+        ("paused", "Paused"),
+    ]
+    SOURCE_CHOICES = [
+        ("bank_txn", "Bank Transaction"),
+        ("cc_txn", "Credit Card Transaction"),
+        ("email", "Email"),
+        ("manual", "Manual"),
+    ]
+
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="subscriptions")
+    name = models.CharField(max_length=255)
+    merchant_pattern = models.CharField(max_length=255, db_index=True)
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default="other")
+    cost = models.DecimalField(max_digits=14, decimal_places=2)
+    currency = models.CharField(max_length=3, default="INR")
+    cycle = models.CharField(max_length=10, choices=CYCLE_CHOICES, default="monthly")
+    next_renewal_date = models.DateField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    last_billed_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
+    auto_renew = models.BooleanField(default=True)
+    icon = models.CharField(max_length=10, blank=True, default="")
+    color = models.CharField(max_length=50, blank=True, default="")
+    description = models.CharField(max_length=500, blank=True, default="")
+    plan = models.CharField(max_length=100, blank=True, default="")
+    payment_method = models.CharField(max_length=100, blank=True, default="")
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="manual")
+    confidence = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("family", "merchant_pattern", "cycle")]
+        ordering = ["-last_billed_date"]
+
+    def __str__(self):
+        return f"{self.name} ({self.cycle})"
+
+
+class SubscriptionPayment(models.Model):
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name="payments")
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    payment_date = models.DateField()
+    bank_transaction = models.ForeignKey(
+        Transaction, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    cc_transaction = models.ForeignKey(
+        "CreditCardTransaction", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    source_email = models.ForeignKey(
+        "gmail.EmailMessage", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-payment_date"]
+
+    def __str__(self):
+        return f"{self.subscription.name} — {self.payment_date} — {self.amount}"
+
+
 class CreditCard(models.Model):
     ISSUER_CHOICES = [
         ("HDFC", "HDFC Bank"),

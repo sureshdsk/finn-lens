@@ -5,7 +5,7 @@ from django_bolt.exceptions import NotFound, BadRequest
 from django.contrib.auth import get_user_model
 
 from .api import api
-from .models import BankAccount, CreditCard, CreditCardBill, CreditCardTransaction, Family
+from .models import BankAccount, CreditCard, CreditCardBill, CreditCardTransaction, Family, Subscription, SubscriptionPayment
 from .serializers import (
     AccountSchema,
     CardSchema,
@@ -16,6 +16,10 @@ from .serializers import (
     CreditCardTransactionSchema,
     MaterializeResultSchema,
     MonthlySummarySchema,
+    SubscriptionDetectResultSchema,
+    SubscriptionListSchema,
+    SubscriptionSchema,
+    SubscriptionUpdateSchema,
     TransactionListSchema,
     TransactionSchema,
     UploadResultSchema,
@@ -377,6 +381,155 @@ class CardClassifyViewSet(ViewSet):
         return {"classified": classified}
 
 
+# ── Subscription ViewSets ────────────────────────────────────────────────────
+
+
+@api.viewset("/subscriptions")
+class SubscriptionListViewSet(ViewSet):
+    auth = _auth
+    guards = _guards
+
+    async def list(self, request: Request):
+        """GET /api/banking/subscriptions/ — list subscriptions"""
+        family = await _get_family(int(request.context["user_id"]))
+        params = request.query
+
+        qs = Subscription.objects.filter(family=family)
+        if "status" in params:
+            qs = qs.filter(status=params["status"])
+        if "category" in params:
+            qs = qs.filter(category=params["category"])
+
+        total = await qs.acount()
+        subs = [s async for s in qs]
+
+        items = []
+        for s in subs:
+            payment_count = await s.payments.acount()
+            from django.db.models import Sum
+            agg = await s.payments.aaggregate(total=Sum("amount"))
+            total_spent = agg["total"]
+
+            items.append(
+                SubscriptionSchema(
+                    id=s.pk,
+                    name=s.name,
+                    category=s.category,
+                    cost=str(s.cost),
+                    currency=s.currency,
+                    cycle=s.cycle,
+                    renew_date=str(s.next_renewal_date) if s.next_renewal_date else None,
+                    status=s.status,
+                    icon=s.icon,
+                    color=s.color,
+                    description=s.description,
+                    start_date=str(s.start_date) if s.start_date else None,
+                    payment_method=s.payment_method,
+                    plan=s.plan,
+                    total_spent=str(total_spent) if total_spent else None,
+                    last_billed=str(s.last_billed_date) if s.last_billed_date else None,
+                    auto_renew=s.auto_renew,
+                    source=s.source,
+                    confidence=s.confidence,
+                    payment_count=payment_count,
+                )
+            )
+        return SubscriptionListSchema(items=items, total=total)
+
+
+@api.viewset("/subscriptions/{id}")
+class SubscriptionDetailViewSet(ViewSet):
+    auth = _auth
+    guards = _guards
+
+    async def retrieve(self, request: Request, id: int):
+        """GET /api/banking/subscriptions/{id}/ — detail with payments"""
+        sub = await _assert_subscription_owner(id, int(request.context["user_id"]))
+        payment_count = await sub.payments.acount()
+        from django.db.models import Sum
+        agg = await sub.payments.aaggregate(total=Sum("amount"))
+        total_spent = agg["total"]
+
+        return SubscriptionSchema(
+            id=sub.pk,
+            name=sub.name,
+            category=sub.category,
+            cost=str(sub.cost),
+            currency=sub.currency,
+            cycle=sub.cycle,
+            renew_date=str(sub.next_renewal_date) if sub.next_renewal_date else None,
+            status=sub.status,
+            icon=sub.icon,
+            color=sub.color,
+            description=sub.description,
+            start_date=str(sub.start_date) if sub.start_date else None,
+            payment_method=sub.payment_method,
+            plan=sub.plan,
+            total_spent=str(total_spent) if total_spent else None,
+            last_billed=str(sub.last_billed_date) if sub.last_billed_date else None,
+            auto_renew=sub.auto_renew,
+            source=sub.source,
+            confidence=sub.confidence,
+            payment_count=payment_count,
+        )
+
+    async def partial_update(self, request: Request, id: int, data: SubscriptionUpdateSchema):
+        """PATCH /api/banking/subscriptions/{id}/ — update status, auto_renew, etc."""
+        sub = await _assert_subscription_owner(id, int(request.context["user_id"]))
+
+        if data.status is not None:
+            sub.status = data.status
+        if data.auto_renew is not None:
+            sub.auto_renew = data.auto_renew
+        if data.category is not None:
+            sub.category = data.category
+        if data.name is not None:
+            sub.name = data.name
+
+        await sub.asave()
+
+        payment_count = await sub.payments.acount()
+        from django.db.models import Sum
+        agg = await sub.payments.aaggregate(total=Sum("amount"))
+        total_spent = agg["total"]
+
+        return SubscriptionSchema(
+            id=sub.pk,
+            name=sub.name,
+            category=sub.category,
+            cost=str(sub.cost),
+            currency=sub.currency,
+            cycle=sub.cycle,
+            renew_date=str(sub.next_renewal_date) if sub.next_renewal_date else None,
+            status=sub.status,
+            icon=sub.icon,
+            color=sub.color,
+            description=sub.description,
+            start_date=str(sub.start_date) if sub.start_date else None,
+            payment_method=sub.payment_method,
+            plan=sub.plan,
+            total_spent=str(total_spent) if total_spent else None,
+            last_billed=str(sub.last_billed_date) if sub.last_billed_date else None,
+            auto_renew=sub.auto_renew,
+            source=sub.source,
+            confidence=sub.confidence,
+            payment_count=payment_count,
+        )
+
+
+@api.viewset("/subscriptions/detect")
+class SubscriptionDetectViewSet(ViewSet):
+    auth = _auth
+    guards = _guards
+
+    async def create(self, request: Request):
+        """POST /api/banking/subscriptions/detect/ — run detection + materialization"""
+        from .sub_services import materialize_subscriptions
+        family = await _get_family(int(request.context["user_id"]))
+        result = await _run_sync(materialize_subscriptions, family)
+        return SubscriptionDetectResultSchema(**result)
+
+
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 async def _assert_account_owner(account_id: int, user_id: int) -> BankAccount:
@@ -397,6 +550,16 @@ async def _assert_card_owner(card_id: int, user_id: int) -> CreditCard:
     if card.family.owner_id != user_id:
         raise NotFound(detail="Card not found")
     return card
+
+
+async def _assert_subscription_owner(sub_id: int, user_id: int) -> Subscription:
+    try:
+        sub = await Subscription.objects.select_related("family").aget(pk=sub_id)
+    except Subscription.DoesNotExist:
+        raise NotFound(detail="Subscription not found")
+    if sub.family.owner_id != user_id:
+        raise NotFound(detail="Subscription not found")
+    return sub
 
 
 async def _run_sync(fn, *args):
