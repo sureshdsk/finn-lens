@@ -5,6 +5,7 @@ DOMAIN_TO_ISSUER: dict[str, str] = {
     "hdfcbank.net": "HDFC",
     "icicibank.com": "ICICI",
     "axisbank.com": "AXIS",
+    "axis.bank.in": "AXIS",
     "sbicard.com": "SBI",
     "kotak.com": "KOTAK",
     "indusind.com": "INDUSIND",

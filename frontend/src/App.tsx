@@ -5,13 +5,12 @@ import { StyleThemeProvider } from '@/contexts/StyleThemeContext'
 import { DarkModeProvider } from '@/contexts/DarkModeContext'
 import AppLayout from '@/components/AppLayout'
 import LoginPage from '@/pages/LoginPage'
-import BankingDashboard from '@/pages/banking/BankingDashboard'
 import AddAccountPage from '@/pages/banking/AddAccountPage'
 import AccountDetailPage from '@/pages/banking/AccountDetailPage'
 import OverviewPage from '@/pages/OverviewPage'
+import AccountsPage from '@/pages/AccountsPage'
 import TransactionsPage from '@/pages/TransactionsPage'
 import AnalyticsPage from '@/pages/AnalyticsPage'
-import CreditCardsPage from '@/pages/CreditCardsPage'
 import CardDetailPage from '@/pages/CardDetailPage'
 import BudgetsPage from '@/pages/BudgetsPage'
 import SubscriptionsPage from '@/pages/SubscriptionsPage'
@@ -35,13 +34,18 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route element={<AppLayout />}>
                 <Route path="/overview" element={<OverviewPage />} />
-                <Route path="/banking" element={<BankingDashboard />} />
-                <Route path="/banking/accounts/new" element={<AddAccountPage />} />
+                <Route path="/accounts" element={<AccountsPage />} />
+                <Route path="/accounts/new" element={<AddAccountPage />} />
+                <Route path="/accounts/:id" element={<AccountDetailPage />} />
+                <Route path="/accounts/cards/:id" element={<CardDetailPage />} />
+                {/* Legacy redirects */}
+                <Route path="/banking" element={<Navigate to="/accounts" replace />} />
+                <Route path="/banking/accounts/new" element={<Navigate to="/accounts/new" replace />} />
                 <Route path="/banking/accounts/:id" element={<AccountDetailPage />} />
+                <Route path="/credit-cards" element={<Navigate to="/accounts" replace />} />
+                <Route path="/credit-cards/:id" element={<CardDetailPage />} />
                 <Route path="/transactions" element={<TransactionsPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/credit-cards" element={<CreditCardsPage />} />
-                <Route path="/credit-cards/:id" element={<CardDetailPage />} />
                 <Route path="/budgets" element={<BudgetsPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/investments" element={<InvestmentsPage />} />

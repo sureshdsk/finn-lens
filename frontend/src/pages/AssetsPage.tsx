@@ -158,17 +158,17 @@ const AssetsPage = () => {
       {/* Summary */}
       <div className="grid sm:grid-cols-4 gap-4">
         {[
-          { label: "Total Asset Value", value: fmt(totalCurrent), sub: `${assets.length} assets tracked`, accent: "neon-text" },
-          { label: "Total Invested", value: fmt(totalPurchase), sub: "purchase cost basis", accent: "text-[hsl(var(--neon-amber))]" },
-          { label: "Total Gain/Loss", value: `${totalGain >= 0 ? "+" : ""}${fmt(totalGain)}`, sub: `${totalGain >= 0 ? "+" : ""}${totalPct}% overall`, accent: totalGain >= 0 ? "neon-green" : "neon-magenta" },
-          { label: "Asset Types", value: String(new Set(assets.map((a) => a.type)).size), sub: "diversification", accent: "neon-text" },
+          { label: "Total Asset Value", value: fmt(totalCurrent), sub: `${assets.length} assets tracked`, accent: "text-primary" },
+          { label: "Total Invested", value: fmt(totalPurchase), sub: "purchase cost basis", accent: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" },
+          { label: "Total Gain/Loss", value: `${totalGain >= 0 ? "+" : ""}${fmt(totalGain)}`, sub: `${totalGain >= 0 ? "+" : ""}${totalPct}% overall`, accent: totalGain >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500" },
+          { label: "Asset Types", value: String(new Set(assets.map((a) => a.type)).size), sub: "diversification", accent: "text-primary" },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="terminal neon-border rounded-sm p-4 crt-overlay">
+            className="bg-card border border-border shadow-sm rounded-sm p-4">
             <div className="relative z-10">
-              <div className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest mb-1">{card.label}</div>
-              <div className={`text-lg font-display font-bold ${card.accent}`}>{card.value}</div>
-              <div className="text-[9px] text-muted-foreground font-mono mt-0.5">{card.sub}</div>
+              <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{card.label}</div>
+              <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">{card.sub}</div>
             </div>
           </motion.div>
         ))}
@@ -177,9 +177,9 @@ const AssetsPage = () => {
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Allocation chart */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          className="terminal neon-border rounded-sm p-5 crt-overlay">
+          className="bg-card border border-border shadow-sm rounded-sm p-5">
           <div className="relative z-10">
-            <h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground mb-4">{'>'} Asset Allocation</h3>
+            <h3 className="font-semibold text-xs uppercase tracking-wider text-foreground mb-4">{'>'} Asset Allocation</h3>
             <div className="flex h-3 rounded-sm overflow-hidden mb-4">
               {breakdown.map(([type, value]) => (
                 <div key={type} className="h-full" style={{
@@ -196,11 +196,11 @@ const AssetsPage = () => {
                   <div key={type} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Icon className="w-3 h-3" style={{ color: cfg?.color }} />
-                      <span className="text-[10px] font-mono uppercase text-foreground">{cfg?.label || type}</span>
+                      <span className="text-[10px] uppercase text-foreground">{cfg?.label || type}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-mono text-muted-foreground">{((value / totalCurrent) * 100).toFixed(1)}%</span>
-                      <span className="text-[10px] font-mono font-bold text-foreground">{fmt(value)}</span>
+                      <span className="text-[10px] text-muted-foreground">{((value / totalCurrent) * 100).toFixed(1)}%</span>
+                      <span className="text-[10px] font-bold text-foreground">{fmt(value)}</span>
                     </div>
                   </div>
                 );
@@ -211,9 +211,9 @@ const AssetsPage = () => {
 
         {/* Top performers */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="lg:col-span-2 terminal neon-border rounded-sm p-5 crt-overlay">
+          className="lg:col-span-2 bg-card border border-border shadow-sm rounded-sm p-5">
           <div className="relative z-10">
-            <h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground mb-4">{'>'} Performance Ranking</h3>
+            <h3 className="font-semibold text-xs uppercase tracking-wider text-foreground mb-4">{'>'} Performance Ranking</h3>
             <div className="space-y-2">
               {[...assets].sort((a, b) => b.appreciationRate - a.appreciationRate).map((a, i) => {
                 const gain = a.currentValue - a.purchasePrice;
@@ -223,19 +223,19 @@ const AssetsPage = () => {
                   <motion.div key={a.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 + i * 0.04 }}
                     className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-[9px] font-mono text-muted-foreground w-4">#{i + 1}</span>
+                      <span className="text-[9px] text-muted-foreground w-4">#{i + 1}</span>
                       <Icon className="w-3.5 h-3.5" style={{ color: cfg.color }} />
                       <div>
-                        <div className="text-[10px] font-mono font-bold text-foreground">{a.name}</div>
-                        <div className="text-[8px] text-muted-foreground font-mono">{cfg.label} • {a.purchaseDate.slice(0, 4)}</div>
+                        <div className="text-[10px] font-bold text-foreground">{a.name}</div>
+                        <div className="text-[8px] text-muted-foreground">{cfg.label} • {a.purchaseDate.slice(0, 4)}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`text-[10px] font-mono font-bold flex items-center gap-0.5 justify-end ${gain >= 0 ? "neon-green" : "neon-magenta"}`}>
+                      <div className={`text-[10px] font-bold flex items-center gap-0.5 justify-end ${gain >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                         {gain >= 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
                         {gain >= 0 ? "+" : ""}{fmt(gain)}
                       </div>
-                      <div className={`text-[8px] font-mono ${a.appreciationRate >= 0 ? "neon-green" : "neon-magenta"}`}>
+                      <div className={`text-[8px] ${a.appreciationRate >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                         {a.appreciationRate >= 0 ? "+" : ""}{a.appreciationRate}%/yr
                       </div>
                     </div>
@@ -252,12 +252,12 @@ const AssetsPage = () => {
         <div className="flex gap-1.5 flex-wrap">
           {["all", ...typeOptions].map((t) => (
             <button key={t} onClick={() => setFilterType(t as any)}
-              className={`px-2.5 py-1 rounded-sm text-[9px] font-mono uppercase tracking-wider transition-all ${
-                filterType === t ? "neon-text neon-border border terminal" : "text-muted-foreground hover:text-foreground"
+              className={`px-2.5 py-1 rounded-sm text-[9px] uppercase tracking-wider transition-all ${
+                filterType === t ? "text-primary border-border border terminal" : "text-muted-foreground hover:text-foreground"
               }`}>{t === "all" ? "All" : typeConfig[t]?.label || t}</button>
           ))}
         </div>
-        <button onClick={openAdd} className="retro-button-solid rounded-sm text-[10px] flex items-center gap-1.5 px-3 py-1.5">
+        <button onClick={openAdd} className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[10px] flex items-center gap-1.5 px-3 py-1.5">
           <Plus className="w-3 h-3" /> Add Asset
         </button>
       </div>
@@ -266,54 +266,54 @@ const AssetsPage = () => {
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="terminal neon-border rounded-sm p-5 crt-overlay">
+            className="bg-card border border-border shadow-sm rounded-sm p-5">
             <div className="relative z-10 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground">
+                <h3 className="font-semibold text-xs uppercase tracking-wider text-foreground">
                   {editId ? "> Edit Asset" : "> Register Asset"}
                 </h3>
                 <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X className="w-3.5 h-3.5" /></button>
               </div>
               <div className="grid sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Name</label>
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Name</label>
                   <input value={fName} onChange={(e) => setFName(e.target.value)} placeholder="Farmland - Nashik"
-                    className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                    className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Type</label>
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Type</label>
                   <select value={fType} onChange={(e) => setFType(e.target.value as Asset["type"])}
-                    className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none">
+                    className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none">
                     {typeOptions.map((t) => <option key={t} value={t}>{typeConfig[t].label}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Purchase Date</label>
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Purchase Date</label>
                   <input type="date" value={fPurchaseDate} onChange={(e) => setFPurchaseDate(e.target.value)}
-                    className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                    className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Purchase Price (₹)</label>
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Purchase Price (₹)</label>
                   <input type="number" value={fPurchasePrice} onChange={(e) => setFPurchasePrice(e.target.value)} placeholder="2400000"
-                    className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                    className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Current Value (₹)</label>
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Current Value (₹)</label>
                   <input type="number" value={fCurrentValue} onChange={(e) => setFCurrentValue(e.target.value)} placeholder="4200000"
-                    className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                    className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Location</label>
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Location</label>
                   <input value={fLocation} onChange={(e) => setFLocation(e.target.value)} placeholder="Nashik, Maharashtra"
-                    className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                    className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
                 </div>
               </div>
               <div>
-                <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Description</label>
+                <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Description</label>
                 <input value={fDescription} onChange={(e) => setFDescription(e.target.value)} placeholder="Details about the asset..."
-                  className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                  className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
               </div>
-              <button onClick={save} className="retro-button-solid rounded-sm text-[10px] flex items-center gap-1.5 px-3 py-1.5">
+              <button onClick={save} className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[10px] flex items-center gap-1.5 px-3 py-1.5">
                 <Check className="w-3 h-3" /> {editId ? "Update" : "Register"}
               </button>
             </div>
@@ -332,23 +332,23 @@ const AssetsPage = () => {
 
           return (
             <motion.div key={asset.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}
-              className="terminal neon-border rounded-sm crt-overlay overflow-hidden group">
+              className="bg-card border border-border shadow-sm rounded-sm overflow-hidden group">
               <div className="relative z-10">
                 <button onClick={() => setExpandedId(isExpanded ? null : asset.id)}
                   className="w-full p-4 text-left hover:bg-secondary/20 transition-colors">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-sm terminal neon-border flex items-center justify-center shrink-0"
+                      <div className="w-9 h-9 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center shrink-0"
                         style={{ borderColor: cfg.color.replace(")", " / 0.3)") }}>
                         <Icon className="w-4 h-4" style={{ color: cfg.color }} />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-mono font-bold text-foreground">{asset.name}</span>
-                          <span className="text-[8px] font-mono px-1.5 py-0.5 rounded-sm terminal neon-border" style={{ color: cfg.color }}>{cfg.label}</span>
+                          <span className="text-[11px] font-bold text-foreground">{asset.name}</span>
+                          <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-card border border-border shadow-sm" style={{ color: cfg.color }}>{cfg.label}</span>
                         </div>
                         {asset.location && (
-                          <div className="text-[8px] text-muted-foreground font-mono mt-0.5 flex items-center gap-0.5">
+                          <div className="text-[8px] text-muted-foreground mt-0.5 flex items-center gap-0.5">
                             <MapPin className="w-2 h-2" /> {asset.location}
                           </div>
                         )}
@@ -356,8 +356,8 @@ const AssetsPage = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <div className="text-[11px] font-display font-bold neon-text">{fmt(asset.currentValue)}</div>
-                        <div className={`text-[9px] font-mono font-bold ${gain >= 0 ? "neon-green" : "neon-magenta"}`}>
+                        <div className="text-[11px] font-semibold text-primary">{fmt(asset.currentValue)}</div>
+                        <div className={`text-[9px] font-bold ${gain >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                           {gain >= 0 ? "+" : ""}{gainPct}%
                         </div>
                       </div>
@@ -374,40 +374,40 @@ const AssetsPage = () => {
                         <div className="grid grid-cols-3 gap-2">
                           {[
                             { label: "Purchased", value: fmt(asset.purchasePrice), accent: "text-muted-foreground" },
-                            { label: "Gain/Loss", value: `${gain >= 0 ? "+" : ""}${fmt(gain)}`, accent: gain >= 0 ? "neon-green" : "neon-magenta" },
-                            { label: "CAGR", value: `${asset.appreciationRate >= 0 ? "+" : ""}${asset.appreciationRate}%`, accent: asset.appreciationRate >= 0 ? "neon-green" : "neon-magenta" },
+                            { label: "Gain/Loss", value: `${gain >= 0 ? "+" : ""}${fmt(gain)}`, accent: gain >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500" },
+                            { label: "CAGR", value: `${asset.appreciationRate >= 0 ? "+" : ""}${asset.appreciationRate}%`, accent: asset.appreciationRate >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500" },
                           ].map((m) => (
-                            <div key={m.label} className="terminal rounded-sm p-2 border border-border">
-                              <div className="text-[7px] text-muted-foreground font-mono uppercase tracking-widest mb-0.5">{m.label}</div>
-                              <div className={`text-[10px] font-display font-bold ${m.accent}`}>{m.value}</div>
+                            <div key={m.label} className="bg-muted/50 rounded-sm p-2 border border-border">
+                              <div className="text-[7px] text-muted-foreground uppercase tracking-widest mb-0.5">{m.label}</div>
+                              <div className={`text-[10px] font-semibold ${m.accent}`}>{m.value}</div>
                             </div>
                           ))}
                         </div>
 
-                        <p className="text-[9px] font-mono text-muted-foreground leading-relaxed">{asset.description}</p>
+                        <p className="text-[9px] text-muted-foreground leading-relaxed">{asset.description}</p>
 
                         {asset.documents.length > 0 && (
                           <div>
-                            <div className="text-[8px] text-muted-foreground font-mono uppercase tracking-widest mb-1">Documents</div>
+                            <div className="text-[8px] text-muted-foreground uppercase tracking-widest mb-1">Documents</div>
                             <div className="flex flex-wrap gap-1">
                               {asset.documents.map((d) => (
-                                <span key={d} className="text-[8px] font-mono px-1.5 py-0.5 rounded-sm bg-secondary text-muted-foreground">{d}</span>
+                                <span key={d} className="text-[8px] px-1.5 py-0.5 rounded-sm bg-secondary text-muted-foreground">{d}</span>
                               ))}
                             </div>
                           </div>
                         )}
 
-                        <div className="text-[8px] font-mono text-muted-foreground">
+                        <div className="text-[8px] text-muted-foreground">
                           Purchased: {new Date(asset.purchaseDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                         </div>
 
                         <div className="flex items-center gap-2">
                           <button onClick={() => openEdit(asset)}
-                            className="text-[9px] font-mono px-2 py-1 rounded-sm text-muted-foreground hover:neon-text hover:bg-secondary/50 transition-all flex items-center gap-1">
+                            className="text-[9px] px-2 py-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-all flex items-center gap-1">
                             <Pencil className="w-2.5 h-2.5" /> Edit
                           </button>
                           <button onClick={() => remove(asset.id)}
-                            className="text-[9px] font-mono px-2 py-1 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all flex items-center gap-1">
+                            className="text-[9px] px-2 py-1 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all flex items-center gap-1">
                             <Trash2 className="w-2.5 h-2.5" /> Remove
                           </button>
                         </div>

@@ -414,7 +414,7 @@ export default function AccountDetailPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <button
-            onClick={() => navigate('/banking')}
+            onClick={() => navigate('/accounts')}
             className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2"
           >
             ← Banking

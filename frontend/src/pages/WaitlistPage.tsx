@@ -95,17 +95,17 @@ const WaitlistPage = () => {
     <div className="space-y-5">
       <div className="grid sm:grid-cols-5 gap-3">
         {[
-          { label: "Monthly Surplus", value: fmt(ctx.monthlySurplus), accent: "neon-green" },
-          { label: "Shopping Left", value: fmt(ctx.shoppingRemaining), accent: ctx.shoppingRemaining < 5000 ? "neon-magenta" : "neon-text" },
-          { label: "Total Debt", value: fmt(ctx.totalDebt), accent: ctx.totalDebt > 0 ? "neon-magenta" : "neon-green" },
-          { label: "Emergency", value: `${ctx.monthsOfExpenses.toFixed(1)}mo`, accent: ctx.monthsOfExpenses < 3 ? "neon-magenta" : "neon-green" },
-          { label: "Savings Rate", value: `${ctx.savingsRate}%`, accent: ctx.savingsRate >= 30 ? "neon-green" : "text-[hsl(var(--neon-amber))]" },
+          { label: "Monthly Surplus", value: fmt(ctx.monthlySurplus), accent: "text-emerald-600 dark:text-emerald-400" },
+          { label: "Shopping Left", value: fmt(ctx.shoppingRemaining), accent: ctx.shoppingRemaining < 5000 ? "text-rose-500" : "text-primary" },
+          { label: "Total Debt", value: fmt(ctx.totalDebt), accent: ctx.totalDebt > 0 ? "text-rose-500" : "text-emerald-600 dark:text-emerald-400" },
+          { label: "Emergency", value: `${ctx.monthsOfExpenses.toFixed(1)}mo`, accent: ctx.monthsOfExpenses < 3 ? "text-rose-500" : "text-emerald-600 dark:text-emerald-400" },
+          { label: "Savings Rate", value: `${ctx.savingsRate}%`, accent: ctx.savingsRate >= 30 ? "text-emerald-600 dark:text-emerald-400" : "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-            className="terminal neon-border rounded-sm p-3 crt-overlay">
+            className="bg-card border border-border shadow-sm rounded-sm p-3">
             <div className="relative z-10">
-              <div className="text-[8px] text-muted-foreground font-mono uppercase tracking-widest mb-0.5">{card.label}</div>
-              <div className={`text-sm font-display font-bold ${card.accent}`}>{card.value}</div>
+              <div className="text-[8px] text-muted-foreground uppercase tracking-widest mb-0.5">{card.label}</div>
+              <div className={`text-sm font-semibold ${card.accent}`}>{card.value}</div>
             </div>
           </motion.div>
         ))}
@@ -113,23 +113,23 @@ const WaitlistPage = () => {
 
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { label: "Items Waiting", value: String(waitingItems.length), sub: `${fmt(totalWaiting)} total value`, accent: "text-[hsl(var(--neon-amber))]" },
-          { label: "Saved by Saying No", value: fmt(savedByRejecting), sub: `${items.filter(i => i.status === "rejected").length} items rejected`, accent: "neon-green" },
-          { label: "Impulse Score", value: `${Math.max(0, 100 - waitingItems.length * 12)}%`, sub: "self-control rating", accent: waitingItems.length <= 3 ? "neon-green" : "neon-magenta" },
+          { label: "Items Waiting", value: String(waitingItems.length), sub: `${fmt(totalWaiting)} total value`, accent: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" },
+          { label: "Saved by Saying No", value: fmt(savedByRejecting), sub: `${items.filter(i => i.status === "rejected").length} items rejected`, accent: "text-emerald-600 dark:text-emerald-400" },
+          { label: "Impulse Score", value: `${Math.max(0, 100 - waitingItems.length * 12)}%`, sub: "self-control rating", accent: waitingItems.length <= 3 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500" },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.08 }}
-            className="terminal neon-border rounded-sm p-4 crt-overlay">
+            className="bg-card border border-border shadow-sm rounded-sm p-4">
             <div className="relative z-10">
-              <div className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest mb-1">{card.label}</div>
-              <div className={`text-lg font-display font-bold ${card.accent}`}>{card.value}</div>
-              <div className="text-[9px] text-muted-foreground font-mono mt-0.5">{card.sub}</div>
+              <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{card.label}</div>
+              <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">{card.sub}</div>
             </div>
           </motion.div>
         ))}
       </div>
 
       <div className="flex justify-end">
-        <button onClick={() => setShowForm(true)} className="retro-button-solid rounded-sm text-[10px] flex items-center gap-1.5 px-3 py-1.5">
+        <button onClick={() => setShowForm(true)} className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[10px] flex items-center gap-1.5 px-3 py-1.5">
           <Plus className="w-3 h-3" /> Add to Waitlist
         </button>
       </div>
@@ -137,37 +137,37 @@ const WaitlistPage = () => {
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="terminal neon-border rounded-sm p-5 crt-overlay">
+            className="bg-card border border-border shadow-sm rounded-sm p-5">
             <div className="relative z-10 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground">{'>'} New Waitlist Item</h3>
+                <h3 className="font-semibold text-xs uppercase tracking-wider text-foreground">{'>'} New Waitlist Item</h3>
                 <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X className="w-3.5 h-3.5" /></button>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Item Name</label>
-                  <input value={formName} onChange={e => setFormName(e.target.value)} placeholder="Sony WH-1000XM5" className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Item Name</label>
+                  <input value={formName} onChange={e => setFormName(e.target.value)} placeholder="Sony WH-1000XM5" className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Price (₹)</label>
-                  <input type="number" value={formPrice} onChange={e => setFormPrice(e.target.value)} placeholder="24990" className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Price (₹)</label>
+                  <input type="number" value={formPrice} onChange={e => setFormPrice(e.target.value)} placeholder="24990" className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Category</label>
-                  <select value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none">
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Category</label>
+                  <select value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none">
                     {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Cooldown (Days)</label>
-                  <input type="number" value={formCooldown} onChange={e => setFormCooldown(e.target.value)} placeholder="7" className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                  <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Cooldown (Days)</label>
+                  <input type="number" value={formCooldown} onChange={e => setFormCooldown(e.target.value)} placeholder="7" className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
                 </div>
               </div>
               <div>
-                <label className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block mb-1">Why do you want this? (Be honest)</label>
-                <input value={formNotes} onChange={e => setFormNotes(e.target.value)} placeholder="Justification..." className="w-full h-8 rounded-sm terminal neon-border px-2 text-[10px] font-mono text-foreground bg-transparent focus:outline-none" />
+                <label className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Why do you want this? (Be honest)</label>
+                <input value={formNotes} onChange={e => setFormNotes(e.target.value)} placeholder="Justification..." className="w-full h-8 rounded-sm bg-card border border-border shadow-sm px-2 text-[10px] text-foreground bg-transparent focus:outline-none" />
               </div>
-              <button onClick={addItem} className="retro-button-solid rounded-sm text-[10px] flex items-center gap-1.5 px-3 py-1.5">
+              <button onClick={addItem} className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[10px] flex items-center gap-1.5 px-3 py-1.5">
                 <Timer className="w-3 h-3" /> Start Cooldown
               </button>
             </div>
@@ -185,29 +185,29 @@ const WaitlistPage = () => {
           const atLowest = item.price <= lowestPrice;
           return (
             <motion.div key={item.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.05 }}
-              className={`terminal neon-border rounded-sm crt-overlay overflow-hidden ${item.status === "rejected" ? "opacity-50" : ""}`}>
+              className={`bg-card border border-border shadow-sm rounded-sm overflow-hidden ${item.status === "rejected" ? "opacity-50" : ""}`}>
               <div className="relative z-10">
                 <button onClick={() => setExpandedId(isExpanded ? null : item.id)}
                   className="w-full p-4 flex items-center justify-between hover:bg-secondary/20 transition-colors text-left">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={`w-10 h-10 rounded-sm terminal neon-border flex items-center justify-center shrink-0 ${item.status === "approved" ? "border-[hsl(var(--neon-green))]/30" : item.status === "rejected" ? "border-destructive/30" : ""}`}>
-                      {item.status === "approved" ? <ThumbsUp className="w-4 h-4 neon-green" /> : item.status === "rejected" ? <ThumbsDown className="w-4 h-4 neon-magenta" /> : <Clock className="w-4 h-4 text-[hsl(var(--neon-amber))]" />}
+                    <div className={`w-10 h-10 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center shrink-0 ${item.status === "approved" ? "border-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/30" : item.status === "rejected" ? "border-destructive/30" : ""}`}>
+                      {item.status === "approved" ? <ThumbsUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : item.status === "rejected" ? <ThumbsDown className="w-4 h-4 text-rose-500" /> : <Clock className="w-4 h-4 text-[hsl(var(--text-amber-600 dark:text-amber-400))]" />}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-mono font-bold text-foreground">{item.name}</span>
-                        <span className="text-[8px] font-mono px-1.5 py-0.5 rounded-sm bg-secondary text-muted-foreground">{item.category}</span>
-                        {item.status === "waiting" && !verdict.cooldownMet && <span className="text-[8px] font-mono px-1.5 py-0.5 rounded-sm bg-[hsl(var(--neon-amber))]/10 text-[hsl(var(--neon-amber))] flex items-center gap-0.5"><Timer className="w-2.5 h-2.5" /> {item.cooldownDays - waited}d left</span>}
-                        {verdict.cooldownMet && item.status === "waiting" && <span className="text-[8px] font-mono px-1.5 py-0.5 rounded-sm bg-[hsl(var(--neon-green))]/10 neon-green">READY</span>}
-                        {atLowest && <span className="text-[8px] font-mono px-1.5 py-0.5 rounded-sm bg-[hsl(var(--neon-green))]/10 neon-green flex items-center gap-0.5"><TrendingDown className="w-2.5 h-2.5" /> LOWEST</span>}
+                        <span className="text-[11px] font-bold text-foreground">{item.name}</span>
+                        <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-secondary text-muted-foreground">{item.category}</span>
+                        {item.status === "waiting" && !verdict.cooldownMet && <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-[hsl(var(--text-amber-600 dark:text-amber-400))]/10 text-[hsl(var(--text-amber-600 dark:text-amber-400))] flex items-center gap-0.5"><Timer className="w-2.5 h-2.5" /> {item.cooldownDays - waited}d left</span>}
+                        {verdict.cooldownMet && item.status === "waiting" && <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/10 text-emerald-600 dark:text-emerald-400">READY</span>}
+                        {atLowest && <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5"><TrendingDown className="w-2.5 h-2.5" /> LOWEST</span>}
                       </div>
-                      <div className="text-[9px] text-muted-foreground font-mono mt-0.5">Added {waited} days ago • {item.notes}</div>
+                      <div className="text-[9px] text-muted-foreground mt-0.5">Added {waited} days ago • {item.notes}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right">
-                      <div className="text-[11px] font-mono font-bold neon-text flex items-center gap-0.5 justify-end"><IndianRupee className="w-3 h-3" />{item.price.toLocaleString("en-IN")}</div>
-                      <div className={`text-[8px] font-mono ${verdict.score >= 60 ? "neon-green" : verdict.score >= 40 ? "text-[hsl(var(--neon-amber))]" : "neon-magenta"}`}>Score: {verdict.score}/100</div>
+                      <div className="text-[11px] font-bold text-primary flex items-center gap-0.5 justify-end"><IndianRupee className="w-3 h-3" />{item.price.toLocaleString("en-IN")}</div>
+                      <div className={`text-[8px] ${verdict.score >= 60 ? "text-emerald-600 dark:text-emerald-400" : verdict.score >= 40 ? "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" : "text-rose-500"}`}>Score: {verdict.score}/100</div>
                     </div>
                     {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
                   </div>
@@ -218,80 +218,80 @@ const WaitlistPage = () => {
                       <div className="p-4 space-y-4">
                         <div className="grid sm:grid-cols-4 gap-3">
                           {[
-                            { label: "% of Income", value: `${(item.price / ctx.monthlyIncome * 100).toFixed(1)}%`, accent: item.price / ctx.monthlyIncome < 0.05 ? "neon-green" : item.price / ctx.monthlyIncome < 0.15 ? "text-[hsl(var(--neon-amber))]" : "neon-magenta" },
-                            { label: "% of Surplus", value: `${(item.price / ctx.monthlySurplus * 100).toFixed(0)}%`, accent: item.price / ctx.monthlySurplus < 0.3 ? "neon-green" : "neon-magenta" },
-                            { label: "Days to Save", value: String(Math.ceil(item.price / (ctx.monthlySurplus / 30))), accent: "neon-text" },
-                            { label: "EMI (6mo)", value: fmt(Math.round(item.price * 1.12 / 6)), accent: "text-[hsl(var(--neon-amber))]" },
+                            { label: "% of Income", value: `${(item.price / ctx.monthlyIncome * 100).toFixed(1)}%`, accent: item.price / ctx.monthlyIncome < 0.05 ? "text-emerald-600 dark:text-emerald-400" : item.price / ctx.monthlyIncome < 0.15 ? "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" : "text-rose-500" },
+                            { label: "% of Surplus", value: `${(item.price / ctx.monthlySurplus * 100).toFixed(0)}%`, accent: item.price / ctx.monthlySurplus < 0.3 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500" },
+                            { label: "Days to Save", value: String(Math.ceil(item.price / (ctx.monthlySurplus / 30))), accent: "text-primary" },
+                            { label: "EMI (6mo)", value: fmt(Math.round(item.price * 1.12 / 6)), accent: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" },
                           ].map(m => (
-                            <div key={m.label} className="terminal rounded-sm p-2.5 border border-border">
-                              <div className="text-[8px] text-muted-foreground font-mono uppercase tracking-widest mb-0.5">{m.label}</div>
-                              <div className={`text-[11px] font-display font-bold ${m.accent}`}>{m.value}</div>
+                            <div key={m.label} className="bg-muted/50 rounded-sm p-2.5 border border-border">
+                              <div className="text-[8px] text-muted-foreground uppercase tracking-widest mb-0.5">{m.label}</div>
+                              <div className={`text-[11px] font-semibold ${m.accent}`}>{m.value}</div>
                             </div>
                           ))}
                         </div>
-                        <div className="terminal rounded-sm p-3 border border-border">
-                          <div className="flex items-center gap-1.5 mb-2"><Tag className="w-3 h-3 neon-text" /><span className="text-[9px] font-display font-bold uppercase tracking-wider text-foreground">Price History</span></div>
+                        <div className="bg-muted/50 rounded-sm p-3 border border-border">
+                          <div className="flex items-center gap-1.5 mb-2"><Tag className="w-3 h-3 text-primary" /><span className="text-[9px] font-semibold uppercase tracking-wider text-foreground">Price History</span></div>
                           <div className="flex items-end gap-1 h-12">
                             {item.priceHistory.map((p, pi) => {
                               const range = highestPrice - lowestPrice || 1;
                               const h = Math.max(15, ((p.price - lowestPrice) / range) * 100);
                               return (
                                 <div key={pi} className="flex-1 flex flex-col items-center gap-0.5">
-                                  <span className="text-[7px] font-mono text-muted-foreground">{fmt(p.price)}</span>
+                                  <span className="text-[7px] text-muted-foreground">{fmt(p.price)}</span>
                                   <motion.div initial={{ height: 0 }} animate={{ height: `${h}%` }} transition={{ delay: 0.1 + pi * 0.05 }}
                                     className="w-full rounded-sm min-h-[4px]"
                                     style={{ background: pi === item.priceHistory.length - 1 ? "hsl(175 100% 50%)" : "hsl(220 20% 25%)", boxShadow: pi === item.priceHistory.length - 1 ? "0 0 6px hsl(175 100% 50% / 0.4)" : "none" }} />
-                                  <span className="text-[7px] font-mono text-muted-foreground">{new Date(p.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</span>
+                                  <span className="text-[7px] text-muted-foreground">{new Date(p.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</span>
                                 </div>
                               );
                             })}
                           </div>
-                          {verdict.priceDropped && <div className="text-[8px] font-mono neon-green mt-2 flex items-center gap-1"><TrendingDown className="w-2.5 h-2.5" /> Price dropped {verdict.priceDrop}% since tracking</div>}
+                          {verdict.priceDropped && <div className="text-[8px] text-emerald-600 dark:text-emerald-400 mt-2 flex items-center gap-1"><TrendingDown className="w-2.5 h-2.5" /> Price dropped {verdict.priceDrop}% since tracking</div>}
                         </div>
-                        <div className="terminal rounded-sm p-3 border border-[hsl(var(--neon-cyan))]/20">
+                        <div className="bg-muted/50 rounded-sm p-3 border border-[hsl(var(--primary))]/20">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <Sparkles className="w-3 h-3 neon-text" />
-                            <span className="text-[9px] font-display font-bold uppercase tracking-wider neon-text">Purchase Verdict</span>
-                            <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded-sm ml-auto ${verdict.score >= 60 ? "bg-[hsl(var(--neon-green))]/10 neon-green" : verdict.score >= 40 ? "bg-[hsl(var(--neon-amber))]/10 text-[hsl(var(--neon-amber))]" : "bg-destructive/10 neon-magenta"}`}>
+                            <Sparkles className="w-3 h-3 text-primary" />
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-primary">Purchase Verdict</span>
+                            <span className={`text-[8px] px-1.5 py-0.5 rounded-sm ml-auto ${verdict.score >= 60 ? "bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/10 text-emerald-600 dark:text-emerald-400" : verdict.score >= 40 ? "bg-[hsl(var(--text-amber-600 dark:text-amber-400))]/10 text-[hsl(var(--text-amber-600 dark:text-amber-400))]" : "bg-destructive/10 text-rose-500"}`}>
                               {verdict.score >= 60 ? "LIKELY SAFE" : verdict.score >= 40 ? "CAUTION" : "NOT RECOMMENDED"}
                             </span>
                           </div>
                           <div className="space-y-1.5">
                             {verdict.reasons.map((r, ri) => (
-                              <div key={ri} className="text-[9px] font-mono text-muted-foreground leading-relaxed flex items-start gap-1.5">
-                                <span className={`shrink-0 mt-0.5 ${r.type === "pro" ? "neon-green" : "neon-magenta"}`}>{r.type === "pro" ? "✓" : "✗"}</span>{r.text}
+                              <div key={ri} className="text-[9px] text-muted-foreground leading-relaxed flex items-start gap-1.5">
+                                <span className={`shrink-0 mt-0.5 ${r.type === "pro" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>{r.type === "pro" ? "✓" : "✗"}</span>{r.text}
                               </div>
                             ))}
                           </div>
                         </div>
                         {ctx.totalDebt > 0 && (
-                          <div className="terminal rounded-sm p-3 border border-destructive/20">
+                          <div className="bg-muted/50 rounded-sm p-3 border border-destructive/20">
                             <div className="flex items-start gap-2">
                               <ShieldAlert className="w-3.5 h-3.5 text-destructive shrink-0 mt-0.5" />
                               <div>
-                                <div className="text-[9px] font-mono font-bold text-destructive mb-1">DEBT WARNING</div>
-                                <p className="text-[9px] text-muted-foreground font-mono leading-relaxed">You have {fmt(ctx.totalDebt)} in credit card debt. Purchasing this item adds {fmt(item.price)} to potential debt. Interest at 3.5%/month means this {fmt(item.price)} item would cost {fmt(Math.round(item.price * 1.42))} if paid via revolving credit over 12 months.</p>
+                                <div className="text-[9px] font-bold text-destructive mb-1">DEBT WARNING</div>
+                                <p className="text-[9px] text-muted-foreground leading-relaxed">You have {fmt(ctx.totalDebt)} in credit card debt. Purchasing this item adds {fmt(item.price)} to potential debt. Interest at 3.5%/month means this {fmt(item.price)} item would cost {fmt(Math.round(item.price * 1.42))} if paid via revolving credit over 12 months.</p>
                               </div>
                             </div>
                           </div>
                         )}
                         {item.status === "waiting" && (
                           <div className="flex items-center gap-2">
-                            <button onClick={() => updateStatus(item.id, "approved")} className="retro-button-solid rounded-sm text-[9px] flex items-center gap-1 px-3 py-1.5" disabled={!verdict.cooldownMet}>
+                            <button onClick={() => updateStatus(item.id, "approved")} className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[9px] flex items-center gap-1 px-3 py-1.5" disabled={!verdict.cooldownMet}>
                               <Check className="w-3 h-3" /> {verdict.cooldownMet ? "Approve Purchase" : `Wait ${item.cooldownDays - waited}d`}
                             </button>
-                            <button onClick={() => updateStatus(item.id, "rejected")} className="text-[9px] font-mono px-3 py-1.5 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors flex items-center gap-1">
+                            <button onClick={() => updateStatus(item.id, "rejected")} className="text-[9px] px-3 py-1.5 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors flex items-center gap-1">
                               <ThumbsDown className="w-3 h-3" /> I Don't Need This
                             </button>
-                            <button onClick={() => removeItem(item.id)} className="text-[9px] font-mono px-2 py-1.5 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors ml-auto"><Trash2 className="w-3 h-3" /></button>
+                            <button onClick={() => removeItem(item.id)} className="text-[9px] px-2 py-1.5 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors ml-auto"><Trash2 className="w-3 h-3" /></button>
                           </div>
                         )}
                         {item.status !== "waiting" && (
                           <div className="flex items-center gap-2">
-                            <span className={`text-[9px] font-mono font-bold ${item.status === "approved" ? "neon-green" : "neon-magenta"}`}>
+                            <span className={`text-[9px] font-bold ${item.status === "approved" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                               {item.status === "approved" ? "✓ PURCHASE APPROVED" : "✗ REJECTED — SAVED " + fmt(item.price)}
                             </span>
-                            <button onClick={() => removeItem(item.id)} className="text-[9px] font-mono px-2 py-1 rounded-sm text-muted-foreground hover:text-destructive transition-colors ml-auto"><Trash2 className="w-3 h-3" /></button>
+                            <button onClick={() => removeItem(item.id)} className="text-[9px] px-2 py-1 rounded-sm text-muted-foreground hover:text-destructive transition-colors ml-auto"><Trash2 className="w-3 h-3" /></button>
                           </div>
                         )}
                       </div>

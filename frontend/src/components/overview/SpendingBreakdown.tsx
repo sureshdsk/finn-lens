@@ -1,53 +1,111 @@
-import { motion } from "framer-motion";
-import { spendingBreakdown, fmt } from "@/data/mockData";
+import { useQuery } from '@tanstack/react-query'
+import { getSpendingSummaryApi } from '@/api/unified'
+import { Skeleton } from '@/components/ui/skeleton'
 
-const total = spendingBreakdown.reduce((s, c) => s + c.amount, 0);
+const CATEGORY_COLORS: Record<string, string> = {
+  food: '#f97316',
+  groceries: '#22c55e',
+  clothing: '#ec4899',
+  entertainment: '#a855f7',
+  ecommerce: '#3b82f6',
+  travel_transport: '#06b6d4',
+  bills_utilities: '#eab308',
+  healthcare: '#ef4444',
+  education: '#6366f1',
+  investment_finance: '#10b981',
+  services_misc: '#64748b',
+  transfers_payments: '#9ca3af',
+  uncategorized: '#6b7280',
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  food: 'Food',
+  groceries: 'Groceries',
+  clothing: 'Clothing',
+  entertainment: 'Entertainment',
+  ecommerce: 'E-commerce',
+  travel_transport: 'Travel',
+  bills_utilities: 'Bills',
+  healthcare: 'Health',
+  education: 'Education',
+  investment_finance: 'Investment',
+  services_misc: 'Services',
+  transfers_payments: 'Transfers',
+  uncategorized: 'Other',
+}
+
+function fmt(n: number) {
+  return `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+}
 
 const SpendingBreakdown = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['spending-summary-overview'],
+    queryFn: () => getSpendingSummaryApi({}),
+  })
+
+  const cats = data?.categories ?? []
+  const total = cats.reduce((s, c) => s + Number(c.total), 0)
+
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-      className="terminal neon-border rounded-sm p-5 crt-overlay">
-      <div className="relative z-10">
-        <h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground mb-5">Breakdown</h3>
-        <div className="flex justify-center mb-5">
-          <div className="relative w-36 h-36">
-            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-              {spendingBreakdown.reduce((acc, cat, i) => {
-                const offset = spendingBreakdown.slice(0, i).reduce((s, c) => s + c.percent, 0);
-                acc.push(
-                  <circle key={cat.name} cx="18" cy="18" r="14" fill="none" stroke={cat.color} strokeWidth="3.5"
-                    strokeDasharray={`${cat.percent} ${100 - cat.percent}`} strokeDashoffset={-offset}
-                    style={{ filter: `drop-shadow(0 0 4px ${cat.color})` }} />
-                );
-                return acc;
-              }, [] as React.ReactElement[])}
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-sm font-display font-bold neon-text">{fmt(total)}</div>
-                <div className="text-[9px] text-muted-foreground font-mono">TOTAL</div>
+    <div className="bg-card border border-border rounded-lg p-5">
+      <h3 className="text-sm font-semibold text-foreground mb-5">Breakdown</h3>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-4 w-full" />)}
+        </div>
+      ) : (
+        <>
+          {/* Donut */}
+          <div className="flex justify-center mb-5">
+            <div className="relative w-36 h-36">
+              <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                {cats.reduce((acc, cat, i) => {
+                  const pct = total > 0 ? (Number(cat.total) / total) * 100 : 0
+                  const offset = cats.slice(0, i).reduce((s, c) => s + (total > 0 ? (Number(c.total) / total) * 100 : 0), 0)
+                  const color = CATEGORY_COLORS[cat.category] ?? '#6b7280'
+                  acc.push(
+                    <circle key={cat.category} cx="18" cy="18" r="14" fill="none" stroke={color} strokeWidth="3.5"
+                      strokeDasharray={`${pct} ${100 - pct}`} strokeDashoffset={-offset} />
+                  )
+                  return acc
+                }, [] as React.ReactElement[])}
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-sm font-semibold text-foreground tabular-nums">{fmt(total)}</div>
+                  <div className="text-xs text-muted-foreground">Total</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="space-y-2.5">
-          {spendingBreakdown.map((cat, i) => (
-            <motion.div key={cat.name} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + i * 0.05 }} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color, boxShadow: `0 0 6px ${cat.color}` }} />
-                <span className="text-[11px] text-foreground font-mono">{cat.name}</span>
-              </div>
-              <div className="text-right flex items-center gap-2">
-                <span className="text-[11px] font-bold text-foreground font-mono">{fmt(cat.amount)}</span>
-                <span className="text-[10px] text-muted-foreground font-mono">{cat.percent}%</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
 
-export default SpendingBreakdown;
+          {/* Legend */}
+          <div className="space-y-2.5">
+            {cats.filter(c => c.category !== 'transfers_payments').slice(0, 8).map((cat) => {
+              const pct = total > 0 ? Math.round((Number(cat.total) / total) * 100) : 0
+              const color = CATEGORY_COLORS[cat.category] ?? '#6b7280'
+              return (
+                <div key={cat.category} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                    <span className="text-sm text-foreground">
+                      {CATEGORY_LABELS[cat.category] ?? cat.category}
+                    </span>
+                  </div>
+                  <div className="text-right flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground tabular-nums">{fmt(Number(cat.total))}</span>
+                    <span className="text-xs text-muted-foreground tabular-nums w-8 text-right">{pct}%</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+export default SpendingBreakdown

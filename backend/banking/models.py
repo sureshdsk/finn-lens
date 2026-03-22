@@ -66,6 +66,9 @@ class Transaction(models.Model):
     ]
 
     account = models.ForeignKey(BankAccount, on_delete=models.CASCADE, related_name="transactions")
+    unified_transaction = models.ForeignKey(
+        "UnifiedTransaction", on_delete=models.SET_NULL, null=True, blank=True, related_name="bank_transactions"
+    )
     transaction_date = models.DateField()
     value_date = models.DateField()
     description = models.TextField()
@@ -89,6 +92,105 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.transaction_date} {self.description[:40]}"
+
+
+class UnifiedTransaction(models.Model):
+    """One row per real-world financial event, regardless of source count."""
+
+    INSTRUMENT_CHOICES = [
+        ("bank_debit", "Bank Debit"),
+        ("bank_credit", "Bank Credit"),
+        ("credit_card", "Credit Card"),
+        ("upi", "UPI"),
+        ("unknown", "Unknown"),
+    ]
+    CATEGORY_CHOICES = [
+        ("food", "Food"),
+        ("groceries", "Groceries"),
+        ("clothing", "Clothing"),
+        ("entertainment", "Entertainment"),
+        ("ecommerce", "E-commerce"),
+        ("travel_transport", "Travel & Transport"),
+        ("bills_utilities", "Bills & Utilities"),
+        ("healthcare", "Healthcare"),
+        ("education", "Education"),
+        ("investment_finance", "Investment & Finance"),
+        ("services_misc", "Services & Misc"),
+        ("transfers_payments", "Transfers & Payments"),
+        ("uncategorized", "Uncategorized"),
+    ]
+
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="unified_transactions")
+    transaction_date = models.DateField(db_index=True)
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    currency = models.CharField(max_length=3, default="INR")
+    merchant_name = models.CharField(max_length=255, blank=True, default="")
+    description = models.TextField(blank=True, default="")
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default="uncategorized", db_index=True)
+    category_confidence = models.FloatField(default=0.0)
+    is_user_categorized = models.BooleanField(default=False)
+    instrument_type = models.CharField(max_length=20, choices=INSTRUMENT_CHOICES, default="unknown")
+    bank_account = models.ForeignKey(
+        BankAccount, on_delete=models.SET_NULL, null=True, blank=True, related_name="unified_transactions"
+    )
+    credit_card = models.ForeignKey(
+        "CreditCard", on_delete=models.SET_NULL, null=True, blank=True, related_name="unified_transactions"
+    )
+    dedup_key = models.CharField(max_length=128, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-transaction_date", "-created_at"]
+        indexes = [
+            models.Index(fields=["family", "transaction_date"]),
+            models.Index(fields=["family", "category"]),
+        ]
+
+    def __str__(self):
+        return f"{self.transaction_date} {self.merchant_name or self.description[:40]} {self.amount}"
+
+
+class TransactionSource(models.Model):
+    """Evidence/provenance — each row is one source confirming a UnifiedTransaction."""
+
+    SOURCE_TYPE_CHOICES = [
+        ("bank_statement", "Bank Statement"),
+        ("cc_alert_email", "CC Alert Email"),
+        ("cc_statement_pdf", "CC Statement PDF"),
+        ("subscription_email", "Subscription Email"),
+        ("ecommerce_email", "E-commerce Email"),
+        ("bill_email", "Bill Email"),
+        ("manual", "Manual Entry"),
+    ]
+
+    unified_transaction = models.ForeignKey(
+        UnifiedTransaction, on_delete=models.CASCADE, related_name="sources"
+    )
+    source_type = models.CharField(max_length=30, choices=SOURCE_TYPE_CHOICES)
+    bank_transaction = models.ForeignKey(
+        "Transaction", on_delete=models.SET_NULL, null=True, blank=True, related_name="unified_sources"
+    )
+    cc_transaction = models.ForeignKey(
+        "CreditCardTransaction", on_delete=models.SET_NULL, null=True, blank=True, related_name="unified_sources"
+    )
+    extracted_data = models.ForeignKey(
+        "gmail.ExtractedFinancialData", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    email = models.ForeignKey(
+        "gmail.EmailMessage", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    raw_description = models.TextField(blank=True, default="")
+    raw_amount = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    raw_currency = models.CharField(max_length=3, blank=True, default="")
+    priority = models.PositiveSmallIntegerField(default=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-priority", "-created_at"]
+
+    def __str__(self):
+        return f"{self.source_type} → {self.unified_transaction_id}"
 
 
 class Subscription(models.Model):
@@ -152,6 +254,10 @@ class SubscriptionPayment(models.Model):
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name="payments")
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     payment_date = models.DateField()
+    unified_transaction = models.ForeignKey(
+        UnifiedTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name="subscription_payments"
+    )
+    # Legacy FKs — kept for backward compat during migration
     bank_transaction = models.ForeignKey(
         Transaction, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -215,6 +321,11 @@ class CreditCardBill(models.Model):
     source_email = models.ForeignKey(
         "gmail.EmailMessage", on_delete=models.SET_NULL, null=True, blank=True
     )
+    payment_bank_transaction = models.ForeignKey(
+        Transaction, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="cc_bill_payments",
+        help_text="The bank statement debit that paid this CC bill",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -235,6 +346,9 @@ class CreditCardTransaction(models.Model):
 
     card = models.ForeignKey(CreditCard, on_delete=models.CASCADE, related_name="transactions")
     bill = models.ForeignKey(CreditCardBill, on_delete=models.SET_NULL, null=True, blank=True, related_name="transactions")
+    unified_transaction = models.ForeignKey(
+        UnifiedTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name="cc_transactions"
+    )
     transaction_date = models.DateField()
     transaction_time = models.TimeField(null=True, blank=True)
     amount = models.DecimalField(max_digits=14, decimal_places=2)
