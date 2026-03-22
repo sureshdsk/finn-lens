@@ -204,7 +204,13 @@ class GmailFetcher:
         for i, msg_id in enumerate(message_ids):
             if EmailMessage.objects.filter(message_id=msg_id).exists():
                 continue
-            self._message_store.store(service, account, msg_id)
+            try:
+                self._message_store.store(service, account, msg_id)
+            except Exception as exc:
+                logger.warning(f"Skipping message {msg_id}: {exc}")
+                sync_job.processed_messages = i + 1
+                sync_job.save(update_fields=["processed_messages"])
+                continue
             sync_job.processed_messages = i + 1
             sync_job.new_messages += 1
             sync_job.save(update_fields=["processed_messages", "new_messages"])
@@ -236,7 +242,13 @@ class GmailFetcher:
                 sync_job.save(update_fields=["processed_messages"])
                 continue
 
-            self._message_store.store(service, account, msg_id)
+            try:
+                self._message_store.store(service, account, msg_id)
+            except Exception as exc:
+                logger.warning(f"Skipping message {msg_id}: {exc}")
+                sync_job.processed_messages = i + 1
+                sync_job.save(update_fields=["processed_messages"])
+                continue
             new_count += 1
             sync_job.processed_messages = i + 1
             sync_job.new_messages = new_count

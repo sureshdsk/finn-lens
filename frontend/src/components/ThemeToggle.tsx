@@ -7,7 +7,7 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={() => setColorMode(isDark ? "light" : "dark")}
-      className="w-8 h-8 rounded-sm terminal neon-border flex items-center justify-center hover:bg-primary/[0.05] transition-all"
+      className="w-8 h-8 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center hover:bg-primary/[0.05] transition-all"
       aria-label="Toggle theme"
     >
       {isDark ? (

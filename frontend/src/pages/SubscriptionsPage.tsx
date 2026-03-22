@@ -107,16 +107,16 @@ const SubscriptionsPage = () => {
       {/* Summary */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { label: "Monthly Cost", value: fmt(monthlyCost), sub: `${activeSubs.length} active`, accent: "neon-text" },
-          { label: "Yearly Projection", value: fmt(yearlyCost), sub: "estimated annual", accent: "text-[hsl(var(--neon-amber))]" },
-          { label: "Renewing Soon", value: String(upcomingCount), sub: "within 7 days", accent: upcomingCount > 0 ? "neon-magenta" : "neon-green" },
+          { label: "Monthly Cost", value: fmt(monthlyCost), sub: `${activeSubs.length} active`, accent: "text-primary" },
+          { label: "Yearly Projection", value: fmt(yearlyCost), sub: "estimated annual", accent: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" },
+          { label: "Renewing Soon", value: String(upcomingCount), sub: "within 7 days", accent: upcomingCount > 0 ? "text-rose-500" : "text-emerald-600 dark:text-emerald-400" },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="terminal neon-border rounded-sm p-4 crt-overlay">
+            className="bg-card border border-border shadow-sm rounded-sm p-4">
             <div className="relative z-10">
-              <div className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest mb-1">{card.label}</div>
-              <div className={`text-lg font-display font-bold ${card.accent}`}>{card.value}</div>
-              <div className="text-[9px] text-muted-foreground font-mono mt-0.5">{card.sub}</div>
+              <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{card.label}</div>
+              <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">{card.sub}</div>
             </div>
           </motion.div>
         ))}
@@ -127,8 +127,8 @@ const SubscriptionsPage = () => {
         <div className="flex gap-2">
           {(["all", "active", "cancelled"] as const).map((f) => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-sm text-[10px] font-mono uppercase tracking-wider transition-all ${
-                filter === f ? "neon-text neon-border border terminal" : "text-muted-foreground hover:text-foreground"
+              className={`px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-wider transition-all ${
+                filter === f ? "text-primary border-border border terminal" : "text-muted-foreground hover:text-foreground"
               }`}>
               {f} ({f === "all" ? subs.length : subs.filter((s) => s.status === f).length})
             </button>
@@ -137,7 +137,7 @@ const SubscriptionsPage = () => {
         <button
           onClick={handleDetect}
           disabled={detecting}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] font-mono uppercase tracking-wider neon-border border terminal text-muted-foreground hover:neon-text transition-all disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-wider border-border border bg-muted/50 text-muted-foreground hover:text-primary transition-all disabled:opacity-50"
         >
           {detecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
           Detect Subscriptions
@@ -146,14 +146,14 @@ const SubscriptionsPage = () => {
 
       {/* Empty state */}
       {subs.length === 0 && (
-        <div className="terminal neon-border rounded-sm p-8 crt-overlay text-center">
+        <div className="bg-card border border-border shadow-sm rounded-sm p-8 text-center">
           <div className="relative z-10">
             <div className="text-2xl mb-2">💳</div>
-            <div className="text-[11px] font-mono text-muted-foreground mb-3">No subscriptions found yet</div>
+            <div className="text-[11px] text-muted-foreground mb-3">No subscriptions found yet</div>
             <button
               onClick={handleDetect}
               disabled={detecting}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm text-[10px] font-mono uppercase tracking-wider neon-border border terminal neon-text hover:bg-primary/5 transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm text-[10px] uppercase tracking-wider border-border border bg-muted/50 text-primary hover:bg-primary/5 transition-all disabled:opacity-50"
             >
               {detecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
               Detect from Transactions
@@ -176,28 +176,28 @@ const SubscriptionsPage = () => {
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.04 }}
                 onClick={() => setSelectedSub(sub)}
-                className={`terminal neon-border rounded-sm p-4 crt-overlay group cursor-pointer hover:border-primary/40 transition-colors ${sub.status === "cancelled" ? "opacity-60" : ""}`}>
+                className={`bg-card border border-border shadow-sm rounded-sm p-4 group cursor-pointer hover:border-primary/40 transition-colors ${sub.status === "cancelled" ? "opacity-60" : ""}`}>
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-9 h-9 rounded-sm terminal neon-border flex items-center justify-center text-lg shrink-0"
+                    <div className="w-9 h-9 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center text-lg shrink-0"
                       style={{ borderColor: sub.color ? sub.color.replace(")", " / 0.3)") : undefined }}>
                       {sub.icon || "💳"}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-mono font-bold text-foreground">{sub.name}</span>
+                        <span className="text-[11px] font-bold text-foreground">{sub.name}</span>
                         {sub.status === "cancelled" && (
-                          <span className="text-[8px] font-mono px-1.5 py-0.5 rounded-sm bg-destructive/10 text-destructive">CANCELLED</span>
+                          <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-destructive/10 text-destructive">CANCELLED</span>
                         )}
                         {isSoon && (
-                          <span className="text-[8px] font-mono px-1.5 py-0.5 rounded-sm bg-[hsl(var(--neon-amber))]/10 text-[hsl(var(--neon-amber))] flex items-center gap-0.5">
+                          <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-[hsl(var(--text-amber-600 dark:text-amber-400))]/10 text-[hsl(var(--text-amber-600 dark:text-amber-400))] flex items-center gap-0.5">
                             <AlertTriangle className="w-2.5 h-2.5" /> SOON
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-[9px] text-muted-foreground font-mono">{sub.category}</span>
-                        <span className="text-[9px] text-muted-foreground font-mono flex items-center gap-0.5">
+                        <span className="text-[9px] text-muted-foreground">{sub.category}</span>
+                        <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
                           <Calendar className="w-2.5 h-2.5" />
                           {sub.status === "active" && sub.renew_date
                             ? `Renews ${new Date(sub.renew_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })} (${days}d)`
@@ -210,10 +210,10 @@ const SubscriptionsPage = () => {
 
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className="text-[11px] font-mono font-bold neon-text flex items-center gap-0.5 justify-end">
+                      <div className="text-[11px] font-bold text-primary flex items-center gap-0.5 justify-end">
                         {sub.currency === "USD" ? "$" : "₹"}{cost.toLocaleString(sub.currency === "USD" ? "en-US" : "en-IN")}
                       </div>
-                      <div className="text-[8px] text-muted-foreground font-mono">
+                      <div className="text-[8px] text-muted-foreground">
                         {sub.cycle === "yearly" ? `~${fmt(monthlized, sub.currency)}/mo` : "/month"}
                       </div>
                     </div>
@@ -222,11 +222,11 @@ const SubscriptionsPage = () => {
                       confirmId === sub.id ? (
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => cancelSub(sub.id)}
-                            className="text-[9px] font-mono px-2 py-1 rounded-sm bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
+                            className="text-[9px] px-2 py-1 rounded-sm bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
                             Confirm
                           </button>
                           <button onClick={() => setConfirmId(null)}
-                            className="text-[9px] font-mono px-2 py-1 rounded-sm text-muted-foreground hover:text-foreground transition-colors">
+                            className="text-[9px] px-2 py-1 rounded-sm text-muted-foreground hover:text-foreground transition-colors">
                             Keep
                           </button>
                         </div>
@@ -238,7 +238,7 @@ const SubscriptionsPage = () => {
                       )
                     ) : (
                       <button onClick={(e) => { e.stopPropagation(); reactivate(sub.id); }}
-                        className="flex items-center gap-1 text-[9px] font-mono px-2 py-1 rounded-sm text-muted-foreground hover:neon-green hover:bg-[hsl(var(--neon-green))]/5 transition-colors">
+                        className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-sm text-muted-foreground hover:text-emerald-600 dark:text-emerald-400 hover:bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/5 transition-colors">
                         <RefreshCw className="w-3 h-3" /> Reactivate
                       </button>
                     )}
@@ -252,7 +252,7 @@ const SubscriptionsPage = () => {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedSub} onOpenChange={(open) => !open && setSelectedSub(null)}>
-        <DialogContent className="terminal neon-border sm:max-w-md p-0 overflow-hidden z-[100]">
+        <DialogContent className="bg-card border border-border shadow-sm sm:max-w-md p-0 overflow-hidden z-[100]">
           {selectedSub && (() => {
             const cost = parseFloat(selectedSub.cost);
             const totalSpent = selectedSub.total_spent ? parseFloat(selectedSub.total_spent) : undefined;
@@ -262,17 +262,17 @@ const SubscriptionsPage = () => {
                 <div className="p-5 pb-4 border-b border-border/50">
                   <DialogHeader>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-sm terminal neon-border flex items-center justify-center text-2xl"
+                      <div className="w-12 h-12 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center text-2xl"
                         style={{ borderColor: selectedSub.color ? selectedSub.color.replace(")", " / 0.4)") : undefined }}>
                         {selectedSub.icon || "💳"}
                       </div>
                       <div>
-                        <DialogTitle className="text-sm font-display font-bold uppercase tracking-wider text-foreground">
+                        <DialogTitle className="text-sm font-semibold uppercase tracking-wider text-foreground">
                           {selectedSub.name}
                         </DialogTitle>
-                        <DialogDescription className="text-[9px] font-mono text-muted-foreground mt-0.5 flex items-center gap-2">
+                        <DialogDescription className="text-[9px] text-muted-foreground mt-0.5 flex items-center gap-2">
                           <span className="px-1.5 py-0.5 rounded-sm border border-border/50 bg-muted/30">{selectedSub.category}</span>
-                          <span className={`px-1.5 py-0.5 rounded-sm ${selectedSub.status === "active" ? "bg-[hsl(var(--neon-green))]/10 text-[hsl(var(--neon-green))]" : "bg-destructive/10 text-destructive"}`}>
+                          <span className={`px-1.5 py-0.5 rounded-sm ${selectedSub.status === "active" ? "bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/10 text-[hsl(var(--text-emerald-600 dark:text-emerald-400))]" : "bg-destructive/10 text-destructive"}`}>
                             {selectedSub.status.toUpperCase()}
                           </span>
                         </DialogDescription>
@@ -284,7 +284,7 @@ const SubscriptionsPage = () => {
                 {/* Description */}
                 {selectedSub.description && (
                   <div className="px-5 py-3 border-b border-border/50">
-                    <p className="text-[10px] font-mono text-muted-foreground leading-relaxed">{selectedSub.description}</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">{selectedSub.description}</p>
                   </div>
                 )}
 
@@ -322,9 +322,9 @@ const SubscriptionsPage = () => {
 
                   {/* Auto-renew indicator */}
                   <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-                    <ToggleRight className={`w-3.5 h-3.5 ${selectedSub.auto_renew ? "neon-text" : "text-muted-foreground"}`} />
-                    <span className="text-[9px] font-mono text-muted-foreground">
-                      Auto-renew: <span className={selectedSub.auto_renew ? "neon-text" : "text-destructive"}>{selectedSub.auto_renew ? "ON" : "OFF"}</span>
+                    <ToggleRight className={`w-3.5 h-3.5 ${selectedSub.auto_renew ? "text-primary" : "text-muted-foreground"}`} />
+                    <span className="text-[9px] text-muted-foreground">
+                      Auto-renew: <span className={selectedSub.auto_renew ? "text-primary" : "text-destructive"}>{selectedSub.auto_renew ? "ON" : "OFF"}</span>
                     </span>
                   </div>
                 </div>
@@ -339,10 +339,10 @@ const SubscriptionsPage = () => {
 
 const DetailItem = ({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: boolean }) => (
   <div className="space-y-0.5">
-    <div className="flex items-center gap-1 text-[8px] text-muted-foreground font-mono uppercase tracking-widest">
+    <div className="flex items-center gap-1 text-[8px] text-muted-foreground uppercase tracking-widest">
       {icon} {label}
     </div>
-    <div className={`text-[10px] font-mono font-semibold ${accent ? "neon-text" : "text-foreground"} truncate`} title={value}>
+    <div className={`text-[10px] font-semibold ${accent ? "text-primary" : "text-foreground"} truncate`} title={value}>
       {value}
     </div>
   </div>

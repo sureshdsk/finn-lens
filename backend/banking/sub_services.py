@@ -280,11 +280,25 @@ def materialize_subscriptions(family: Family) -> dict[str, int]:
 
         # Link payment records
         for p in det.payments:
-            defaults = {"amount": p.amount}
+            defaults: dict = {"amount": p.amount}
             if p.source == "bank_txn":
                 defaults["bank_transaction_id"] = p.txn_id
+                # Get unified_transaction from bank txn
+                try:
+                    bt = Transaction.objects.get(pk=p.txn_id)
+                    if bt.unified_transaction_id:
+                        defaults["unified_transaction_id"] = bt.unified_transaction_id
+                except Transaction.DoesNotExist:
+                    pass
             else:
                 defaults["cc_transaction_id"] = p.txn_id
+                # Get unified_transaction from CC txn
+                try:
+                    ct = CreditCardTransaction.objects.get(pk=p.txn_id)
+                    if ct.unified_transaction_id:
+                        defaults["unified_transaction_id"] = ct.unified_transaction_id
+                except CreditCardTransaction.DoesNotExist:
+                    pass
 
             _, pay_created = SubscriptionPayment.objects.get_or_create(
                 subscription=sub,

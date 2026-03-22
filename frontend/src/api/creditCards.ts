@@ -22,6 +22,9 @@ export interface CreditCardBill {
   billing_period_start: string | null
   billing_period_end: string | null
   is_paid: boolean
+  transaction_count: number
+  transactions_total: string | null
+  gmail_message_id: string | null
 }
 
 export interface CreditCardTransaction {
@@ -97,13 +100,14 @@ export async function getCardTransactionsApi(
     category?: string
     search?: string
     sort?: string
+    bill_id?: number | 'unbilled'
   } = {}
 ): Promise<CCTransactionList> {
   const qs = new URLSearchParams()
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) qs.set(k, String(v))
   })
-  const res = await apiFetch(`${API_URL}/api/banking/cards/${cardId}/transactions/?${qs}`, {
+  const res = await apiFetch(`${API_URL}/api/banking/cards/${cardId}/transactions?${qs}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch transactions')

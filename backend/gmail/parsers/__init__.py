@@ -46,14 +46,16 @@ def parse_email(
     return []
 
 
-# Register parsers — order matters (statement before alerts)
+# Register parsers — order matters (statement before alerts, payment after alerts)
 from .cc_statement import CreditCardStatementParser
+from .cc_payment import CreditCardPaymentParser
 from .credit_card import CreditCardParser
 from .investment import GrowwInvestmentParser
 from .subscription import SubscriptionParser
 
 _cc_statement_parser = CreditCardStatementParser()
 register(_cc_statement_parser)
+register(CreditCardPaymentParser())
 register(CreditCardParser())
 register(GrowwInvestmentParser())
 register(SubscriptionParser())

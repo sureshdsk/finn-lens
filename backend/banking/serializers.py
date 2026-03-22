@@ -91,6 +91,9 @@ class CreditCardBillSchema(msgspec.Struct):
     billing_period_start: Optional[str]
     billing_period_end: Optional[str]
     is_paid: bool
+    transaction_count: int = 0
+    transactions_total: Optional[str] = None
+    gmail_message_id: Optional[str] = None
 
 
 class CreditCardTransactionSchema(msgspec.Struct):
@@ -162,3 +165,75 @@ class SubscriptionDetectResultSchema(msgspec.Struct):
     detected: int
     created: int
     payments_linked: int
+
+
+# ── Unified transaction schemas ──────────────────────────────────────────
+
+
+class UnifiedTransactionSchema(msgspec.Struct):
+    id: int
+    transaction_date: str
+    amount: str
+    currency: str
+    merchant_name: str
+    description: str
+    category: str
+    category_confidence: float
+    instrument_type: str
+    source_count: int = 0
+    credit_card_label: Optional[str] = None
+    bank_account_label: Optional[str] = None
+
+
+class UnifiedTransactionListSchema(msgspec.Struct):
+    items: list[UnifiedTransactionSchema]
+    total: int
+    page: int
+    page_size: int
+
+
+class TransactionSourceSchema(msgspec.Struct):
+    id: int
+    source_type: str
+    raw_description: str
+    raw_amount: Optional[str]
+    raw_currency: str
+    priority: int
+    email_subject: Optional[str] = None
+    gmail_message_id: Optional[str] = None
+
+
+class UnifiedTransactionDetailSchema(msgspec.Struct):
+    id: int
+    transaction_date: str
+    amount: str
+    currency: str
+    merchant_name: str
+    description: str
+    category: str
+    instrument_type: str
+    credit_card_label: Optional[str]
+    bank_account_label: Optional[str]
+    sources: list[TransactionSourceSchema]
+
+
+class CategoryBreakdownSchema(msgspec.Struct):
+    category: str
+    total: str
+    count: int
+
+
+class SpendingSummarySchema(msgspec.Struct):
+    total_spending: str
+    total_income: str
+    transaction_count: int
+    categories: list[CategoryBreakdownSchema]
+
+
+class MonthlySpendingSchema(msgspec.Struct):
+    year: int
+    month: int
+    month_label: str
+    income: str
+    expense: str
+    savings: str

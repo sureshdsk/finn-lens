@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -22,7 +21,7 @@
     --secondary-foreground: 220 15% 35%;
 
     --muted: 210 12% 88%;
-    --muted-foreground: 220 15% 32%;
+    --muted-foreground: 220 10% 46%;
 
     --accent: 320 70% 50%;
     --accent-foreground: 0 0% 100%;
@@ -30,25 +29,11 @@
     --destructive: 0 75% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 82%;
+    --border: 210 15% 88%;
     --input: 210 15% 82%;
     --ring: 175 80% 35%;
 
-    --radius: 0.375rem;
-
-    /* Retro-futurism tokens – light */
-    --neon-cyan: 175 80% 35%;
-    --neon-magenta: 320 70% 50%;
-    --neon-green: 145 65% 32%;
-    --neon-amber: 40 80% 42%;
-    --neon-red: 0 75% 50%;
-    --terminal: 210 15% 94%;
-    --terminal-line: 175 60% 40%;
-
-    --glow-cyan: 0 0 4px hsl(175 80% 35% / 0.3), 0 0 10px hsl(175 80% 35% / 0.1);
-    --glow-magenta: 0 0 4px hsl(320 70% 50% / 0.3), 0 0 10px hsl(320 70% 50% / 0.1);
-    --glow-green: 0 0 4px hsl(145 65% 32% / 0.3), 0 0 10px hsl(145 65% 32% / 0.1);
-    --glow-text: 0 0 6px hsl(175 80% 35% / 0.25);
+    --radius: 0.5rem;
 
     --sidebar-background: 210 18% 97%;
     --sidebar-foreground: 220 15% 35%;
@@ -56,7 +41,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 12% 90%;
     --sidebar-accent-foreground: 220 15% 35%;
-    --sidebar-border: 210 15% 82%;
+    --sidebar-border: 210 15% 88%;
     --sidebar-ring: 175 80% 35%;
 
     --chart-1: 175 80% 35%;
@@ -68,22 +53,22 @@
 
 .dark {
     --background: 230 25% 5%;
-    --foreground: 180 15% 88%;
+    --foreground: 210 20% 88%;
 
     --card: 230 20% 8%;
-    --card-foreground: 180 15% 88%;
+    --card-foreground: 210 20% 88%;
 
     --popover: 230 20% 8%;
-    --popover-foreground: 180 15% 88%;
+    --popover-foreground: 210 20% 88%;
 
     --primary: 175 100% 50%;
     --primary-foreground: 230 25% 5%;
 
     --secondary: 230 18% 14%;
-    --secondary-foreground: 180 15% 78%;
+    --secondary-foreground: 210 15% 78%;
 
     --muted: 230 15% 12%;
-    --muted-foreground: 200 20% 68%;
+    --muted-foreground: 210 15% 55%;
 
     --accent: 320 100% 60%;
     --accent-foreground: 230 25% 5%;
@@ -91,31 +76,17 @@
     --destructive: 0 85% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
+    --border: 220 15% 16%;
+    --input: 220 15% 18%;
     --ring: 175 100% 50%;
 
-    /* Retro-futurism tokens – dark */
-    --neon-cyan: 175 100% 50%;
-    --neon-magenta: 320 100% 60%;
-    --neon-green: 145 100% 50%;
-    --neon-amber: 40 100% 55%;
-    --neon-red: 0 100% 60%;
-    --terminal: 230 20% 7%;
-    --terminal-line: 175 80% 50%;
-
-    --glow-cyan: 0 0 8px hsl(175 100% 50% / 0.6), 0 0 20px hsl(175 100% 50% / 0.2);
-    --glow-magenta: 0 0 8px hsl(320 100% 60% / 0.6), 0 0 20px hsl(320 100% 60% / 0.2);
-    --glow-green: 0 0 8px hsl(145 100% 50% / 0.6), 0 0 20px hsl(145 100% 50% / 0.2);
-    --glow-text: 0 0 10px hsl(175 100% 50% / 0.5);
-
     --sidebar-background: 230 22% 6%;
-    --sidebar-foreground: 180 15% 78%;
+    --sidebar-foreground: 210 15% 78%;
     --sidebar-primary: 175 100% 50%;
     --sidebar-primary-foreground: 230 25% 5%;
     --sidebar-accent: 230 18% 14%;
-    --sidebar-accent-foreground: 180 15% 78%;
-    --sidebar-border: 220 20% 18%;
+    --sidebar-accent-foreground: 210 15% 78%;
+    --sidebar-border: 220 15% 16%;
     --sidebar-ring: 175 100% 50%;
 
     --chart-1: 175 100% 50%;
@@ -126,9 +97,7 @@
 }
 
 @theme inline {
-    --font-sans: 'Geist Variable', sans-serif;
-    --font-mono: 'JetBrains Mono', 'Space Mono', 'Geist Variable', monospace;
-    --font-display: 'Orbitron', 'Geist Variable', sans-serif;
+    --font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
     --color-sidebar-ring: hsl(var(--sidebar-ring));
     --color-sidebar-border: hsl(var(--sidebar-border));
     --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
@@ -174,364 +143,18 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-mono antialiased;
-  }
-  html {
-    @apply font-sans;
-  }
-
-  .dark body,
-  body.dark {
-    background-image:
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        hsl(175 100% 50% / 0.015) 2px,
-        hsl(175 100% 50% / 0.015) 4px
-      );
+    @apply bg-background text-foreground font-sans antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+    @apply font-semibold tracking-tight;
   }
 }
 
+/* Tabular figures for financial data */
 @layer utilities {
-  /* CRT scanline overlay */
-  .crt-overlay {
-    position: relative;
-  }
-  .crt-overlay::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      hsl(0 0% 0% / 0.06) 2px,
-      hsl(0 0% 0% / 0.06) 4px
-    );
-    z-index: 1;
-    border-radius: inherit;
-  }
-
-  /* Terminal panel */
-  .terminal {
-    @apply bg-card border border-border rounded-sm;
-    box-shadow:
-      inset 0 0 30px hsl(175 100% 50% / 0.03),
-      0 0 1px hsl(175 100% 50% / 0.3);
-  }
-
-  .terminal-glow {
-    @apply bg-card border rounded-sm;
-    border-color: hsl(var(--neon-cyan) / 0.3);
-    box-shadow:
-      inset 0 0 40px hsl(175 100% 50% / 0.04),
-      0 0 1px hsl(175 100% 50% / 0.4),
-      0 0 15px hsl(175 100% 50% / 0.08);
-  }
-
-  .neon-text {
-    color: hsl(var(--neon-cyan));
-    text-shadow: var(--glow-text);
-  }
-
-  .neon-magenta {
-    color: hsl(var(--neon-magenta));
-    text-shadow: 0 0 10px hsl(320 100% 60% / 0.5);
-  }
-
-  .neon-green {
-    color: hsl(var(--neon-green));
-    text-shadow: 0 0 10px hsl(145 100% 50% / 0.5);
-  }
-
-  .neon-amber {
-    color: hsl(var(--neon-amber));
-    text-shadow: 0 0 10px hsl(40 100% 55% / 0.5);
-  }
-
-  .neon-border {
-    border-color: hsl(var(--neon-cyan) / 0.3);
-    box-shadow: 0 0 1px hsl(175 100% 50% / 0.4), inset 0 0 1px hsl(175 100% 50% / 0.1);
-  }
-
-  .neon-border-magenta {
-    border-color: hsl(var(--neon-magenta) / 0.3);
-    box-shadow: 0 0 1px hsl(320 100% 60% / 0.4);
-  }
-
-  .retro-button {
-    @apply bg-card border text-sm font-mono uppercase tracking-wider px-5 py-2.5;
-    border-color: hsl(var(--neon-cyan) / 0.5);
-    color: hsl(var(--neon-cyan));
-    text-shadow: var(--glow-text);
-    box-shadow: 0 0 8px hsl(175 100% 50% / 0.15), inset 0 0 8px hsl(175 100% 50% / 0.05);
-    transition: all 0.2s;
-  }
-
-  .retro-button:hover {
-    background: hsl(175 100% 50% / 0.08);
-    box-shadow: 0 0 15px hsl(175 100% 50% / 0.25), inset 0 0 15px hsl(175 100% 50% / 0.08);
-  }
-
-  .retro-button-solid {
-    @apply text-sm font-mono uppercase tracking-wider px-5 py-2.5;
-    background: hsl(var(--neon-cyan));
-    color: hsl(var(--background));
-    font-weight: 700;
-    box-shadow: 0 0 12px hsl(175 100% 50% / 0.4), 0 0 30px hsl(175 100% 50% / 0.15);
-    transition: all 0.2s;
-  }
-
-  .retro-button-solid:hover {
-    box-shadow: 0 0 20px hsl(175 100% 50% / 0.6), 0 0 45px hsl(175 100% 50% / 0.2);
-  }
-
-  .retro-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--neon-cyan) / 0.4), transparent);
-    box-shadow: 0 0 4px hsl(175 100% 50% / 0.2);
-  }
-
-  .grid-bg {
-    background-image:
-      linear-gradient(hsl(175 100% 50% / 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(175 100% 50% / 0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-
-  .flicker {
-    animation: flicker 4s infinite;
-  }
-
-  @keyframes flicker {
-    0%, 97%, 100% { opacity: 1; }
-    98% { opacity: 0.85; }
-    99% { opacity: 0.95; }
-  }
-}
-
-/* ═══════════════════════════════════════════════
-   NEUBRUTALISM STYLE THEME OVERRIDES
-   ═══════════════════════════════════════════════ */
-
-@layer base {
-  .neubrutalism {
-    --radius: 0.75rem;
-
-    --background: 50 100% 96%;
-    --foreground: 0 0% 9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
-
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 47 100% 62%;
-    --secondary-foreground: 0 0% 9%;
-
-    --muted: 50 30% 88%;
-    --muted-foreground: 0 0% 32%;
-
-    --accent: 340 82% 52%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 9%;
-    --input: 0 0% 9%;
-    --ring: 262 83% 58%;
-
-    --neon-cyan: 262 83% 58%;
-    --neon-magenta: 340 82% 52%;
-    --neon-green: 142 71% 45%;
-    --neon-amber: 47 100% 50%;
-    --neon-red: 0 84% 60%;
-    --terminal: 50 30% 94%;
-    --terminal-line: 0 0% 9%;
-
-    --glow-cyan: none;
-    --glow-magenta: none;
-    --glow-green: none;
-    --glow-text: none;
-
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 9%;
-    --sidebar-primary: 262 83% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 47 100% 80%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 9%;
-    --sidebar-ring: 262 83% 58%;
-  }
-
-  .neubrutalism.dark {
-    --background: 240 6% 10%;
-    --foreground: 50 100% 96%;
-
-    --card: 240 5% 14%;
-    --card-foreground: 50 100% 96%;
-
-    --popover: 240 5% 14%;
-    --popover-foreground: 50 100% 96%;
-
-    --primary: 262 83% 65%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 47 100% 55%;
-    --secondary-foreground: 0 0% 9%;
-
-    --muted: 240 5% 20%;
-    --muted-foreground: 50 20% 70%;
-
-    --accent: 340 82% 60%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 50 100% 96%;
-    --input: 50 20% 70%;
-    --ring: 262 83% 65%;
-
-    --neon-cyan: 262 83% 65%;
-    --neon-magenta: 340 82% 60%;
-    --neon-green: 142 71% 50%;
-    --neon-amber: 47 100% 55%;
-    --neon-red: 0 84% 60%;
-    --terminal: 240 5% 12%;
-    --terminal-line: 50 100% 96%;
-
-    --glow-cyan: none;
-    --glow-magenta: none;
-    --glow-green: none;
-    --glow-text: none;
-
-    --sidebar-background: 240 5% 12%;
-    --sidebar-foreground: 50 100% 96%;
-    --sidebar-primary: 262 83% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 20%;
-    --sidebar-accent-foreground: 50 100% 96%;
-    --sidebar-border: 50 100% 96%;
-    --sidebar-ring: 262 83% 65%;
-  }
-
-  /* Neubrutalism body — no scanlines */
-  .neubrutalism body,
-  body.neubrutalism {
-    background-image: none !important;
-    font-family: "JetBrains Mono", "Space Mono", monospace;
-  }
-
-  /* Override heading font for neubrutalism */
-  .neubrutalism h1, .neubrutalism h2, .neubrutalism h3,
-  .neubrutalism h4, .neubrutalism h5, .neubrutalism h6 {
-    font-family: "JetBrains Mono", "Space Mono", monospace;
-    font-weight: 800;
-  }
-}
-
-/* Neubrutalism utility overrides */
-@layer utilities {
-  .neubrutalism .terminal {
-    @apply bg-card rounded-lg;
-    border: 2px solid hsl(var(--border));
-    box-shadow: 4px 4px 0px hsl(var(--border));
-  }
-
-  .neubrutalism .terminal-glow {
-    @apply bg-card rounded-lg;
-    border: 2px solid hsl(var(--border));
-    box-shadow: 4px 4px 0px hsl(var(--border));
-  }
-
-  .neubrutalism .neon-text {
-    color: hsl(var(--primary));
-    text-shadow: none;
-  }
-
-  .neubrutalism .neon-magenta {
-    color: hsl(var(--accent));
-    text-shadow: none;
-  }
-
-  .neubrutalism .neon-green {
-    color: hsl(var(--neon-green));
-    text-shadow: none;
-  }
-
-  .neubrutalism .neon-amber {
-    color: hsl(var(--neon-amber));
-    text-shadow: none;
-  }
-
-  .neubrutalism .neon-border {
-    border-color: hsl(var(--border));
-    box-shadow: 3px 3px 0px hsl(var(--border));
-  }
-
-  .neubrutalism .neon-border-magenta {
-    border-color: hsl(var(--accent));
-    box-shadow: 3px 3px 0px hsl(var(--accent));
-  }
-
-  .neubrutalism .retro-button {
-    @apply bg-card font-mono uppercase tracking-wider px-5 py-2.5 rounded-lg;
-    border: 2px solid hsl(var(--border));
-    color: hsl(var(--foreground));
-    text-shadow: none;
-    box-shadow: 3px 3px 0px hsl(var(--border));
-    transition: all 0.15s;
-  }
-
-  .neubrutalism .retro-button:hover {
-    background: hsl(var(--secondary));
-    box-shadow: 1px 1px 0px hsl(var(--border));
-    transform: translate(2px, 2px);
-  }
-
-  .neubrutalism .retro-button-solid {
-    @apply font-mono uppercase tracking-wider px-5 py-2.5 rounded-lg;
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    font-weight: 700;
-    border: 2px solid hsl(var(--border));
-    box-shadow: 4px 4px 0px hsl(var(--border));
-    text-shadow: none;
-    transition: all 0.15s;
-  }
-
-  .neubrutalism .retro-button-solid:hover {
-    box-shadow: 1px 1px 0px hsl(var(--border));
-    transform: translate(3px, 3px);
-  }
-
-  .neubrutalism .retro-divider {
-    height: 2px;
-    background: hsl(var(--border));
-    box-shadow: none;
-  }
-
-  .neubrutalism .grid-bg {
-    background-image: none;
-  }
-
-  .neubrutalism .crt-overlay::after {
-    display: none;
-  }
-
-  .neubrutalism .flicker {
-    animation: none;
+  .tabular-nums {
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
   }
 }

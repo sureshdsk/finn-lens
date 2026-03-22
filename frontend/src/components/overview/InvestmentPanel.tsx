@@ -1,41 +1,42 @@
-import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { mockHoldings, fmt } from "@/data/mockData";
+import { TrendingUp, TrendingDown } from "lucide-react"
+import { mockHoldings, fmt } from "@/data/mockData"
 
-const holdings = mockHoldings.slice(0, 5);
-const totalValue = holdings.reduce((s, h) => s + h.current, 0);
+const holdings = mockHoldings.slice(0, 5)
+const totalValue = holdings.reduce((s, h) => s + h.current, 0)
+const totalInvested = holdings.reduce((s, h) => s + h.invested, 0)
+const totalChange = ((totalValue - totalInvested) / totalInvested * 100).toFixed(1)
 
 const InvestmentPanel = () => {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-      className="terminal neon-border rounded-sm p-5 crt-overlay">
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display font-bold text-xs uppercase tracking-wider text-foreground">Portfolio</h3>
-          <span className="text-xs font-display font-bold neon-text">{fmt(totalValue)}</span>
-        </div>
-        <div className="space-y-0">
-          {holdings.map((h, i) => (
-            <motion.div key={h.ticker} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.55 + i * 0.05 }}
-              className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
-              <div>
-                <div className="text-[11px] font-mono text-foreground">{h.name}</div>
-                <div className="text-[9px] text-muted-foreground font-mono">{h.ticker} × {h.qty}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[11px] font-mono font-bold text-foreground">{fmt(h.current)}</div>
-                <div className={`text-[10px] font-mono font-bold flex items-center gap-0.5 justify-end ${h.dayChange >= 0 ? "neon-green" : "neon-magenta"}`}>
-                  {h.dayChange >= 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-                  {h.dayChange >= 0 ? "+" : ""}{h.dayChange}%
-                </div>
-              </div>
-            </motion.div>
-          ))}
+    <div className="bg-card border border-border rounded-lg p-5 h-full">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-sm font-semibold text-foreground">Portfolio</h3>
+        <div className="text-right">
+          <div className="text-sm font-semibold text-foreground tabular-nums">{fmt(totalValue)}</div>
+          <div className={`text-xs tabular-nums ${Number(totalChange) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}`}>
+            {Number(totalChange) >= 0 ? '+' : ''}{totalChange}%
+          </div>
         </div>
       </div>
-    </motion.div>
-  );
-};
+      <div className="mt-3 space-y-0">
+        {holdings.map((h) => (
+          <div key={h.ticker} className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
+            <div>
+              <div className="text-sm text-foreground">{h.name}</div>
+              <div className="text-xs text-muted-foreground">{h.ticker} · {h.qty} shares</div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-foreground tabular-nums">{fmt(h.current)}</div>
+              <div className={`text-xs tabular-nums flex items-center gap-0.5 justify-end ${h.dayChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                {h.dayChange >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {h.dayChange >= 0 ? "+" : ""}{h.dayChange}%
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
-export default InvestmentPanel;
+export default InvestmentPanel

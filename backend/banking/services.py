@@ -5,8 +5,9 @@ from datetime import date
 
 from django.db import transaction as db_transaction
 
-from .models import BankAccount, Family, Transaction
+from .models import BankAccount, CreditCardBill, Family, Transaction
 from .protocols import StatementParser
+from .unified import get_or_create_unified, make_dedup_key
 
 
 @dataclass
@@ -105,6 +106,9 @@ def import_statement(account: BankAccount, parser: StatementParser, file_bytes: 
     with db_transaction.atomic():
         for rec in txn_iter:
             raw = _make_reference(rec)
+            pre_category = _classify_bank_description(
+                rec["description"], is_debit=bool(rec.get("debit"))
+            )
             obj, created = Transaction.objects.get_or_create(
                 account=account,
                 raw_reference=raw,
@@ -116,11 +120,130 @@ def import_statement(account: BankAccount, parser: StatementParser, file_bytes: 
                     "debit": rec.get("debit"),
                     "credit": rec.get("credit"),
                     "balance": rec["balance"],
+                    "category": pre_category,
                 },
             )
             if created:
                 count += 1
+                # Create unified transaction
+                amount = rec.get("debit") or rec.get("credit")
+                if amount:
+                    inst_type = "bank_debit" if rec.get("debit") else "bank_credit"
+                    unified_key = make_dedup_key(
+                        account.family_id, inst_type, account.pk,
+                        rec["transaction_date"], amount,
+                    )
+                    ut, _ = get_or_create_unified(
+                        family=account.family,
+                        transaction_date=rec["transaction_date"],
+                        amount=Decimal(str(amount)),
+                        currency=account.currency,
+                        description=rec["description"],
+                        category=pre_category,
+                        instrument_type=inst_type,
+                        bank_account=account,
+                        dedup_key=unified_key,
+                        source_type="bank_statement",
+                        source_bank_transaction=obj,
+                    )
+                    obj.unified_transaction = ut
+                    obj.save(update_fields=["unified_transaction"])
+
+    # Detect CC bill payments
+    _link_cc_bill_payments(account)
+
     return count
+
+
+def _link_cc_bill_payments(account: BankAccount) -> None:
+    """Detect bank debits that are CC bill payments and link them.
+
+    Matches by description patterns (CCPAY, credit card, card payment, ICICI/HDFC/Axis card)
+    and also by exact amount matching against CC bills.
+    """
+    import re
+    from datetime import timedelta
+
+    cc_payment_re = re.compile(
+        r"(?:cc\s*pay|credit\s*card|card\s*(?:bill|payment)|"
+        r"ccpay|amex|visa|master\s*card|rupay|"
+        r"icici\s*(?:bank\s*)?(?:card|cc)|"
+        r"hdfc\s*(?:bank\s*)?(?:card|cc)|"
+        r"axis\s*(?:bank\s*)?(?:card|cc)|"
+        r"sbi\s*(?:card|cc)|"
+        r"kotak\s*(?:card|cc))",
+        re.IGNORECASE,
+    )
+
+    family = account.family
+    bills_exist = CreditCardBill.objects.filter(card__family=family).exists()
+    if not bills_exist:
+        return
+
+    debits = Transaction.objects.filter(
+        account=account,
+        debit__isnull=False,
+    )
+
+    for txn in debits:
+        if not cc_payment_re.search(txn.description):
+            continue
+        if CreditCardBill.objects.filter(payment_bank_transaction=txn).exists():
+            continue
+
+        # Match by amount + date proximity (bill statement_date within 45 days before payment)
+        bill = (
+            CreditCardBill.objects.filter(
+                card__family=family,
+                total_due=txn.debit,
+                statement_date__gte=txn.transaction_date - timedelta(days=45),
+                statement_date__lte=txn.transaction_date,
+                payment_bank_transaction__isnull=True,
+            )
+            .order_by("-statement_date")
+            .first()
+        )
+        if bill:
+            bill.payment_bank_transaction = txn
+            bill.is_paid = True
+            bill.save(update_fields=["payment_bank_transaction", "is_paid"])
+
+            if txn.unified_transaction:
+                txn.unified_transaction.category = "transfers_payments"
+                txn.unified_transaction.save(update_fields=["category"])
+
+
+def _classify_bank_description(description: str, is_debit: bool) -> str:
+    """Rule-based pre-classification for bank statement descriptions."""
+    import re
+    desc = description.lower()
+
+    # Transfers: IMPS, NEFT, RTGS to individuals
+    if re.match(r"^(mmt/imps|neft|rtgs)", desc):
+        return "transfers_payments"
+
+    # CC bill payments
+    if re.search(r"(cc\s*pay|credit\s*card|card\s*payment|ccpay)", desc):
+        return "transfers_payments"
+
+    # Investment: mutual fund, stock platforms
+    if any(kw in desc for kw in ["bsestarmf", "groww", "zerodha", "kuvera", "mutual fund", "mf purchase"]):
+        return "investment_finance"
+
+    # Bills: BIL/BPAY, insurance, electricity, gas
+    if desc.startswith("bil/") or any(kw in desc for kw in ["insurance", "lic", "electricity", "bescom", "gas"]):
+        return "bills_utilities"
+
+    # Large UPI transfers (>=5000) to personal handles are likely P2P
+    if is_debit and re.search(r"upi/.+@", desc):
+        # Known merchants stay uncategorized (for ML to handle)
+        if any(kw in desc for kw in ["swiggy", "zomato", "amazon", "flipkart", "phonepe merchant"]):
+            return "uncategorized"
+        # Check if it looks like Razorpay/BSEStar investment
+        if any(kw in desc for kw in ["razorpay", "bsestarmf", "groww"]):
+            return "investment_finance"
+
+    return "uncategorized"
 
 
 def _make_reference(rec: dict) -> str:

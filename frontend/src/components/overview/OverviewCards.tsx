@@ -1,34 +1,45 @@
-import { motion } from "framer-motion";
-import { Wallet, TrendingUp, CreditCard, LineChart, PiggyBank } from "lucide-react";
-import { overviewCards } from "@/data/mockData";
+import { useQuery } from '@tanstack/react-query'
+import { getSpendingSummaryApi } from '@/api/unified'
+import { Wallet, TrendingUp, CreditCard } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
-const icons = [Wallet, TrendingUp, CreditCard, LineChart, PiggyBank];
+function fmt(n: string | number) {
+  return `₹${Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+}
 
 const OverviewCards = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['spending-summary-overview'],
+    queryFn: () => getSpendingSummaryApi({}),
+  })
+
+  const cards = [
+    { label: 'Total Spending', value: data ? fmt(data.total_spending) : '—', icon: Wallet },
+    { label: 'Total Income', value: data ? fmt(data.total_income) : '—', icon: TrendingUp },
+    { label: 'Transactions', value: data?.transaction_count.toLocaleString() ?? '—', icon: CreditCard },
+  ]
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-      {overviewCards.map((card, i) => (
-        <motion.div
-          key={card.label}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.08, duration: 0.4 }}
-          className="terminal neon-border rounded-sm p-4 crt-overlay"
-        >
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {cards.map((card) => (
+        <div key={card.label} className="bg-card border border-border shadow-sm rounded-sm p-4">
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              {(() => { const Icon = icons[i]; return <Icon className="w-4 h-4 neon-text" />; })()}
-              <span className={`text-[10px] font-mono font-bold ${card.positive ? "neon-green" : "neon-magenta"}`}>
-                {card.change} {card.positive ? "▲" : "▼"}
+            <div className="flex items-center gap-2 mb-2">
+              <card.icon className="w-4 h-4 text-primary" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                {'>'} {card.label}
               </span>
             </div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 font-mono">{'>'} {card.label}</div>
-            <div className="text-base font-display font-bold neon-text">{card.value}</div>
+            {isLoading ? (
+              <Skeleton className="h-6 w-24" />
+            ) : (
+              <div className="text-base font-semibold text-primary">{card.value}</div>
+            )}
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
-  );
-};
+  )
+}
 
-export default OverviewCards;
+export default OverviewCards

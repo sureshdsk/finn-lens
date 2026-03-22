@@ -25,7 +25,7 @@ export default function AddAccountPage() {
     mutationFn: createAccountApi,
     onSuccess: (acc) => {
       qc.invalidateQueries({ queryKey: ['banking-accounts'] })
-      navigate(`/banking/accounts/${acc.id}`)
+      navigate(`/accounts/${acc.id}`)
     },
   })
 
@@ -39,7 +39,7 @@ export default function AddAccountPage() {
     <div className="flex flex-col gap-6 max-w-md">
       <div>
         <button
-          onClick={() => navigate('/banking')}
+          onClick={() => navigate('/accounts')}
           className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-3"
         >
           ← Banking

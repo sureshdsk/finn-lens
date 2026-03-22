@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       const res = await loginApi(username, password)
       setToken(res.token)
-      navigate('/banking')
+      navigate('/overview')
     } catch {
       setError('Invalid credentials')
     } finally {
