@@ -9,6 +9,7 @@ from typing import Protocol
 class DataType(str, Enum):
     CC_TRANSACTION = "cc_transaction"
     CC_BILL = "cc_bill"
+    BANK_STATEMENT = "bank_statement"
     SUBSCRIPTION_RENEWAL = "subscription_renewal"
     INVESTMENT_UPDATE = "investment_update"
     BILL_NOTICE = "bill_notice"

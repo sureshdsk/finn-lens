@@ -29,6 +29,20 @@ class Family(models.Model):
         # ICICI, SBI, and most others use lowercase
         return name_part.lower() + ddmm
 
+    def get_bank_statement_password(self, bank_code: str) -> str | None:
+        """Generate PDF password for bank account e-statements.
+
+        ICICI: lowercase first 4 chars of name + DDMM of DOB (same as CC).
+        Override per-bank as needed.
+        """
+        if not self.cardholder_name or not self.cardholder_dob:
+            return None
+        name_part = self.cardholder_name.strip().split()[0][:4]
+        ddmm = self.cardholder_dob.strftime("%d%m")
+        if bank_code in ("ICICI",):
+            return name_part.lower() + ddmm
+        return name_part.lower() + ddmm
+
 
 class BankAccount(models.Model):
     BANK_CHOICES = [

@@ -15,7 +15,7 @@ from banking.constants import CC_DOMAINS
 
 from .encryption import decrypt_token, encrypt_token
 from .models import EmailAttachment, EmailMessage, ExtractedFinancialData, GmailAccount, SyncJob
-from .parsers import classify_sender, parse_email, set_cc_password_fn
+from .parsers import classify_sender, parse_email, set_bank_statement_password_fn, set_cc_password_fn
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +46,17 @@ def get_gmail_service(account: GmailAccount):
     return build("gmail", "v1", credentials=creds)
 
 
+_BANK_STATEMENT_SENDERS = {"estatement@icicibank.com"}
+
+
 class AttachmentHandler:
-    """Downloads and stores PDF attachments from CC sender emails."""
+    """Downloads and stores PDF attachments from CC and bank statement emails."""
 
     def store(self, service: Any, email_obj: EmailMessage, payload: dict) -> None:
         sender_lower = email_obj.sender.lower()
-        if not any(domain in sender_lower for domain in CC_DOMAINS):
+        is_cc = any(domain in sender_lower for domain in CC_DOMAINS)
+        is_bank_stmt = any(s in sender_lower for s in _BANK_STATEMENT_SENDERS)
+        if not is_cc and not is_bank_stmt:
             return
 
         parts: list[dict] = []
@@ -293,8 +298,9 @@ class GmailSyncService:
             sync_job.status = "parsing"
             sync_job.save(update_fields=["status"])
 
-            # Set up CC statement password from Family cardholder info
+            # Set up statement passwords from Family cardholder info
             self._setup_cc_passwords(account.user_id)
+            self._setup_bank_statement_passwords(account.user_id)
 
             extracted_count = 0
             for msg in unprocessed:
@@ -317,9 +323,10 @@ class GmailSyncService:
                 msg.is_processed = True
                 msg.save(update_fields=["is_processed"])
 
-            # Phase 4: Materialize CC data + classify
+            # Phase 4: Materialize extracted data
             if extracted_count > 0:
                 self._materialize_and_classify_cc(account.user_id)
+                self._materialize_bank_statements(account.user_id)
 
             # Done
             sync_job.status = "completed"
@@ -348,6 +355,16 @@ class GmailSyncService:
             pass
 
     @staticmethod
+    def _setup_bank_statement_passwords(user_id: int) -> None:
+        try:
+            from banking.models import Family
+            family = Family.objects.get(owner_id=user_id)
+            if family.cardholder_name and family.cardholder_dob:
+                set_bank_statement_password_fn(family.get_bank_statement_password)
+        except Exception:
+            pass
+
+    @staticmethod
     def _materialize_and_classify_cc(user_id: int) -> None:
         try:
             from banking.cc_services import CCMaterializer, CCClassifier
@@ -363,6 +380,17 @@ class GmailSyncService:
                     classifier.classify(card.pk)
         except Exception as e:
             logger.warning(f"CC materialize/classify failed: {e}")
+
+    @staticmethod
+    def _materialize_bank_statements(user_id: int) -> None:
+        try:
+            from banking.bank_statement_services import BankStatementMaterializer
+
+            materializer = BankStatementMaterializer()
+            result = materializer.materialize(user_id)
+            logger.info(f"Bank statement materialize: {result}")
+        except Exception as e:
+            logger.warning(f"Bank statement materialize failed: {e}")
 
 
 # ── Module-level aliases for backward compatibility ──────────────────────────

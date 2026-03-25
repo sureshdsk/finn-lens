@@ -25,6 +25,13 @@ _STATEMENT_SUBJECT_RE = re.compile(
 # Exclude transaction alert keywords
 _ALERT_KEYWORDS = ["transaction", "spent", "debited", "purchase", "charged"]
 
+# Exclude bank account statement keywords (NOT credit card)
+_BANK_STMT_RE = re.compile(
+    r"(?:bank\s+statement\s+from|account\s+statement|savings\s+account|"
+    r"current\s+account|e-?statement\s+from)",
+    re.IGNORECASE,
+)
+
 
 class CreditCardStatementParser:
     """Email parser for monthly CC statement/bill emails."""
@@ -39,8 +46,9 @@ class CreditCardStatementParser:
         domain_match = any(domain in sender_lower for domain in CC_DOMAINS)
         statement_match = bool(_STATEMENT_SUBJECT_RE.search(subject_lower))
         is_alert = any(kw in subject_lower for kw in _ALERT_KEYWORDS)
+        is_bank_stmt = bool(_BANK_STMT_RE.search(subject))
 
-        return domain_match and statement_match and not is_alert
+        return domain_match and statement_match and not is_alert and not is_bank_stmt
 
     def parse(
         self,

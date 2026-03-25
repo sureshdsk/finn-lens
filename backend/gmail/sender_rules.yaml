@@ -1,0 +1,116 @@
+# Default email sender rules for classifying financial emails.
+#
+# Each rule maps a sender pattern (fnmatch syntax) to a source type.
+# More specific patterns (fewer wildcards) are matched first automatically.
+#
+# Source types: bank, credit_card, investment, subscription, ecommerce, bill
+#
+# To add a new rule: append to the appropriate section and run:
+#   uv run python manage.py bootstrap_sender_rules
+
+# ── Bank account e-statements ────────────────────────────────────────────
+# Exact sender addresses for bank account statement emails.
+# These carry PDF attachments with monthly transaction data.
+
+- pattern: "estatement@icicibank.com"
+  source_type: bank
+
+# ── Credit cards ─────────────────────────────────────────────────────────
+# Wildcard domain rules for credit card transaction alerts and statements.
+
+- pattern: "*@hdfcbank.net"
+  source_type: credit_card
+
+- pattern: "*@icicibank.com"
+  source_type: credit_card
+
+- pattern: "*@axisbank.com"
+  source_type: credit_card
+
+- pattern: "*@sbicard.com"
+  source_type: credit_card
+
+- pattern: "*@kotak.com"
+  source_type: credit_card
+
+- pattern: "*@indusind.com"
+  source_type: credit_card
+
+- pattern: "*@sc.com"
+  source_type: credit_card
+
+- pattern: "*@rblbank.com"
+  source_type: credit_card
+
+- pattern: "*@yesbank.in"
+  source_type: credit_card
+
+# ── Banks ────────────────────────────────────────────────────────────────
+
+- pattern: "*@sbi.co.in"
+  source_type: bank
+
+- pattern: "*@idfcfirstbank.com"
+  source_type: bank
+
+- pattern: "*@federalbank.co.in"
+  source_type: bank
+
+# ── Investments ──────────────────────────────────────────────────────────
+
+- pattern: "*@zerodha.com"
+  source_type: investment
+
+- pattern: "*@groww.in"
+  source_type: investment
+
+- pattern: "*@kite.trade"
+  source_type: investment
+
+- pattern: "*@angelone.in"
+  source_type: investment
+
+# ── Subscriptions ────────────────────────────────────────────────────────
+
+- pattern: "*@netflix.com"
+  source_type: subscription
+
+- pattern: "*@spotify.com"
+  source_type: subscription
+
+- pattern: "*@hotstar.com"
+  source_type: subscription
+
+- pattern: "*@primevideo.com"
+  source_type: subscription
+
+- pattern: "*@youtube.com"
+  source_type: subscription
+
+# ── E-commerce ───────────────────────────────────────────────────────────
+
+- pattern: "*@amazon.in"
+  source_type: ecommerce
+
+- pattern: "*@flipkart.com"
+  source_type: ecommerce
+
+- pattern: "*@myntra.com"
+  source_type: ecommerce
+
+- pattern: "*@meesho.com"
+  source_type: ecommerce
+
+- pattern: "*@swiggy.in"
+  source_type: ecommerce
+
+- pattern: "*@zomato.com"
+  source_type: ecommerce
+
+# ── Bills ────────────────────────────────────────────────────────────────
+
+- pattern: "*@phonepe.com"
+  source_type: bill
+
+- pattern: "*@paytm.com"
+  source_type: bill
