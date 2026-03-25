@@ -88,6 +88,7 @@ class ExtractedFinancialData(models.Model):
     DATA_TYPE_CHOICES = [
         ("cc_transaction", "CC Transaction"),
         ("cc_bill", "CC Bill/Statement"),
+        ("bank_statement", "Bank Account Statement"),
         ("subscription_renewal", "Subscription Renewal"),
         ("investment_update", "Investment Update"),
         ("bill_notice", "Bill Notice"),
@@ -100,6 +101,7 @@ class ExtractedFinancialData(models.Model):
     data_json = models.JSONField()
     confidence = models.FloatField(default=0.0)
     is_verified = models.BooleanField(default=False)
+    is_materialized = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

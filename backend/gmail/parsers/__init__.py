@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 _PARSERS: list[BaseEmailParser] = []
 _cc_statement_parser: CreditCardStatementParser | None = None
+_bank_statement_parser: BankStatementParser | None = None
 
 
 def register(parser: BaseEmailParser):
@@ -17,11 +18,16 @@ def register(parser: BaseEmailParser):
 
 
 def classify_sender(sender: str, rules: list[EmailSenderRule]) -> SourceType:
-    """Match a sender email against sender rules to determine source type."""
+    """Match a sender email against sender rules to determine source type.
+
+    Rules are sorted so more specific patterns (fewer wildcards) match first.
+    """
     sender_lower = sender.lower()
-    for rule in rules:
-        if not rule.is_enabled:
-            continue
+    sorted_rules = sorted(
+        (r for r in rules if r.is_enabled),
+        key=lambda r: r.sender_pattern.count("*"),
+    )
+    for rule in sorted_rules:
         pattern = rule.sender_pattern.lower()
         if fnmatch.fnmatch(sender_lower, pattern):
             return SourceType(rule.source_type)
@@ -32,6 +38,12 @@ def set_cc_password_fn(fn: Callable[[str], str | None]) -> None:
     """Set the password callback for CC statement PDF parsing."""
     if _cc_statement_parser:
         _cc_statement_parser._password_fn = fn
+
+
+def set_bank_statement_password_fn(fn: Callable[[str], str | None]) -> None:
+    """Set the password callback for bank e-statement PDF parsing."""
+    if _bank_statement_parser:
+        _bank_statement_parser._password_fn = fn
 
 
 def parse_email(
@@ -46,12 +58,21 @@ def parse_email(
     return []
 
 
-# Register parsers — order matters (statement before alerts, payment after alerts)
+# Register parsers — order matters:
+# 1. Bank statement (before CC, since same domain can send both)
+# 2. CC statement (before alerts)
+# 3. CC payment
+# 4. CC alerts
+# 5. Others
+from .bank_statement import BankStatementParser
 from .cc_statement import CreditCardStatementParser
 from .cc_payment import CreditCardPaymentParser
 from .credit_card import CreditCardParser
 from .investment import GrowwInvestmentParser
 from .subscription import SubscriptionParser
+
+_bank_statement_parser = BankStatementParser()
+register(_bank_statement_parser)
 
 _cc_statement_parser = CreditCardStatementParser()
 register(_cc_statement_parser)

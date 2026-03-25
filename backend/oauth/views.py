@@ -128,50 +128,5 @@ class GoogleCallbackViewSet(ViewSet):
 
 
 def _seed_sender_rules(account):
-    from gmail.models import EmailSenderRule
-
-    default_rules = [
-        # Credit cards / Banks
-        ("*@hdfcbank.net", "credit_card"),
-        ("*@icicibank.com", "credit_card"),
-        ("*@axisbank.com", "credit_card"),
-        ("*@sbicard.com", "credit_card"),
-        ("*@kotak.com", "credit_card"),
-        ("*@indusind.com", "credit_card"),
-        ("*@sc.com", "credit_card"),
-        ("*@rblbank.com", "credit_card"),
-        ("*@yesbank.in", "credit_card"),
-        # Banks
-        ("*@sbi.co.in", "bank"),
-        ("*@idfcfirstbank.com", "bank"),
-        ("*@federalbank.co.in", "bank"),
-        # E-commerce
-        ("*@amazon.in", "ecommerce"),
-        ("*@flipkart.com", "ecommerce"),
-        ("*@myntra.com", "ecommerce"),
-        ("*@meesho.com", "ecommerce"),
-        # Subscriptions
-        ("*@netflix.com", "subscription"),
-        ("*@spotify.com", "subscription"),
-        ("*@hotstar.com", "subscription"),
-        ("*@primevideo.com", "subscription"),
-        ("*@youtube.com", "subscription"),
-        # Food
-        ("*@swiggy.in", "ecommerce"),
-        ("*@zomato.com", "ecommerce"),
-        # Bills
-        ("*@phonepe.com", "bill"),
-        ("*@paytm.com", "bill"),
-        # Investments
-        ("*@zerodha.com", "investment"),
-        ("*@groww.in", "investment"),
-        ("*@kite.trade", "investment"),
-        ("*@angelone.in", "investment"),
-    ]
-
-    for pattern, source_type in default_rules:
-        EmailSenderRule.objects.get_or_create(
-            gmail_account=account,
-            sender_pattern=pattern,
-            defaults={"source_type": source_type, "is_enabled": True},
-        )
+    from gmail.management.commands.bootstrap_sender_rules import load_rules, sync_rules_for_account
+    sync_rules_for_account(account, load_rules(), reset=False)
