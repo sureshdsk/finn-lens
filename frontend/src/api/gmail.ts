@@ -7,11 +7,24 @@ export interface GmailStatus {
   email: string
   last_sync_at: string | null
   is_active: boolean
+  needs_reauth: boolean
+  reauth_reason: string
+}
+
+export interface PipelineStep {
+  step_name: 'fetch' | 'classify' | 'parse' | 'materialize' | 'classify_transactions' | 'detect_subscriptions'
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped'
+  total_items: number
+  processed_items: number
+  error_count: number
+  error_message: string
+  started_at: string | null
+  completed_at: string | null
 }
 
 export interface SyncJob {
   id: number
-  status: 'pending' | 'fetching' | 'classifying' | 'parsing' | 'completed' | 'failed'
+  status: 'pending' | 'running' | 'completed' | 'failed'
   total_messages: number
   processed_messages: number
   new_messages: number
@@ -19,6 +32,7 @@ export interface SyncJob {
   error_message: string
   started_at: string
   completed_at: string | null
+  steps: PipelineStep[]
 }
 
 export interface SyncTriggerResponse {
@@ -48,6 +62,9 @@ export interface SenderRule {
   sender_pattern: string
   source_type: string
   is_enabled: boolean
+  subject_pattern: string
+  require_attachment: boolean
+  priority: number
 }
 
 export interface ExtractedData {
@@ -103,10 +120,11 @@ export async function disconnectGmail(): Promise<void> {
 
 // --- Sync ---
 
-export async function triggerSync(): Promise<SyncTriggerResponse> {
+export async function triggerSync(months: number = 12): Promise<SyncTriggerResponse> {
   const res = await apiFetch(`${API_URL}/api/gmail/sync`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ months }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -116,7 +134,7 @@ export async function triggerSync(): Promise<SyncTriggerResponse> {
 }
 
 export async function getSyncJob(id: number): Promise<SyncJob> {
-  const res = await apiFetch(`${API_URL}/api/gmail/sync/${id}`, {
+  const res = await apiFetch(`${API_URL}/api/gmail/sync-jobs/${id}`, {
     headers: authHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch sync job')

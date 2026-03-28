@@ -17,20 +17,31 @@ def register(parser: BaseEmailParser):
     _PARSERS.append(parser)
 
 
-def classify_sender(sender: str, rules: list[EmailSenderRule]) -> SourceType:
+def classify_sender(
+    sender: str,
+    rules: list[EmailSenderRule],
+    subject: str = "",
+    has_attachment: bool = False,
+) -> SourceType:
     """Match a sender email against sender rules to determine source type.
 
-    Rules are sorted so more specific patterns (fewer wildcards) match first.
+    Rules are sorted by priority (descending), then specificity (fewer wildcards first).
+    Subject pattern and attachment requirement are checked if set on the rule.
     """
     sender_lower = sender.lower()
+    subject_lower = subject.lower()
     sorted_rules = sorted(
         (r for r in rules if r.is_enabled),
-        key=lambda r: r.sender_pattern.count("*"),
+        key=lambda r: (-r.priority, r.sender_pattern.count("*")),
     )
     for rule in sorted_rules:
-        pattern = rule.sender_pattern.lower()
-        if fnmatch.fnmatch(sender_lower, pattern):
-            return SourceType(rule.source_type)
+        if not fnmatch.fnmatch(sender_lower, rule.sender_pattern.lower()):
+            continue
+        if rule.subject_pattern and not fnmatch.fnmatch(subject_lower, rule.subject_pattern.lower()):
+            continue
+        if rule.require_attachment and not has_attachment:
+            continue
+        return SourceType(rule.source_type)
     return SourceType.UNKNOWN
 
 

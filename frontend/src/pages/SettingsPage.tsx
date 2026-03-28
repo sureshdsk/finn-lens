@@ -1,18 +1,21 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useDarkMode } from "@/contexts/DarkModeContext";
 import { useStyleTheme, type StyleTheme } from "@/contexts/StyleThemeContext";
-import { User, Palette, Bell, Shield, Globe, Monitor, Sun, Moon, Save, Check, Zap, Square, Link2, RefreshCw, Trash2, Plus } from "lucide-react";
+import { User, Palette, Bell, Shield, Globe, Monitor, Sun, Moon, Save, Check, Zap, Square, Link2, RefreshCw, Trash2, Plus, AlertTriangle, Mail, CheckCircle2, Clock, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 import {
-  getGmailStatus, getGoogleAuthUrl, disconnectGmail, triggerSync, getSyncJob,
+  getGoogleAuthUrl, disconnectGmail,
   getSenderRules, createSenderRule, updateSenderRule, deleteSenderRule,
-  type GmailStatus, type SyncJob, type SenderRule,
+  type SenderRule, type PipelineStep,
 } from "@/api/gmail";
+import { useGmailStatus, useSyncJob, useStartSync } from "@/hooks/useSync";
+import { useQueryClient } from "@tanstack/react-query";
 
 type SettingsTab = "profile" | "appearance" | "integrations" | "notifications" | "privacy" | "general";
 
@@ -26,9 +29,11 @@ const tabs: { id: SettingsTab; label: string; icon: React.ComponentType<{ classN
 ];
 
 const SettingsPage = () => {
+  const location = useLocation();
   const { colorMode, setColorMode } = useDarkMode();
   const { styleTheme, setStyleTheme } = useStyleTheme();
-  const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
+  const initialTab = (location.state as { tab?: SettingsTab } | null)?.tab ?? "profile";
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [profileName, setProfileName] = useState("John Doe");
   const [profileEmail, setProfileEmail] = useState("john@example.com");
   const [currency, setCurrency] = useState("INR");
@@ -45,33 +50,27 @@ const SettingsPage = () => {
   const [language, setLanguage] = useState("en");
 
   // Gmail integration state
-  const [gmailStatus, setGmailStatus] = useState<GmailStatus>({ connected: false, email: "", last_sync_at: null, is_active: false });
+  const { data: gmailStatus } = useGmailStatus();
+  const { syncing, syncJob } = useSyncJob();
+  const { startSync } = useStartSync();
+  const qc = useQueryClient();
   const [gmailLoading, setGmailLoading] = useState(false);
-  const [syncJob, setSyncJob] = useState<SyncJob | null>(null);
-  const [syncing, setSyncing] = useState(false);
   const [senderRules, setSenderRules] = useState<SenderRule[]>([]);
   const [newRulePattern, setNewRulePattern] = useState("");
   const [newRuleType, setNewRuleType] = useState("credit_card");
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const loadGmailStatus = useCallback(async () => {
+  const loadRules = useCallback(async () => {
     try {
-      const status = await getGmailStatus();
-      setGmailStatus(status);
-      if (status.connected) {
+      if (gmailStatus?.connected) {
         const rules = await getSenderRules();
         setSenderRules(rules);
       }
-    } catch { /* not connected */ }
-  }, []);
+    } catch { /* ignore */ }
+  }, [gmailStatus?.connected]);
 
   useEffect(() => {
-    if (activeTab === "integrations") loadGmailStatus();
-  }, [activeTab, loadGmailStatus]);
-
-  useEffect(() => {
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, []);
+    if (activeTab === "integrations") loadRules();
+  }, [activeTab, loadRules]);
 
   const handleConnectGmail = async () => {
     setGmailLoading(true);
@@ -88,38 +87,10 @@ const SettingsPage = () => {
   const handleDisconnectGmail = async () => {
     try {
       await disconnectGmail();
-      setGmailStatus({ connected: false, email: "", last_sync_at: null, is_active: false });
       setSenderRules([]);
+      qc.invalidateQueries({ queryKey: ["gmail-status"] });
       toast.success("Gmail disconnected");
     } catch { toast.error("Failed to disconnect"); }
-  };
-
-  const handleSync = async () => {
-    setSyncing(true);
-    setSyncJob(null);
-    try {
-      const { sync_job_id } = await triggerSync();
-      // Poll for progress
-      pollRef.current = setInterval(async () => {
-        try {
-          const job = await getSyncJob(sync_job_id);
-          setSyncJob(job);
-          if (job.status === "completed" || job.status === "failed") {
-            if (pollRef.current) clearInterval(pollRef.current);
-            setSyncing(false);
-            if (job.status === "completed") {
-              toast.success(`Sync complete: ${job.new_messages} new emails, ${job.extracted_count} extracted`);
-              loadGmailStatus();
-            } else {
-              toast.error(`Sync failed: ${job.error_message}`);
-            }
-          }
-        } catch { /* ignore poll errors */ }
-      }, 2000);
-    } catch (err) {
-      setSyncing(false);
-      toast.error(err instanceof Error ? err.message : "Sync failed");
-    }
   };
 
   const handleAddRule = async () => {
@@ -210,95 +181,168 @@ const SettingsPage = () => {
           )}
           {activeTab === "integrations" && (
             <div className="space-y-6">
-              <div><h3 className="font-semibold text-xs uppercase tracking-wider text-foreground mb-1">Integrations</h3><p className="text-[10px] text-muted-foreground">{'>'} connect external services to auto-import data</p></div>
+              <div>
+                <h3 className="font-semibold text-xs uppercase tracking-wider text-foreground mb-1">Integrations</h3>
+                <p className="text-[10px] text-muted-foreground">{'>'} connect external services to auto-import financial data</p>
+              </div>
 
-              {/* Gmail Connection */}
-              <div className="space-y-4">
-                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Gmail</Label>
-                {!gmailStatus.connected ? (
-                  <div className="flex items-center gap-4">
-                    <button onClick={handleConnectGmail} disabled={gmailLoading}
-                      className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[10px] flex items-center gap-2">
-                      <Link2 className="w-3.5 h-3.5" />{gmailLoading ? "Redirecting..." : "Connect Gmail"}
-                    </button>
-                    <span className="text-[10px] text-muted-foreground">Read-only access to financial emails</span>
+              {/* Gmail Card */}
+              <div className="border border-border rounded-sm overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-7 h-7 rounded-sm flex items-center justify-center ${gmailStatus?.connected ? "bg-primary/10" : "bg-muted"}`}>
+                      <Mail className={`w-3.5 h-3.5 ${gmailStatus?.connected ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <div>
+                      <div className="text-xs font-medium text-foreground">Gmail</div>
+                      <div className="text-[9px] text-muted-foreground">Read-only access to financial emails</div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-medium text-foreground">{gmailStatus.email}</div>
-                        <div className="text-[10px] text-muted-foreground">
-                          {gmailStatus.last_sync_at ? `Last sync: ${new Date(gmailStatus.last_sync_at).toLocaleString()}` : "Never synced"}
+                  {gmailStatus?.connected ? (
+                    <div className="flex items-center gap-1.5">
+                      {gmailStatus?.needs_reauth ? (
+                        <span className="flex items-center gap-1 text-[9px] text-destructive font-medium"><AlertTriangle className="w-3 h-3" />Needs reconnect</span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[9px] text-green-500 font-medium"><CheckCircle2 className="w-3 h-3" />Connected</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-[9px] text-muted-foreground">Not connected</span>
+                  )}
+                </div>
+
+                <div className="p-4">
+                  {!gmailStatus?.connected ? (
+                    <div className="flex flex-col items-center py-6 gap-3">
+                      <div className="w-12 h-12 rounded-sm bg-muted/50 flex items-center justify-center">
+                        <Mail className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs font-medium text-foreground">Connect your Gmail account</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5 max-w-xs">
+                          Auto-import credit card alerts, bank statements, subscriptions, and investment emails
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button onClick={handleSync} disabled={syncing}
-                          className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[10px] flex items-center gap-2">
-                          <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />{syncing ? "Syncing..." : "Sync Now"}
+                      <div className="flex flex-col items-center gap-2 mt-1">
+                        <button onClick={handleConnectGmail} disabled={gmailLoading}
+                          className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[10px] px-4 py-2 flex items-center gap-2">
+                          <Link2 className="w-3.5 h-3.5" />{gmailLoading ? "Redirecting..." : "Connect Gmail"}
                         </button>
-                        <button onClick={handleDisconnectGmail}
-                          className="bg-card border border-border font-medium shadow-sm hover:bg-muted rounded-sm text-[10px] text-destructive border-destructive/30 flex items-center gap-2">
-                          <Trash2 className="w-3.5 h-3.5" />Disconnect
-                        </button>
+                        <div className="flex items-center gap-3 text-[9px] text-muted-foreground mt-1">
+                          <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" />Read-only</span>
+                          <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" />Data stays local</span>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Sync Progress */}
-                    {syncJob && syncing && (
-                      <div className="bg-card border border-border shadow-sm rounded-sm p-4 space-y-2">
-                        <div className="flex justify-between text-[10px]">
-                          <span className="text-primary uppercase">{syncJob.status}</span>
-                          <span className="text-muted-foreground">{syncJob.processed_messages}/{syncJob.total_messages}</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-primary transition-all duration-300 rounded-full"
-                            style={{ width: syncJob.total_messages ? `${(syncJob.processed_messages / syncJob.total_messages) * 100}%` : "0%" }} />
-                        </div>
-                      </div>
-                    )}
-                    {syncJob && !syncing && syncJob.status === "completed" && (
-                      <div className="text-[10px] text-muted-foreground">
-                        Last sync: {syncJob.new_messages} new emails, {syncJob.extracted_count} data points extracted
-                      </div>
-                    )}
-
-                    {/* Sender Rules */}
-                    <div className="pt-3 border-t border-border space-y-3">
-                      <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Sender Rules</Label>
-                      <div className="space-y-1 max-h-48 overflow-y-auto">
-                        {senderRules.map(rule => (
-                          <div key={rule.id} className="flex items-center justify-between py-1.5 px-2 rounded-sm hover:bg-secondary/30">
-                            <div className="flex items-center gap-2">
-                              <Switch checked={rule.is_enabled} onCheckedChange={() => handleToggleRule(rule)} />
-                              <span className="text-[10px] text-foreground">{rule.sender_pattern}</span>
-                              <span className="text-[9px] text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">{rule.source_type}</span>
-                            </div>
-                            <button onClick={() => handleDeleteRule(rule.id)} className="text-muted-foreground hover:text-destructive">
-                              <Trash2 className="w-3 h-3" />
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Reauth Banner */}
+                      {gmailStatus?.needs_reauth && (
+                        <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-3 flex items-start gap-3">
+                          <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <div className="text-xs font-medium text-destructive">Reconnection Required</div>
+                            <div className="text-[10px] text-destructive/80 mt-0.5">{gmailStatus?.reauth_reason || "Your Gmail authorization has expired."}</div>
+                            <button onClick={handleConnectGmail} disabled={gmailLoading}
+                              className="mt-2 bg-destructive text-destructive-foreground font-medium shadow-sm hover:bg-destructive/90 rounded-sm text-[10px] flex items-center gap-2">
+                              <Link2 className="w-3.5 h-3.5" />{gmailLoading ? "Redirecting..." : "Reconnect Gmail"}
                             </button>
                           </div>
-                        ))}
+                        </div>
+                      )}
+
+                      {/* Account info + actions */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-sm bg-primary/10 flex items-center justify-center">
+                            <span className="text-[10px] font-bold text-primary">{gmailStatus?.email?.charAt(0).toUpperCase()}</span>
+                          </div>
+                          <div>
+                            <div className="text-xs font-medium text-foreground">{gmailStatus?.email}</div>
+                            <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {gmailStatus?.last_sync_at ? `Last sync ${new Date(gmailStatus.last_sync_at).toLocaleString()}` : "Never synced"}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => startSync()} disabled={syncing || !!gmailStatus?.needs_reauth}
+                            className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[10px] px-3 py-1.5 flex items-center gap-1.5 disabled:opacity-50">
+                            <RefreshCw className={`w-3 h-3 ${syncing ? "animate-spin" : ""}`} />{syncing ? "Syncing..." : "Sync Now"}
+                          </button>
+                          <button onClick={handleDisconnectGmail}
+                            className="bg-card border border-border font-medium shadow-sm hover:bg-muted rounded-sm text-[10px] px-3 py-1.5 text-destructive border-destructive/30 flex items-center gap-1.5">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Input value={newRulePattern} onChange={e => setNewRulePattern(e.target.value)}
-                          placeholder="*@bank.com" className="bg-card border border-border shadow-sm text-[10px] flex-1" />
-                        <select value={newRuleType} onChange={e => setNewRuleType(e.target.value)}
-                          className="h-10 rounded-md bg-card border border-border shadow-sm bg-card px-2 text-[10px] text-foreground">
-                          <option value="credit_card">Credit Card</option>
-                          <option value="bank">Bank</option>
-                          <option value="subscription">Subscription</option>
-                          <option value="ecommerce">E-commerce</option>
-                          <option value="bill">Bill</option>
-                          <option value="investment">Investment</option>
-                        </select>
-                        <button onClick={handleAddRule} className="bg-card border border-border font-medium shadow-sm hover:bg-muted rounded-sm text-[10px] flex items-center gap-1">
-                          <Plus className="w-3 h-3" />Add
-                        </button>
+
+                      {/* Pipeline Progress */}
+                      {syncJob && (syncing || syncJob.status === "failed") && syncJob.steps && syncJob.steps.length > 0 && (
+                        <div className="bg-muted/30 border border-border rounded-sm p-3 space-y-2.5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Pipeline</span>
+                            {syncJob.error_message && <span className="text-[9px] text-destructive truncate max-w-[200px]">{syncJob.error_message}</span>}
+                          </div>
+                          <div className="space-y-1.5">
+                            {syncJob.steps.map((step) => (
+                              <PipelineStepRow key={step.step_name} step={step} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {syncJob && !syncing && syncJob.status === "completed" && (
+                        <div className="bg-green-500/5 border border-green-500/20 rounded-sm p-3 flex items-center gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                          <span className="text-[10px] text-green-600 dark:text-green-400">
+                            Synced {syncJob.new_messages} new emails, {syncJob.extracted_count} data points extracted
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Sender Rules */}
+                      <div className="pt-3 border-t border-border space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Email Sender Rules</Label>
+                          <span className="text-[9px] text-muted-foreground">{senderRules.filter(r => r.is_enabled).length}/{senderRules.length} active</span>
+                        </div>
+                        <div className="space-y-0.5 max-h-52 overflow-y-auto">
+                          {senderRules.map(rule => (
+                            <div key={rule.id} className="flex items-center justify-between py-1.5 px-2 rounded-sm hover:bg-secondary/30 group">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Switch checked={rule.is_enabled} onCheckedChange={() => handleToggleRule(rule)} />
+                                <span className={`text-[10px] truncate ${rule.is_enabled ? "text-foreground" : "text-muted-foreground line-through"}`}>{rule.sender_pattern}</span>
+                                <span className="text-[9px] text-muted-foreground px-1.5 py-0.5 rounded bg-secondary shrink-0">{rule.source_type}</span>
+                              </div>
+                              <button onClick={() => handleDeleteRule(rule.id)} className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                          {senderRules.length === 0 && (
+                            <div className="text-[10px] text-muted-foreground py-3 text-center">No sender rules configured</div>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input value={newRulePattern} onChange={e => setNewRulePattern(e.target.value)}
+                            placeholder="*@bank.com" className="bg-card border border-border shadow-sm text-[10px] flex-1" />
+                          <select value={newRuleType} onChange={e => setNewRuleType(e.target.value)}
+                            className="h-10 rounded-md bg-card border border-border shadow-sm px-2 text-[10px] text-foreground">
+                            <option value="credit_card">Credit Card</option>
+                            <option value="bank">Bank</option>
+                            <option value="subscription">Subscription</option>
+                            <option value="ecommerce">E-commerce</option>
+                            <option value="bill">Bill</option>
+                            <option value="investment">Investment</option>
+                          </select>
+                          <button onClick={handleAddRule} className="bg-card border border-border font-medium shadow-sm hover:bg-muted rounded-sm text-[10px] flex items-center gap-1">
+                            <Plus className="w-3 h-3" />Add
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -339,6 +383,39 @@ const SettingsPage = () => {
           </div>
         </div>
       </motion.div>
+    </div>
+  );
+};
+
+const STEP_LABELS: Record<string, string> = {
+  fetch: "Fetching emails",
+  classify: "Classifying senders",
+  parse: "Parsing content",
+  materialize: "Materializing data",
+  classify_transactions: "Classifying transactions",
+  detect_subscriptions: "Detecting subscriptions",
+};
+
+const PipelineStepRow = ({ step }: { step: PipelineStep }) => {
+  const pct = step.total_items > 0 ? Math.round((step.processed_items / step.total_items) * 100) : 0;
+  const statusColor = step.status === "completed" ? "text-green-500" : step.status === "running" ? "text-primary" : step.status === "failed" ? "text-destructive" : "text-muted-foreground";
+  const statusIcon = step.status === "completed" ? "✓" : step.status === "running" ? "●" : step.status === "failed" ? "✗" : "○";
+
+  return (
+    <div className="flex items-center gap-2 text-[10px]">
+      <span className={`${statusColor} w-3 text-center`}>{statusIcon}</span>
+      <span className="text-foreground flex-1">{STEP_LABELS[step.step_name] || step.step_name}</span>
+      {step.status === "running" && step.total_items > 0 && (
+        <span className="text-muted-foreground">{step.processed_items}/{step.total_items}</span>
+      )}
+      {step.status === "running" && step.total_items > 0 && (
+        <div className="w-16 h-1 bg-secondary rounded-full overflow-hidden">
+          <div className="h-full bg-primary transition-all duration-300 rounded-full" style={{ width: `${pct}%` }} />
+        </div>
+      )}
+      {step.error_count > 0 && (
+        <span className="text-destructive/70">{step.error_count} err</span>
+      )}
     </div>
   );
 };

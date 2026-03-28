@@ -44,15 +44,26 @@ class CCMaterializer:
         extracted = ExtractedFinancialData.objects.filter(
             email__gmail_account_id__in=account_ids,
             data_type__in=["cc_transaction", "cc_bill"],
+            is_materialized=False,
         ).select_related("email")
 
         result = MaterializeResult()
 
+        # Split into bills/transactions first, payments second.
+        # Payment emails often arrive before statement emails,
+        # so we must create bills before trying to mark them paid.
+        records = list(extracted)
+        non_payments = [r for r in records if not (r.data_type == "cc_bill" and r.data_json.get("is_payment"))]
+        payments = [r for r in records if r.data_type == "cc_bill" and r.data_json.get("is_payment")]
+
         with db_transaction.atomic():
-            for record in extracted:
+            # Pass 1: materialize cards, bills, transactions
+            for record in non_payments:
                 data = record.data_json
                 card_last4 = data.get("card_last4", "")
                 if not card_last4 or len(card_last4) != 4:
+                    record.is_materialized = True
+                    record.save(update_fields=["is_materialized"])
                     continue
 
                 issuer = data.get("issuer") or infer_issuer(record.email.sender)
@@ -66,13 +77,37 @@ class CCMaterializer:
                     result.cards += 1
 
                 if record.data_type == "cc_bill":
-                    if data.get("is_payment"):
-                        self._mark_bill_paid(card, data)
-                    elif self._materialize_bill(card, record, data):
+                    if self._materialize_bill(card, record, data):
                         result.bills += 1
                 elif record.data_type == "cc_transaction":
                     if self._materialize_transaction(card, record, data):
                         result.transactions += 1
+
+                record.is_materialized = True
+                record.save(update_fields=["is_materialized"])
+
+            # Pass 2: apply payment confirmations (bills now exist)
+            for record in payments:
+                data = record.data_json
+                card_last4 = data.get("card_last4", "")
+                if not card_last4 or len(card_last4) != 4:
+                    record.is_materialized = True
+                    record.save(update_fields=["is_materialized"])
+                    continue
+
+                issuer = data.get("issuer") or infer_issuer(record.email.sender)
+                card, created = CreditCard.objects.get_or_create(
+                    family=family,
+                    issuer=issuer,
+                    card_last4=card_last4,
+                    defaults={"currency": data.get("currency", "INR")},
+                )
+                if created:
+                    result.cards += 1
+
+                self._mark_bill_paid(card, data)
+                record.is_materialized = True
+                record.save(update_fields=["is_materialized"])
 
         self._link_transactions_to_bills(family)
         self._detect_payments_from_transactions(family)

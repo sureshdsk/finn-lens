@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getCardsApi, materializeCardsApi, type CreditCard } from '@/api/creditCards'
+import { useQuery } from '@tanstack/react-query'
+import { getCardsApi } from '@/api/creditCards'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { CreditCard as CreditCardIcon } from 'lucide-react'
-import { toast } from 'sonner'
+import { CreditCard as CreditCardIcon, RefreshCw } from 'lucide-react'
+import { useSyncJob, useStartSync } from '@/hooks/useSync'
 
 function fmt(n: string | number) {
   return `₹${Number(n).toLocaleString('en-IN')}`
@@ -30,24 +30,12 @@ const ISSUER_LABELS: Record<string, string> = {
 
 export default function CreditCardsPage() {
   const navigate = useNavigate()
-  const qc = useQueryClient()
+  const { syncing } = useSyncJob()
+  const { startSync } = useStartSync()
 
   const { data: cards = [], isLoading } = useQuery({
     queryKey: ['credit-cards'],
     queryFn: getCardsApi,
-  })
-
-  const materializeMutation = useMutation({
-    mutationFn: materializeCardsApi,
-    onSuccess: (result) => {
-      const parts: string[] = []
-      if (result.cards > 0) parts.push(`${result.cards} cards`)
-      if (result.bills > 0) parts.push(`${result.bills} bills`)
-      if (result.transactions > 0) parts.push(`${result.transactions} transactions`)
-      toast.success(parts.length > 0 ? `Synced: ${parts.join(', ')}` : 'Already up to date')
-      qc.invalidateQueries({ queryKey: ['credit-cards'] })
-    },
-    onError: (err) => toast.error((err as Error).message),
   })
 
   const totalTxns = cards.reduce((s, c) => s + c.transaction_count, 0)
@@ -64,10 +52,11 @@ export default function CreditCardsPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => materializeMutation.mutate()}
-          disabled={materializeMutation.isPending}
+          onClick={() => startSync()}
+          disabled={syncing}
         >
-          {materializeMutation.isPending ? 'Syncing...' : 'Sync from Email'}
+          <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${syncing ? 'animate-spin' : ''}`} />
+          {syncing ? 'Syncing...' : 'Sync'}
         </Button>
       </div>
 
@@ -126,10 +115,11 @@ export default function CreditCardsPage() {
             </p>
             <Button
               variant="outline"
-              onClick={() => materializeMutation.mutate()}
-              disabled={materializeMutation.isPending}
+              onClick={() => startSync()}
+              disabled={syncing}
             >
-              Sync from Email
+              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing...' : 'Sync from Email'}
             </Button>
           </div>
         )}
