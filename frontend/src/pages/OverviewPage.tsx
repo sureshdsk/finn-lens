@@ -1,19 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
 import { getSpendingSummaryApi } from '@/api/unified'
-import { getCardsApi, getCardBillsApi, type CreditCard, type CreditCardBill } from '@/api/creditCards'
-import { getSubscriptionsApi, type Subscription } from '@/api/subscriptions'
+import { getCardsApi, getCardBillsApi } from '@/api/creditCards'
+import { getSubscriptionsApi } from '@/api/subscriptions'
 import { getInvestmentSummary } from '@/api/gmail'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight, Wallet, TrendingUp, CreditCard as CreditCardIcon,
-  Receipt, ArrowDownToLine,
+  Receipt, ArrowDownToLine, ChevronRight,
 } from 'lucide-react'
 import SpendingChart from '@/components/overview/SpendingChart'
 import SpendingBreakdown from '@/components/overview/SpendingBreakdown'
 import RecentTransactions from '@/components/overview/RecentTransactions'
 import InvestmentPanel from '@/components/overview/InvestmentPanel'
-import BudgetTracker from '@/components/overview/BudgetTracker'
 
 function fmt(n: string | number) {
   return `₹${Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
@@ -115,7 +114,6 @@ function UpcomingTimeline() {
     .sort((a, b) => daysUntil(a.due_date) - daysUntil(b.due_date))
     .slice(0, 3)
 
-  // Build unified timeline
   type TimelineItem = {
     id: string
     type: 'cc_bill' | 'subscription' | 'sip'
@@ -223,6 +221,72 @@ function UpcomingTimeline() {
   )
 }
 
+// --- Active Subscriptions Summary ---
+function SubscriptionsSummary() {
+  const navigate = useNavigate()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['subscriptions-overview'],
+    queryFn: () => getSubscriptionsApi({ status: 'active' }),
+  })
+
+  const activeSubs = data?.items ?? []
+  const monthlyTotal = activeSubs
+    .filter(s => s.cycle === 'monthly')
+    .reduce((s, sub) => s + Number(sub.cost), 0)
+  const yearlyTotal = activeSubs
+    .filter(s => s.cycle === 'yearly')
+    .reduce((s, sub) => s + Number(sub.cost), 0)
+  const effectiveMonthly = monthlyTotal + (yearlyTotal / 12)
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-5 h-full">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-foreground">Subscriptions</h3>
+        <button onClick={() => navigate('/subscriptions')} className="text-xs text-primary hover:underline flex items-center gap-0.5">
+          View all <ChevronRight className="w-3 h-3" />
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {[0, 1, 2].map(i => <Skeleton key={i} className="h-8 w-full" />)}
+        </div>
+      ) : activeSubs.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-8">No active subscriptions</p>
+      ) : (
+        <>
+          <div className="flex items-baseline gap-1 mb-4">
+            <span className="text-xl font-semibold text-foreground tabular-nums">{fmt(effectiveMonthly)}</span>
+            <span className="text-xs text-muted-foreground">/month</span>
+          </div>
+
+          <div className="space-y-0">
+            {activeSubs.slice(0, 5).map((sub) => (
+              <div key={sub.id} className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-base leading-none shrink-0">{sub.icon || '📄'}</span>
+                  <div className="min-w-0">
+                    <div className="text-sm text-foreground truncate">{sub.name}</div>
+                    <div className="text-xs text-muted-foreground capitalize">{sub.cycle}</div>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-foreground tabular-nums shrink-0">{fmt(sub.cost)}</span>
+              </div>
+            ))}
+          </div>
+
+          {activeSubs.length > 5 && (
+            <div className="mt-3 text-xs text-muted-foreground text-center">
+              +{activeSubs.length - 5} more
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 // --- Main Page ---
 const OverviewPage = () => {
   return (
@@ -236,7 +300,7 @@ const OverviewPage = () => {
       <div className="grid lg:grid-cols-3 gap-5">
         <div className="lg:col-span-1"><InvestmentPanel /></div>
         <div className="lg:col-span-1"><RecentTransactions /></div>
-        <div className="lg:col-span-1"><BudgetTracker /></div>
+        <div className="lg:col-span-1"><SubscriptionsSummary /></div>
       </div>
     </div>
   )

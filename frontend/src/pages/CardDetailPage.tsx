@@ -224,7 +224,7 @@ function TransactionTable({
                         <p className="text-xs text-muted-foreground line-clamp-1">{t.description}</p>
                       </TableCell>
                       <TableCell className="align-top pt-3">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${cat.color}`}>
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cat.color}`}>
                           {cat.label}
                         </span>
                       </TableCell>
@@ -314,7 +314,7 @@ function BillSection({
             {b.due_date && (
               <span className="text-xs text-muted-foreground">by {formatDateShort(b.due_date)}</span>
             )}
-            <Badge variant={b.is_paid ? 'default' : 'destructive'} className="text-[10px]">
+            <Badge variant={b.is_paid ? 'default' : 'destructive'} className="text-xs">
               {b.is_paid ? 'Paid' : 'Due'}
             </Badge>
           </>

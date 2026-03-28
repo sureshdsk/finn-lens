@@ -197,7 +197,7 @@ export default function AccountsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-foreground">{acc.bank_name} Bank</span>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">Bank</Badge>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0">Bank</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {acc.account_holder_name || 'Account'}
@@ -242,11 +242,11 @@ export default function AccountsPage() {
                       <span className="text-sm font-medium text-foreground">
                         {ISSUER_LABELS[card.issuer] ?? card.issuer}
                       </span>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">Credit</Badge>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0">Credit</Badge>
                       {pendingBill && (
                         <Badge
                           variant="secondary"
-                          className={`text-[10px] px-1.5 py-0 ${
+                          className={`text-xs px-1.5 py-0 ${
                             overdue
                               ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800'
                               : dueSoon

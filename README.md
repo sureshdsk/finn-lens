@@ -2,6 +2,10 @@
 
 A personal finance intelligence platform. Connect your Gmail, and FinnLens automatically extracts credit card transactions, subscriptions, and investments from your emails — with PDF statement parsing.
 
+<p align="center">
+  <img src="docs/finnlens-2-feat.png" alt="FinnLens Features" width="700" />
+</p>
+
 ## Stack
 
 | Layer | Tech |
@@ -12,6 +16,7 @@ A personal finance intelligence platform. Connect your Gmail, and FinnLens autom
 | ML | GLiNER (entity extraction), GLiClass (classification) |
 | PDF | pdfplumber (text + table extraction) |
 | Package managers | `pnpm` (frontend), `uv` (backend) |
+| AI coding agents | [Claude Code](https://claude.ai/code) (Opus), [OpenCode](https://opencode.ai) (GLM-5) |
 
 ## Project Structure
 
@@ -72,7 +77,39 @@ pnpm dev
 
 Open `http://localhost:5174` and sign in with your superuser credentials.
 
+### Demo Mode
+
+Demo mode runs the frontend with zero backend dependency — all API calls are intercepted and return realistic mocked data (Indian financial data: INR, Indian banks, merchants).
+
+```bash
+cd frontend
+
+# Dev server with demo mode
+pnpm dev:demo
+
+# Production demo build
+pnpm build:demo
+```
+
+Open `http://localhost:5174` — you'll see a marketing landing page instead of the login form. Click **"Quick Login as Demo User"** or enter `demo` / `demo`.
+
+**What works in demo mode:**
+- All pages display realistic mock data (overview, accounts, transactions, analytics, calendar, subscriptions, investments, budgets, assets, life events, waitlist, notifications, settings)
+- Write operations (add account, update profile, manage subscriptions, manage sender rules) modify in-memory state
+- Gmail sync simulates a real pipeline — click Sync and watch the 6-step pipeline progress in real time
+- Category overrides on transactions persist in-memory
+- A subtle "Demo Mode" banner appears at the top of the app
+
+**What is mocked:**
+- No real API calls are made — the backend is not required
+- Login is local (`demo:demo` credentials, no JWT validation)
+- Gmail OAuth flow returns mock responses
+
 ## How It Works
+
+<p align="center">
+  <img src="docs/finnlens-architecture.png" alt="FinnLens Architecture" width="700" />
+</p>
 
 ### Gmail Sync Pipeline
 

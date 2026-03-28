@@ -148,7 +148,7 @@ function TransactionDetail({ id, onClose }: { id: number; onClose: () => void })
               <div className="space-y-2">
                 {data.sources.map((s) => (
                   <div key={s.id} className="flex items-center gap-3 text-sm border rounded-md px-3 py-2">
-                    <Badge variant="outline" className="text-[10px] shrink-0">
+                    <Badge variant="outline" className="text-xs shrink-0">
                       {SOURCE_TYPE_LABELS[s.source_type] ?? s.source_type}
                     </Badge>
                     <span className="text-xs text-muted-foreground flex-1 line-clamp-1">
@@ -383,14 +383,14 @@ export default function TransactionsPage() {
                             <p className="text-xs text-muted-foreground line-clamp-1">{t.description}</p>
                           </div>
                           {t.source_count > 1 && (
-                            <span className="shrink-0 inline-flex items-center gap-0.5 text-[10px] text-muted-foreground" title={`${t.source_count} sources`}>
+                            <span className="shrink-0 inline-flex items-center gap-0.5 text-xs text-muted-foreground" title={`${t.source_count} sources`}>
                               <LayersIcon className="size-3" />{t.source_count}
                             </span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${cat.color}`}>
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cat.color}`}>
                           {cat.label}
                         </span>
                       </TableCell>

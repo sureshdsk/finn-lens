@@ -160,6 +160,8 @@ class SubscriptionUpdateSchema(msgspec.Struct):
     auto_renew: Optional[bool] = None
     category: Optional[str] = None
     name: Optional[str] = None
+    cost: Optional[str] = None
+    currency: Optional[str] = None
 
 
 class SubscriptionDetectResultSchema(msgspec.Struct):

@@ -581,6 +581,11 @@ class SubscriptionDetailViewSet(ViewSet):
             sub.category = data.category
         if data.name is not None:
             sub.name = data.name
+        if data.cost is not None:
+            from decimal import Decimal
+            sub.cost = Decimal(data.cost)
+        if data.currency is not None:
+            sub.currency = data.currency
 
         await sub.asave()
 

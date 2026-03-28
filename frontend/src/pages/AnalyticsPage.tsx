@@ -35,7 +35,7 @@ function fmtFull(n: number) {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-card border border-border shadow-sm rounded-sm p-2.5 text-[9px] shadow-lg">
+    <div className="bg-card border border-border shadow-sm rounded-lg p-2.5 text-xs shadow-lg">
       <div className="text-foreground font-bold mb-1">{label}</div>
       {payload.map((p: any) => (
         <div key={p.dataKey} className="flex items-center gap-2">
@@ -88,15 +88,15 @@ export default function AnalyticsPage() {
       {/* Summary cards */}
       <div className="grid sm:grid-cols-4 gap-4">
         {[
-          { label: 'Avg Monthly Spend', value: isLoading ? '...' : fmt(avgExpense), icon: TrendingDown, accent: 'text-[hsl(var(--text-amber-600 dark:text-amber-400))]' },
+          { label: 'Avg Monthly Spend', value: isLoading ? '...' : fmt(avgExpense), icon: TrendingDown, accent: 'text-amber-600 dark:text-amber-400' },
           { label: 'Savings Rate', value: isLoading ? '...' : `${savingsRate}%`, icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
           { label: 'Expense Trend', value: isLoading ? '...' : `${Number(expenseTrend) > 0 ? '+' : ''}${expenseTrend}%`, icon: Number(expenseTrend) > 0 ? TrendingUp : TrendingDown, accent: Number(expenseTrend) > 0 ? 'text-rose-500' : 'text-emerald-600 dark:text-emerald-400' },
           { label: 'Top Category', value: isLoading ? '...' : (CATEGORY_LABELS[cats[0]?.category] ?? '—'), icon: TrendingUp, accent: 'text-primary' },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="bg-card border border-border shadow-sm rounded-sm p-4">
+            className="bg-card border border-border shadow-sm rounded-lg p-4">
             <div className="relative z-10">
-              <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{card.label}</div>
+              <div className="text-xs text-muted-foreground mb-1">{card.label}</div>
               <div className="flex items-center gap-1.5">
                 <card.icon className={`w-4 h-4 ${card.accent}`} />
                 <span className={`text-lg font-semibold ${card.accent}`}>{card.value}</span>
@@ -108,9 +108,9 @@ export default function AnalyticsPage() {
 
       {/* Income vs Expense chart */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-        className="bg-card border border-border shadow-sm rounded-sm p-5">
+        className="bg-card border border-border shadow-sm rounded-lg p-5">
         <div className="relative z-10">
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-foreground mb-4">{'>'} Income vs Expense</h3>
+          <h3 className="text-base font-semibold text-foreground mb-4">Income vs Expense</h3>
           {isLoading ? <Skeleton className="h-[260px] w-full" /> : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={chartData} barGap={4}>
@@ -118,23 +118,23 @@ export default function AnalyticsPage() {
                 <XAxis dataKey="month" tick={{ fontSize: 9, fontFamily: 'JetBrains Mono', fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fontFamily: 'JetBrains Mono', fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} tickFormatter={(v) => fmt(v)} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="income" fill="hsl(var(--text-emerald-600 dark:text-emerald-400))" radius={[2, 2, 0, 0]} opacity={0.85} />
+                <Bar dataKey="income" fill="hsl(142,71%,45%)" radius={[2, 2, 0, 0]} opacity={0.85} />
                 <Bar dataKey="expense" fill="hsl(var(--accent))" radius={[2, 2, 0, 0]} opacity={0.85} />
               </BarChart>
             </ResponsiveContainer>
           )}
           <div className="flex items-center justify-center gap-5 mt-2">
-            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground"><div className="w-2.5 h-2.5 rounded-sm bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]" /> Income</div>
-            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground"><div className="w-2.5 h-2.5 rounded-sm bg-[hsl(var(--accent))]" /> Expense</div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><div className="w-2.5 h-2.5 rounded-md bg-emerald-500" /> Income</div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><div className="w-2.5 h-2.5 rounded-md bg-[hsl(var(--accent))]" /> Expense</div>
           </div>
         </div>
       </motion.div>
 
       {/* Category breakdown */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-        className="bg-card border border-border shadow-sm rounded-sm p-5">
+        className="bg-card border border-border shadow-sm rounded-lg p-5">
         <div className="relative z-10">
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-foreground mb-4">{'>'} Spending by Category</h3>
+          <h3 className="text-base font-semibold text-foreground mb-4">Spending by Category</h3>
           {isLoading ? <Skeleton className="h-[200px] w-full" /> : (
             <div className="flex items-center gap-4">
               <ResponsiveContainer width="50%" height={200}>
@@ -155,9 +155,9 @@ export default function AnalyticsPage() {
                   <div key={c.category} className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full" style={{ background: CATEGORY_COLORS[c.category] ?? '#6b7280' }} />
-                      <span className="text-[9px] text-foreground">{CATEGORY_LABELS[c.category] ?? c.category}</span>
+                      <span className="text-xs text-foreground">{CATEGORY_LABELS[c.category] ?? c.category}</span>
                     </div>
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {totalExpense > 0 ? Math.round((Number(c.total) / totalExpense) * 100) : 0}%
                     </span>
                   </div>
@@ -170,10 +170,10 @@ export default function AnalyticsPage() {
 
       {/* Monthly comparison table */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-        className="bg-card border border-border shadow-sm rounded-sm p-5">
+        className="bg-card border border-border shadow-sm rounded-lg p-5">
         <div className="relative z-10">
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-foreground mb-4">{'>'} Monthly Comparison</h3>
-          <div className="grid grid-cols-5 gap-2 pb-2 border-b border-border text-[8px] uppercase tracking-widest text-muted-foreground">
+          <h3 className="text-base font-semibold text-foreground mb-4">Monthly Comparison</h3>
+          <div className="grid grid-cols-5 gap-2 pb-2 border-b border-border text-xs font-medium text-muted-foreground">
             <div>Month</div><div className="text-right">Income</div><div className="text-right">Expense</div><div className="text-right">Savings</div><div className="text-right">Rate</div>
           </div>
           {isLoading ? (
@@ -186,14 +186,14 @@ export default function AnalyticsPage() {
                 const expChange = prevExp > 0 ? ((m.expense - prevExp) / prevExp * 100).toFixed(1) : '0'
                 return (
                   <div key={m.month} className="grid grid-cols-5 gap-2 py-2.5 items-center">
-                    <div className="text-[10px] font-bold text-foreground">{m.month}</div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 text-right">{fmtFull(m.income)}</div>
+                    <div className="text-xs font-bold text-foreground">{m.month}</div>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 text-right">{fmtFull(m.income)}</div>
                     <div className="text-right">
-                      <div className="text-[10px] text-rose-500">{fmtFull(m.expense)}</div>
-                      {i > 0 && <div className={`text-[8px] ${Number(expChange) > 0 ? 'text-rose-500' : 'text-emerald-600 dark:text-emerald-400'}`}>{Number(expChange) > 0 ? '+' : ''}{expChange}%</div>}
+                      <div className="text-xs text-rose-500">{fmtFull(m.expense)}</div>
+                      {i > 0 && <div className={`text-xs ${Number(expChange) > 0 ? 'text-rose-500' : 'text-emerald-600 dark:text-emerald-400'}`}>{Number(expChange) > 0 ? '+' : ''}{expChange}%</div>}
                     </div>
-                    <div className="text-[10px] text-primary text-right">{fmtFull(m.savings)}</div>
-                    <div className={`text-[10px] font-bold text-right ${rate >= 30 ? 'text-emerald-600 dark:text-emerald-400' : rate >= 20 ? 'text-[hsl(var(--text-amber-600 dark:text-amber-400))]' : 'text-rose-500'}`}>{rate}%</div>
+                    <div className="text-xs text-primary text-right">{fmtFull(m.savings)}</div>
+                    <div className={`text-xs font-bold text-right ${rate >= 30 ? 'text-emerald-600 dark:text-emerald-400' : rate >= 20 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-500'}`}>{rate}%</div>
                   </div>
                 )
               })}
