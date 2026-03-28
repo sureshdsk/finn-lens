@@ -22,6 +22,7 @@ export interface CreditCardBill {
   billing_period_start: string | null
   billing_period_end: string | null
   is_paid: boolean
+  paid_date: string | null
   transaction_count: number
   transactions_total: string | null
   gmail_message_id: string | null

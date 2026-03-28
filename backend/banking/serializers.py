@@ -91,6 +91,7 @@ class CreditCardBillSchema(msgspec.Struct):
     billing_period_start: Optional[str]
     billing_period_end: Optional[str]
     is_paid: bool
+    paid_date: Optional[str] = None
     transaction_count: int = 0
     transactions_total: Optional[str] = None
     gmail_message_id: Optional[str] = None

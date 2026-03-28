@@ -3,8 +3,8 @@ import { useAuthStore } from '@/stores/authStore'
 import { useState } from 'react'
 import {
   LayoutDashboard, Wallet, ArrowDownUp, BarChart3,
-  Calculator, Bell, LineChart, Settings, LogOut, TrendingUp,
-  ChevronLeft, ChevronRight, Milestone, ShoppingCart, Radio, Landmark
+  Bell, LineChart, Settings, LogOut, TrendingUp,
+  ChevronLeft, ChevronRight, Radio, CalendarDays
 } from 'lucide-react'
 
 const menuItems = [
@@ -12,12 +12,9 @@ const menuItems = [
   { icon: Wallet, label: "Accounts", route: "/accounts" },
   { icon: ArrowDownUp, label: "Transactions", route: "/transactions" },
   { icon: BarChart3, label: "Analytics", route: "/analytics" },
-  { icon: Calculator, label: "Budgets", route: "/budgets" },
+  { icon: CalendarDays, label: "Calendar", route: "/calendar" },
   { icon: Bell, label: "Subscriptions", route: "/subscriptions" },
   { icon: LineChart, label: "Investments", route: "/investments" },
-  { icon: Landmark, label: "Assets", route: "/assets" },
-  { icon: Milestone, label: "Life Events", route: "/life-events" },
-  { icon: ShoppingCart, label: "Waitlist", route: "/waitlist" },
   { icon: Radio, label: "Control Center", route: "/notifications" },
 ]
 
