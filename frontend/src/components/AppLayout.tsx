@@ -12,6 +12,7 @@ const viewLabels: Record<string, string> = {
   '/accounts': 'Accounts',
   '/transactions': 'Transactions',
   '/analytics': 'Analytics',
+  '/calendar': 'Calendar',
   '/budgets': 'Budgets',
   '/subscriptions': 'Subscriptions',
   '/investments': 'Investments',

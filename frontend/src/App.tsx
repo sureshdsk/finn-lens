@@ -12,6 +12,7 @@ import AccountsPage from '@/pages/AccountsPage'
 import TransactionsPage from '@/pages/TransactionsPage'
 import AnalyticsPage from '@/pages/AnalyticsPage'
 import CardDetailPage from '@/pages/CardDetailPage'
+import CalendarPage from '@/pages/CalendarPage'
 import BudgetsPage from '@/pages/BudgetsPage'
 import SubscriptionsPage from '@/pages/SubscriptionsPage'
 import InvestmentsPage from '@/pages/InvestmentsPage'
@@ -46,6 +47,7 @@ export default function App() {
                 <Route path="/credit-cards/:id" element={<CardDetailPage />} />
                 <Route path="/transactions" element={<TransactionsPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/budgets" element={<BudgetsPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/investments" element={<InvestmentsPage />} />

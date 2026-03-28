@@ -7,8 +7,14 @@ from django.db import models
 
 from .api import api
 from .models import (
-    BankAccount, CreditCard, CreditCardBill, CreditCardTransaction,
-    Family, Subscription, SubscriptionPayment, UnifiedTransaction,
+    BankAccount,
+    CreditCard,
+    CreditCardBill,
+    CreditCardTransaction,
+    Family,
+    Subscription,
+    SubscriptionPayment,
+    UnifiedTransaction,
 )
 from .serializers import (
     AccountSchema,
@@ -60,7 +66,9 @@ async def _get_family(user_id: int) -> Family:
     try:
         return await Family.objects.aget(owner_id=user_id)
     except Family.DoesNotExist:
-        raise NotFound(detail="No family found for this user. Run bootstrap_data first.")
+        raise NotFound(
+            detail="No family found for this user. Run bootstrap_data first."
+        )
 
 
 @api.viewset("/accounts")
@@ -183,7 +191,9 @@ class UploadViewSet(ViewSet):
     auth = _auth
     guards = _guards
 
-    async def create(self, request: Request, id: int, file: Annotated[UploadFile, File()]):
+    async def create(
+        self, request: Request, id: int, file: Annotated[UploadFile, File()]
+    ):
         """POST /api/banking/accounts/{id}/upload/ — upload statement file"""
         acc = await _assert_account_owner(id, int(request.context["user_id"]))
 
@@ -197,6 +207,7 @@ class UploadViewSet(ViewSet):
         classified = 0
         if count > 0:
             from classifier.services import classify_account_transactions
+
             classified = await _run_sync(classify_account_transactions, acc.pk)
 
         return UploadResultSchema(imported=count, classified=classified, account_id=id)
@@ -234,7 +245,12 @@ class CardListViewSet(ViewSet):
     async def list(self, request: Request):
         """GET /api/banking/cards/ — list all CC cards for the user's family"""
         family = await _get_family(int(request.context["user_id"]))
-        cards = [c async for c in CreditCard.objects.filter(family=family).order_by("created_at")]
+        cards = [
+            c
+            async for c in CreditCard.objects.filter(family=family).order_by(
+                "created_at"
+            )
+        ]
 
         result = []
         for card in cards:
@@ -250,7 +266,9 @@ class CardListViewSet(ViewSet):
                     credit_limit=str(card.credit_limit) if card.credit_limit else None,
                     currency=card.currency,
                     transaction_count=count,
-                    last_bill_total=str(last_bill.total_due) if last_bill and last_bill.total_due else None,
+                    last_bill_total=str(last_bill.total_due)
+                    if last_bill and last_bill.total_due
+                    else None,
                     last_bill_date=str(last_bill.statement_date) if last_bill else None,
                 )
             )
@@ -264,6 +282,7 @@ class CardListViewSet(ViewSet):
             raise BadRequest(detail="card_last4 must be exactly 4 digits")
 
         from decimal import Decimal, InvalidOperation
+
         credit_limit = None
         if data.credit_limit:
             try:
@@ -301,6 +320,7 @@ class CardBillViewSet(ViewSet):
         """GET /api/banking/cards/{id}/bills/ — bills for a card"""
         await _assert_card_owner(id, int(request.context["user_id"]))
         from django.db.models import Count, Sum
+
         bills = [
             CreditCardBillSchema(
                 id=b.pk,
@@ -308,20 +328,36 @@ class CardBillViewSet(ViewSet):
                 due_date=str(b.due_date) if b.due_date else None,
                 total_due=str(b.total_due) if b.total_due else None,
                 min_due=str(b.min_due) if b.min_due else None,
-                billing_period_start=str(b.billing_period_start) if b.billing_period_start else None,
-                billing_period_end=str(b.billing_period_end) if b.billing_period_end else None,
+                billing_period_start=str(b.billing_period_start)
+                if b.billing_period_start
+                else None,
+                billing_period_end=str(b.billing_period_end)
+                if b.billing_period_end
+                else None,
                 is_paid=b.is_paid,
+                paid_date=(
+                    str(b.payment_txn_date)
+                    if getattr(b, "payment_txn_date", None)
+                    else None
+                ),
                 transaction_count=b.txn_count,
                 transactions_total=str(b.txn_total) if b.txn_total else None,
-                gmail_message_id=b.source_email.message_id if b.source_email_id else None,
+                gmail_message_id=b.source_email.message_id
+                if b.source_email_id
+                else None,
             )
             async for b in (
-                CreditCardBill.objects
-                .filter(card_id=id)
-                .select_related("source_email")
+                CreditCardBill.objects.filter(card_id=id)
+                .select_related("source_email", "payment_bank_transaction")
                 .annotate(
                     txn_count=Count("transactions"),
-                    txn_total=Sum("transactions__amount", filter=models.Q(transactions__amount__gt=0)),
+                    txn_total=Sum(
+                        "transactions__amount",
+                        filter=models.Q(transactions__amount__gt=0),
+                    ),
+                    payment_txn_date=models.F(
+                        "payment_bank_transaction__transaction_date"
+                    ),
                 )
                 .order_by("-statement_date")
             )
@@ -383,7 +419,9 @@ class CardTransactionViewSet(ViewSet):
             CreditCardTransactionSchema(
                 id=t.pk,
                 transaction_date=str(t.transaction_date),
-                transaction_time=str(t.transaction_time) if t.transaction_time else None,
+                transaction_time=str(t.transaction_time)
+                if t.transaction_time
+                else None,
                 amount=str(t.amount),
                 currency=t.currency,
                 description=t.description,
@@ -412,6 +450,7 @@ class CardMaterializeViewSet(ViewSet):
     async def create(self, request: Request):
         """POST /api/banking/cards/materialize/ — materialize CC data from emails"""
         from .cc_services import materialize_cc_data
+
         user_id = int(request.context["user_id"])
         result = await _run_sync(materialize_cc_data, user_id)
         return MaterializeResultSchema(**result)
@@ -426,6 +465,7 @@ class CardClassifyViewSet(ViewSet):
         """POST /api/banking/cards/{id}/classify/ — classify uncategorized CC transactions"""
         await _assert_card_owner(id, int(request.context["user_id"]))
         from .cc_services import classify_cc_transactions
+
         classified = await _run_sync(classify_cc_transactions, id)
         return {"classified": classified}
 
@@ -438,7 +478,9 @@ class SubscriptionListViewSet(ViewSet):
     auth = _auth
     guards = _guards
 
-    async def list(self, request: Request, status: str | None = None, category: str | None = None):
+    async def list(
+        self, request: Request, status: str | None = None, category: str | None = None
+    ):
         """GET /api/banking/subscriptions/ — list subscriptions"""
         family = await _get_family(int(request.context["user_id"]))
 
@@ -455,6 +497,7 @@ class SubscriptionListViewSet(ViewSet):
         for s in subs:
             payment_count = await s.payments.acount()
             from django.db.models import Sum
+
             agg = await s.payments.aaggregate(total=Sum("amount"))
             total_spent = agg["total"]
 
@@ -466,7 +509,9 @@ class SubscriptionListViewSet(ViewSet):
                     cost=str(s.cost),
                     currency=s.currency,
                     cycle=s.cycle,
-                    renew_date=str(s.next_renewal_date) if s.next_renewal_date else None,
+                    renew_date=str(s.next_renewal_date)
+                    if s.next_renewal_date
+                    else None,
                     status=s.status,
                     icon=s.icon,
                     color=s.color,
@@ -495,6 +540,7 @@ class SubscriptionDetailViewSet(ViewSet):
         sub = await _assert_subscription_owner(id, int(request.context["user_id"]))
         payment_count = await sub.payments.acount()
         from django.db.models import Sum
+
         agg = await sub.payments.aaggregate(total=Sum("amount"))
         total_spent = agg["total"]
 
@@ -521,7 +567,9 @@ class SubscriptionDetailViewSet(ViewSet):
             payment_count=payment_count,
         )
 
-    async def partial_update(self, request: Request, id: int, data: SubscriptionUpdateSchema):
+    async def partial_update(
+        self, request: Request, id: int, data: SubscriptionUpdateSchema
+    ):
         """PATCH /api/banking/subscriptions/{id}/ — update status, auto_renew, etc."""
         sub = await _assert_subscription_owner(id, int(request.context["user_id"]))
 
@@ -538,6 +586,7 @@ class SubscriptionDetailViewSet(ViewSet):
 
         payment_count = await sub.payments.acount()
         from django.db.models import Sum
+
         agg = await sub.payments.aaggregate(total=Sum("amount"))
         total_spent = agg["total"]
 
@@ -573,6 +622,7 @@ class SubscriptionDetectViewSet(ViewSet):
     async def create(self, request: Request):
         """POST /api/banking/subscriptions/detect/ — run detection + materialization"""
         from .sub_services import materialize_subscriptions
+
         family = await _get_family(int(request.context["user_id"]))
         result = await _run_sync(materialize_subscriptions, family)
         return SubscriptionDetectResultSchema(**result)
@@ -627,6 +677,7 @@ class UnifiedTransactionListViewSet(ViewSet):
         offset = (page - 1) * page_size
 
         from django.db.models import Count
+
         qs = qs.annotate(src_count=Count("sources"))
 
         items = [
@@ -641,13 +692,21 @@ class UnifiedTransactionListViewSet(ViewSet):
                 category_confidence=t.category_confidence,
                 instrument_type=t.instrument_type,
                 source_count=t.src_count,
-                credit_card_label=f"{t.credit_card.issuer} ••{t.credit_card.card_last4}" if t.credit_card_id else None,
-                bank_account_label=f"{t.bank_account.bank_name}" if t.bank_account_id else None,
+                credit_card_label=f"{t.credit_card.issuer} ••{t.credit_card.card_last4}"
+                if t.credit_card_id
+                else None,
+                bank_account_label=f"{t.bank_account.bank_name}"
+                if t.bank_account_id
+                else None,
             )
-            async for t in qs.select_related("credit_card", "bank_account")[offset: offset + page_size]
+            async for t in qs.select_related("credit_card", "bank_account")[
+                offset : offset + page_size
+            ]
         ]
 
-        return UnifiedTransactionListSchema(items=items, total=total, page=page, page_size=page_size)
+        return UnifiedTransactionListSchema(
+            items=items, total=total, page=page, page_size=page_size
+        )
 
 
 @api.viewset("/transactions/unified/{id}")
@@ -666,6 +725,7 @@ class UnifiedTransactionDetailViewSet(ViewSet):
             raise NotFound(detail="Transaction not found")
 
         import msgspec
+
         body = msgspec.json.decode(await request.body)
         category = body.get("category")
         if not category:
@@ -675,10 +735,18 @@ class UnifiedTransactionDetailViewSet(ViewSet):
         ut.category = category
         ut.is_user_categorized = True
         ut.category_confidence = 1.0
-        await ut.asave(update_fields=["category", "is_user_categorized", "category_confidence", "updated_at"])
+        await ut.asave(
+            update_fields=[
+                "category",
+                "is_user_categorized",
+                "category_confidence",
+                "updated_at",
+            ]
+        )
 
         # Propagate to source records
         from asgiref.sync import sync_to_async
+
         await sync_to_async(_propagate_category)(ut, category)
 
         return {"id": ut.pk, "category": ut.category}
@@ -687,11 +755,9 @@ class UnifiedTransactionDetailViewSet(ViewSet):
         """GET /api/banking/transactions/unified/{id}/ — detail with sources"""
         user_id = int(request.context["user_id"])
         try:
-            ut = await (
-                UnifiedTransaction.objects
-                .select_related("credit_card", "bank_account", "family")
-                .aget(pk=id)
-            )
+            ut = await UnifiedTransaction.objects.select_related(
+                "credit_card", "bank_account", "family"
+            ).aget(pk=id)
         except UnifiedTransaction.DoesNotExist:
             raise NotFound(detail="Transaction not found")
         if ut.family.owner_id != user_id:
@@ -720,8 +786,12 @@ class UnifiedTransactionDetailViewSet(ViewSet):
             description=ut.description,
             category=ut.category,
             instrument_type=ut.instrument_type,
-            credit_card_label=f"{ut.credit_card.issuer} ••{ut.credit_card.card_last4}" if ut.credit_card_id else None,
-            bank_account_label=f"{ut.bank_account.bank_name}" if ut.bank_account_id else None,
+            credit_card_label=f"{ut.credit_card.issuer} ••{ut.credit_card.card_last4}"
+            if ut.credit_card_id
+            else None,
+            bank_account_label=f"{ut.bank_account.bank_name}"
+            if ut.bank_account_id
+            else None,
             sources=sources,
         )
 
@@ -731,7 +801,9 @@ class SpendingSummaryViewSet(ViewSet):
     auth = _auth
     guards = _guards
 
-    async def list(self, request: Request, year: int | None = None, month: int | None = None):
+    async def list(
+        self, request: Request, year: int | None = None, month: int | None = None
+    ):
         """GET /api/banking/spending/summary/ — spending summary with category breakdown"""
         family = await _get_family(int(request.context["user_id"]))
 
@@ -756,7 +828,8 @@ class SpendingSummaryViewSet(ViewSet):
 
         # Total income
         income_qs = UnifiedTransaction.objects.filter(
-            family=family, instrument_type="bank_credit",
+            family=family,
+            instrument_type="bank_credit",
         )
         if year is not None:
             income_qs = income_qs.filter(transaction_date__year=year)
@@ -772,9 +845,10 @@ class SpendingSummaryViewSet(ViewSet):
                 total=str(row["cat_total"]),
                 count=row["cat_count"],
             )
-            async for row in qs.filter(amount__gt=0).values("category").annotate(
-                cat_total=Sum("amount"), cat_count=Count("id")
-            ).order_by("-cat_total")
+            async for row in qs.filter(amount__gt=0)
+            .values("category")
+            .annotate(cat_total=Sum("amount"), cat_count=Count("id"))
+            .order_by("-cat_total")
         ]
 
         return SpendingSummarySchema(
@@ -797,7 +871,21 @@ class MonthlySpendingViewSet(ViewSet):
         from django.db.models import Sum
         from django.db.models.functions import ExtractMonth, ExtractYear
 
-        MONTH_LABELS = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        MONTH_LABELS = [
+            "",
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+        ]
 
         # Expense by month (CC + bank debits, excl transfers)
         expense_qs = UnifiedTransaction.objects.filter(
@@ -812,7 +900,10 @@ class MonthlySpendingViewSet(ViewSet):
             (r["y"], r["m"]): r["total"]
             async for r in expense_qs.annotate(
                 y=ExtractYear("transaction_date"), m=ExtractMonth("transaction_date")
-            ).values("y", "m").annotate(total=Sum("amount")).order_by("y", "m")
+            )
+            .values("y", "m")
+            .annotate(total=Sum("amount"))
+            .order_by("y", "m")
         }
 
         # Income by month
@@ -827,7 +918,10 @@ class MonthlySpendingViewSet(ViewSet):
             (r["y"], r["m"]): r["total"]
             async for r in income_qs.annotate(
                 y=ExtractYear("transaction_date"), m=ExtractMonth("transaction_date")
-            ).values("y", "m").annotate(total=Sum("amount")).order_by("y", "m")
+            )
+            .values("y", "m")
+            .annotate(total=Sum("amount"))
+            .order_by("y", "m")
         }
 
         all_months = sorted(set(expense_by_month.keys()) | set(income_by_month.keys()))
@@ -837,33 +931,44 @@ class MonthlySpendingViewSet(ViewSet):
             expense = expense_by_month.get((y, m), 0) or 0
             income = income_by_month.get((y, m), 0) or 0
             savings = income - expense
-            result.append(MonthlySpendingSchema(
-                year=y, month=m,
-                month_label=f"{MONTH_LABELS[m]} {y}",
-                income=str(income),
-                expense=str(expense),
-                savings=str(savings),
-            ))
+            result.append(
+                MonthlySpendingSchema(
+                    year=y,
+                    month=m,
+                    month_label=f"{MONTH_LABELS[m]} {y}",
+                    income=str(income),
+                    expense=str(expense),
+                    savings=str(savings),
+                )
+            )
 
         return result
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+
 def _propagate_category(ut: UnifiedTransaction, category: str) -> None:
     """Sync category from UnifiedTransaction to all source records."""
     from .models import TransactionSource
-    for src in TransactionSource.objects.filter(unified_transaction=ut).select_related("cc_transaction", "bank_transaction"):
+
+    for src in TransactionSource.objects.filter(unified_transaction=ut).select_related(
+        "cc_transaction", "bank_transaction"
+    ):
         if src.cc_transaction:
             src.cc_transaction.category = category
             src.cc_transaction.is_user_categorized = True
             src.cc_transaction.category_confidence = 1.0
-            src.cc_transaction.save(update_fields=["category", "is_user_categorized", "category_confidence"])
+            src.cc_transaction.save(
+                update_fields=["category", "is_user_categorized", "category_confidence"]
+            )
         if src.bank_transaction:
             src.bank_transaction.category = category
             src.bank_transaction.is_user_categorized = True
             src.bank_transaction.category_confidence = 1.0
-            src.bank_transaction.save(update_fields=["category", "is_user_categorized", "category_confidence"])
+            src.bank_transaction.save(
+                update_fields=["category", "is_user_categorized", "category_confidence"]
+            )
 
 
 async def _assert_account_owner(account_id: int, user_id: int) -> BankAccount:
@@ -898,4 +1003,5 @@ async def _assert_subscription_owner(sub_id: int, user_id: int) -> Subscription:
 
 async def _run_sync(fn, *args):
     from asgiref.sync import sync_to_async
+
     return await sync_to_async(fn)(*args)
