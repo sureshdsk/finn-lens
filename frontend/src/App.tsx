@@ -22,6 +22,7 @@ import WaitlistPage from '@/pages/WaitlistPage'
 import NotificationsPage from '@/pages/NotificationsPage'
 import SettingsPage from '@/pages/SettingsPage'
 import OAuthCallbackPage from '@/pages/OAuthCallbackPage'
+import AboutPage from '@/pages/AboutPage'
 
 const queryClient = new QueryClient()
 
@@ -58,6 +59,7 @@ export default function App() {
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
               <Route path="/oauth/google/callback" element={<OAuthCallbackPage />} />
+              <Route path="/about" element={<AboutPage />} />
               <Route path="*" element={<Navigate to="/overview" replace />} />
             </Routes>
           </BrowserRouter>
