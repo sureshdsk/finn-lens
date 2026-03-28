@@ -8,7 +8,11 @@ from .serializers import AuthUrlResponse, CallbackRequest, CallbackResponse
 _auth = [JWTAuthentication()]
 _guards = [IsAuthenticated]
 
-GOOGLE_SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+GOOGLE_SCOPES = [
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "profile",
+    "email",
+]
 
 
 @api.viewset("/google/auth-url")
@@ -90,17 +94,23 @@ class GoogleCallbackViewSet(ViewSet):
         if not refresh_token:
             raise BadRequest(detail="No refresh token received. Please revoke access and try again.")
 
-        # Get user email via Gmail profile (only needs gmail.readonly scope)
+        # Fetch user info (email, name, picture) via OpenID userinfo endpoint
         async with httpx.AsyncClient() as client:
-            profile_resp = await client.get(
-                "https://gmail.googleapis.com/gmail/v1/users/me/profile",
+            userinfo_resp = await client.get(
+                "https://www.googleapis.com/oauth2/v2/userinfo",
                 headers={"Authorization": f"Bearer {access_token}"},
             )
 
-        if profile_resp.status_code != 200:
-            raise BadRequest(detail="Failed to fetch Gmail profile")
+        if userinfo_resp.status_code != 200:
+            raise BadRequest(detail="Failed to fetch user info from Google")
 
-        email = profile_resp.json().get("emailAddress", "")
+        userinfo = userinfo_resp.json()
+        email = userinfo.get("email", "")
+        google_name = userinfo.get("name", "")
+        google_picture = userinfo.get("picture", "")
+
+        if not email:
+            raise BadRequest(detail="Failed to fetch email address from Google")
 
         # Store tokens
         from gmail.models import GmailAccount
@@ -126,9 +136,34 @@ class GoogleCallbackViewSet(ViewSet):
         # Pre-seed default sender rules
         await sync_to_async(_seed_sender_rules)(account)
 
+        # Auto-populate user profile with Google info
+        if google_name or google_picture:
+            await sync_to_async(_update_user_profile)(user_id, google_name, google_picture)
+
         return CallbackResponse(email=email, connected=True)
 
 
 def _seed_sender_rules(account):
     from gmail.management.commands.bootstrap_sender_rules import load_rules, sync_rules_for_account
     sync_rules_for_account(account, load_rules(), reset=False)
+
+
+def _update_user_profile(user_id, google_name, google_picture):
+    from django.contrib.auth import get_user_model
+    from accounts.models import UserProfile
+    User = get_user_model()
+    user = User.objects.get(pk=user_id)
+    profile, created = UserProfile.objects.get_or_create(
+        user=user,
+        defaults={"display_name": google_name, "avatar_url": google_picture},
+    )
+    if not created:
+        changed = False
+        if google_name and not profile.display_name:
+            profile.display_name = google_name
+            changed = True
+        if google_picture:
+            profile.avatar_url = google_picture
+            changed = True
+        if changed:
+            profile.save()

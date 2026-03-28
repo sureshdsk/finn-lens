@@ -77,7 +77,7 @@ function CategoryBadge({ txn, onOverride }: { txn: Transaction; onOverride: (id:
           setEditing(false)
         }}
       >
-        <SelectTrigger size="sm" className="h-5 w-24 text-[10px] rounded-full">
+        <SelectTrigger size="sm" className="h-5 w-24 text-xs rounded-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -96,7 +96,7 @@ function CategoryBadge({ txn, onOverride }: { txn: Transaction; onOverride: (id:
   return (
     <button
       onClick={() => setEditing(true)}
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer hover:opacity-70 transition-opacity ${cat.color}`}
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium cursor-pointer hover:opacity-70 transition-opacity ${cat.color}`}
       title="Click to change category"
     >
       {cat.label}
@@ -525,14 +525,14 @@ export default function AccountDetailPage() {
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-sm">{t.merchant_name}</span>
                             {t.payment_channel && (
-                              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                              <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                                 {t.payment_channel}
                               </span>
                             )}
                           </div>
                         ) : (
                           t.payment_channel && (
-                            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded inline-block mb-1">
+                            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded inline-block mb-1">
                               {t.payment_channel}
                             </span>
                           )
@@ -543,7 +543,7 @@ export default function AccountDetailPage() {
                         </p>
                         {/* Expanded details */}
                         {isExpanded && (
-                          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                             {t.upi_handle && <span>UPI: {t.upi_handle}</span>}
                             {t.recipient_name && <span>To: {t.recipient_name}</span>}
                             {t.cheque_number && <span>Chq: {t.cheque_number}</span>}

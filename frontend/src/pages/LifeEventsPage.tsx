@@ -175,7 +175,7 @@ const lifeEvents: LifeEvent[] = [
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
-const riskColors = { low: "text-emerald-600 dark:text-emerald-400", medium: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]", high: "text-rose-500" };
+const riskColors = { low: "text-emerald-600 dark:text-emerald-400", medium: "text-amber-600 dark:text-amber-400", high: "text-rose-500" };
 
 const LifeEventsPage = () => {
   const [events, setEvents] = useState(lifeEvents);
@@ -200,15 +200,15 @@ const LifeEventsPage = () => {
       <div className="grid sm:grid-cols-3 gap-4">
         {[
           { label: "Active Goals", value: String(events.filter((e) => !e.locked).length), sub: `of ${events.length} life events`, accent: "text-primary" },
-          { label: "Total Planned Cost", value: fmt(totalPlanned), sub: "for unlocked goals", accent: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" },
+          { label: "Total Planned Cost", value: fmt(totalPlanned), sub: "for unlocked goals", accent: "text-amber-600 dark:text-amber-400" },
           { label: "Total Saved", value: fmt(totalSaved), sub: `${totalPlanned > 0 ? Math.round((totalSaved / totalPlanned) * 100) : 0}% funded`, accent: "text-emerald-600 dark:text-emerald-400" },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="bg-card border border-border shadow-sm rounded-sm p-4">
+            className="bg-card border border-border shadow-sm rounded-lg p-4">
             <div className="relative z-10">
-              <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{card.label}</div>
+              <div className="text-xs text-muted-foreground mb-1">{card.label}</div>
               <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
-              <div className="text-[9px] text-muted-foreground mt-0.5">{card.sub}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{card.sub}</div>
             </div>
           </motion.div>
         ))}
@@ -223,29 +223,29 @@ const LifeEventsPage = () => {
 
           return (
             <motion.div key={event.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.06 }}
-              className={`bg-card border border-border shadow-sm rounded-sm overflow-hidden ${event.locked ? "opacity-75" : ""}`}>
+              className={`bg-card border border-border shadow-sm rounded-lg overflow-hidden ${event.locked ? "opacity-75" : ""}`}>
               <div className="relative z-10">
                 {/* Card header */}
                 <button onClick={() => !event.locked ? toggleExpand(event.id) : setUnlockConfirm(event.id)}
                   className="w-full p-4 flex items-center justify-between hover:bg-secondary/20 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center text-xl"
+                    <div className="w-10 h-10 rounded-lg bg-card border border-border shadow-sm flex items-center justify-center text-xl"
                       style={{ borderColor: event.color.replace(")", " / 0.3)") }}>
                       {event.locked ? <Lock className="w-4 h-4 text-muted-foreground" /> : event.emoji}
                     </div>
                     <div className="text-left">
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">{event.title}</span>
-                        <span className={`text-[8px] px-1.5 py-0.5 rounded-sm bg-card border border-border shadow-sm ${riskColors[event.riskLevel]}`}>
+                        <span className="text-sm font-semibold text-foreground">{event.title}</span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded-md bg-card border border-border shadow-sm uppercase ${riskColors[event.riskLevel]}`}>
                           {event.riskLevel.toUpperCase()} RISK
                         </span>
                         {event.locked && (
-                          <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-secondary text-muted-foreground flex items-center gap-0.5">
+                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground uppercase flex items-center gap-0.5">
                             <Lock className="w-2 h-2" /> LOCKED
                           </span>
                         )}
                       </div>
-                      <div className="text-[9px] text-muted-foreground mt-0.5">
+                      <div className="text-xs text-muted-foreground mt-0.5">
                         {fmt(event.estimatedCost)} • Target: {new Date(event.targetDate).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
                         {!event.locked && ` • ${doneCount}/${event.milestones.length} milestones`}
                       </div>
@@ -254,8 +254,8 @@ const LifeEventsPage = () => {
                   <div className="flex items-center gap-3">
                     {!event.locked && (
                       <div className="text-right">
-                        <div className="text-[10px] font-bold text-primary">{pct.toFixed(0)}%</div>
-                        <div className="text-[8px] text-muted-foreground">funded</div>
+                        <div className="text-xs font-bold text-primary">{pct.toFixed(0)}%</div>
+                        <div className="text-xs text-muted-foreground">funded</div>
                       </div>
                     )}
                     {!event.locked && (isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />)}
@@ -265,9 +265,9 @@ const LifeEventsPage = () => {
                 {/* Progress bar */}
                 {!event.locked && (
                   <div className="px-4 pb-2">
-                    <div className="bg-muted/50 rounded-sm h-1.5 overflow-hidden">
+                    <div className="bg-muted/50 rounded-md h-1.5 overflow-hidden">
                       <motion.div animate={{ width: `${pct}%` }} transition={{ duration: 0.5 }}
-                        className="h-full rounded-sm"
+                        className="h-full rounded-md"
                         style={{ background: event.color, boxShadow: `0 0 6px ${event.color.replace(")", " / 0.4)")}` }} />
                     </div>
                   </div>
@@ -280,19 +280,19 @@ const LifeEventsPage = () => {
                       className="overflow-hidden border-t border-border">
                       <div className="p-4 space-y-3">
                         <div className="flex items-start gap-2">
-                          <AlertTriangle className="w-4 h-4 text-[hsl(var(--text-amber-600 dark:text-amber-400))] shrink-0 mt-0.5" />
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                           <div>
-                            <div className="text-[10px] font-bold text-foreground mb-1">Goal-Lock Friction Check</div>
-                            <p className="text-[9px] text-muted-foreground leading-relaxed">{event.frictionQuestion}</p>
+                            <div className="text-xs font-bold text-foreground mb-1">Goal-Lock Friction Check</div>
+                            <p className="text-xs text-muted-foreground leading-relaxed">{event.frictionQuestion}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button onClick={() => unlockEvent(event.id)}
-                            className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-sm text-[9px] flex items-center gap-1 px-3 py-1.5">
+                            className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-md text-xs flex items-center gap-1 px-3 py-1.5">
                             <Unlock className="w-3 h-3" /> Yes, I've considered this
                           </button>
                           <button onClick={() => setUnlockConfirm(null)}
-                            className="text-[9px] px-3 py-1.5 rounded-sm text-muted-foreground hover:text-foreground transition-colors">
+                            className="text-xs px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors">
                             Not yet
                           </button>
                         </div>
@@ -310,12 +310,12 @@ const LifeEventsPage = () => {
                         {/* Friction warning if just unlocked */}
                         {frictionShown[event.id] && (
                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            className="bg-muted/50 rounded-sm p-3 border border-[hsl(var(--text-amber-600 dark:text-amber-400))]/30">
+                            className="bg-muted/50 rounded-lg p-3 border border-amber-500/30">
                             <div className="flex items-start gap-2">
-                              <AlertTriangle className="w-3.5 h-3.5 text-[hsl(var(--text-amber-600 dark:text-amber-400))] shrink-0 mt-0.5" />
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                               <div>
-                                <div className="text-[9px] font-bold text-[hsl(var(--text-amber-600 dark:text-amber-400))] mb-1">FRICTION CHECKPOINT</div>
-                                <p className="text-[9px] text-muted-foreground leading-relaxed">{event.frictionQuestion}</p>
+                                <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">FRICTION CHECKPOINT</div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{event.frictionQuestion}</p>
                               </div>
                               <button onClick={() => setFrictionShown((p) => ({ ...p, [event.id]: false }))} className="text-muted-foreground hover:text-foreground shrink-0">
                                 <X className="w-3 h-3" />
@@ -329,12 +329,12 @@ const LifeEventsPage = () => {
                           {[
                             { label: "Saved", value: fmt(event.savedSoFar), icon: Target, accent: "text-emerald-600 dark:text-emerald-400" },
                             { label: "Remaining", value: fmt(event.estimatedCost - event.savedSoFar), icon: TrendingDown, accent: "text-rose-500" },
-                            { label: "Monthly Needed", value: fmt(event.monthlyRequired), icon: TrendingUp, accent: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" },
+                            { label: "Monthly Needed", value: fmt(event.monthlyRequired), icon: TrendingUp, accent: "text-amber-600 dark:text-amber-400" },
                             { label: "Readiness", value: `${event.readiness}%`, icon: Sparkles, accent: "text-primary" },
                           ].map((m) => (
-                            <div key={m.label} className="bg-muted/50 rounded-sm p-2.5 border border-border">
-                              <div className="text-[8px] text-muted-foreground uppercase tracking-widest mb-0.5">{m.label}</div>
-                              <div className={`text-[11px] font-semibold ${m.accent} flex items-center gap-1`}>
+                            <div key={m.label} className="bg-muted/50 rounded-lg p-2.5 border border-border">
+                              <div className="text-xs text-muted-foreground mb-0.5">{m.label}</div>
+                              <div className={`text-sm font-semibold ${m.accent} flex items-center gap-1`}>
                                 <m.icon className="w-3 h-3" /> {m.value}
                               </div>
                             </div>
@@ -343,17 +343,17 @@ const LifeEventsPage = () => {
 
                         {/* Milestones */}
                         <div>
-                          <div className="text-[9px] font-semibold uppercase tracking-wider text-foreground mb-2 flex items-center gap-1.5">
+                          <div className="text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
                             <Clock className="w-3 h-3 text-primary" /> Milestones
                           </div>
                           <div className="space-y-1.5">
                             {event.milestones.map((m, mi) => (
-                              <div key={mi} className="flex items-center justify-between py-1.5 px-2 rounded-sm hover:bg-secondary/20">
+                              <div key={mi} className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-secondary/20">
                                 <div className="flex items-center gap-2">
                                   {m.done ? <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <div className="w-3 h-3 rounded-full border border-muted-foreground" />}
-                                  <span className={`text-[9px] ${m.done ? "line-through text-muted-foreground" : "text-foreground"}`}>{m.label}</span>
+                                  <span className={`text-xs ${m.done ? "line-through text-muted-foreground" : "text-foreground"}`}>{m.label}</span>
                                 </div>
-                                {m.amount > 0 && <span className="text-[9px] text-muted-foreground">{fmt(m.amount)}</span>}
+                                {m.amount > 0 && <span className="text-xs text-muted-foreground">{fmt(m.amount)}</span>}
                               </div>
                             ))}
                           </div>
@@ -361,21 +361,21 @@ const LifeEventsPage = () => {
 
                         {/* Pros & Cons */}
                         <div className="grid sm:grid-cols-2 gap-3">
-                          <div className="bg-muted/50 rounded-sm p-3 border border-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/20">
-                            <div className="text-[9px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">✓ Pros</div>
+                          <div className="bg-muted/50 rounded-lg p-3 border border-emerald-500/20">
+                            <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">Pros</div>
                             <div className="space-y-1.5">
                               {event.pros.map((p, pi) => (
-                                <div key={pi} className="text-[9px] text-muted-foreground leading-relaxed flex items-start gap-1.5">
+                                <div key={pi} className="text-xs text-muted-foreground leading-relaxed flex items-start gap-1.5">
                                   <span className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">+</span> {p}
                                 </div>
                               ))}
                             </div>
                           </div>
-                          <div className="bg-muted/50 rounded-sm p-3 border border-destructive/20">
-                            <div className="text-[9px] font-semibold uppercase tracking-wider text-rose-500 mb-2">✗ Cons</div>
+                          <div className="bg-muted/50 rounded-lg p-3 border border-destructive/20">
+                            <div className="text-sm font-medium text-rose-500 mb-2">Cons</div>
                             <div className="space-y-1.5">
                               {event.cons.map((c, ci) => (
-                                <div key={ci} className="text-[9px] text-muted-foreground leading-relaxed flex items-start gap-1.5">
+                                <div key={ci} className="text-xs text-muted-foreground leading-relaxed flex items-start gap-1.5">
                                   <span className="text-rose-500 shrink-0 mt-0.5">−</span> {c}
                                 </div>
                               ))}
@@ -384,12 +384,12 @@ const LifeEventsPage = () => {
                         </div>
 
                         {/* AI Insight */}
-                        <div className="bg-muted/50 rounded-sm p-3 border border-[hsl(var(--primary))]/20">
+                        <div className="bg-muted/50 rounded-lg p-3 border border-[hsl(var(--primary))]/20">
                           <div className="flex items-center gap-1.5 mb-2">
                             <Sparkles className="w-3 h-3 text-primary" />
-                            <span className="text-[9px] font-semibold uppercase tracking-wider text-primary">AI Analysis</span>
+                            <span className="text-sm font-medium text-primary">AI Analysis</span>
                           </div>
-                          <p className="text-[9px] text-muted-foreground leading-relaxed">{event.aiInsight}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{event.aiInsight}</p>
                         </div>
                       </div>
                     </motion.div>

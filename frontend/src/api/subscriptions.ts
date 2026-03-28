@@ -53,7 +53,7 @@ export async function getSubscriptionsApi(params?: {
 
 export async function updateSubscriptionApi(
   id: number,
-  data: { status?: string; auto_renew?: boolean; category?: string; name?: string }
+  data: { status?: string; auto_renew?: boolean; category?: string; name?: string; cost?: string; currency?: string }
 ): Promise<Subscription> {
   const res = await apiFetch(`${API_URL}/api/banking/subscriptions/${id}/`, {
     method: 'PATCH',

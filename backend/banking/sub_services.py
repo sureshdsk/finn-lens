@@ -200,6 +200,39 @@ def detect_subscriptions(family: Family) -> list[DetectedSubscription]:
     return detected
 
 
+def _find_email_match(
+    det: DetectedSubscription, email_subs: dict[str, dict]
+) -> dict | None:
+    """Find matching email-extracted subscription data for a detected subscription."""
+    det_lower = det.merchant_pattern.lower()
+    det_name_lower = det.name.lower()
+
+    for key, data in email_subs.items():
+        # Direct substring match
+        if key in det_lower or det_lower in key:
+            return data
+
+        # Match via merchant_or_provider field from email
+        email_merchant = data.get("merchant_or_provider", "").lower()
+        if email_merchant and (email_merchant in det_lower or det_lower in email_merchant):
+            return data
+
+        # Match on det.name (e.g. "Claude Pro" matches email key "claude")
+        if key in det_name_lower or det_name_lower in key:
+            return data
+        if email_merchant and (email_merchant in det_name_lower or det_name_lower in email_merchant):
+            return data
+
+        # Match via KNOWN_SUBSCRIPTIONS — both resolve to same known service
+        det_known = _match_known(det_lower)
+        key_known = _match_known(key)
+        email_merchant_known = _match_known(email_merchant) if email_merchant else None
+        if det_known and (det_known == key_known or det_known == email_merchant_known):
+            return data
+
+    return None
+
+
 @db_transaction.atomic
 def materialize_subscriptions(family: Family) -> dict[str, int]:
     """Detect subscriptions and persist them, merging with email-sourced data."""
@@ -226,17 +259,15 @@ def materialize_subscriptions(family: Family) -> dict[str, int]:
     payment_count = 0
 
     for det in detected:
-        # Merge email data if available
-        email_data = None
-        for key, data in email_subs.items():
-            if key in det.merchant_pattern or det.merchant_pattern in key:
-                email_data = data
-                break
+        # Merge email data if available (fuzzy match on merchant name)
+        email_data = _find_email_match(det, email_subs)
 
         # Apply email enrichments
         plan = ""
         if email_data:
             plan = email_data.get("plan", "")
+            if email_data.get("currency"):
+                det.currency = email_data["currency"]
             if email_data.get("next_renewal_date"):
                 try:
                     det.next_renewal_date = date.fromisoformat(email_data["next_renewal_date"])

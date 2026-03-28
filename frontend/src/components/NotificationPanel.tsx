@@ -44,9 +44,9 @@ const moduleLabels: Record<NotifModule, string> = {
 };
 const priorityConfig: Record<NotifPriority, { color: string; border: string; bg: string; badge: string; icon: React.ComponentType<{ className?: string }> }> = {
   critical: { color: "text-destructive", border: "border-destructive/40", bg: "bg-destructive/5", badge: "bg-destructive/15 text-destructive", icon: AlertTriangle },
-  warning: { color: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]", border: "border-[hsl(var(--text-amber-600 dark:text-amber-400))]/30", bg: "bg-[hsl(var(--text-amber-600 dark:text-amber-400))]/5", badge: "bg-[hsl(var(--text-amber-600 dark:text-amber-400))]/15 text-[hsl(var(--text-amber-600 dark:text-amber-400))]", icon: AlertTriangle },
+  warning: { color: "text-amber-600 dark:text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/5", badge: "bg-amber-500/15 text-amber-600 dark:text-amber-400", icon: AlertTriangle },
   info: { color: "text-primary", border: "border-border", bg: "bg-transparent", badge: "bg-secondary text-muted-foreground", icon: Bell },
-  success: { color: "text-emerald-600 dark:text-emerald-400", border: "border-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/20", bg: "bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/5", badge: "bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/15 text-emerald-600 dark:text-emerald-400", icon: CheckCircle2 },
+  success: { color: "text-emerald-600 dark:text-emerald-400", border: "border-emerald-500/20", bg: "bg-emerald-500/5", badge: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400", icon: CheckCircle2 },
 };
 
 interface Props {
@@ -83,32 +83,35 @@ const NotificationCenter = ({ open, onClose, onNavigate, onExpand, mode = "panel
   };
 
   const renderHeader = () => (
-    <div className={`${mode === "fullpage" ? "p-5 pb-4" : "p-4"} border-b border-border shrink-0`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center relative">
+    <div className={`${mode === "fullpage" ? "p-6 pb-4" : "p-4"} border-b border-border shrink-0`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-card border border-border shadow-sm flex items-center justify-center relative">
             <Bell className="w-4 h-4 text-primary" />
-            {unreadCount > 0 && <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(var(--accent))] flex items-center justify-center"><span className="text-[8px] font-bold text-background">{unreadCount}</span></div>}
+            {unreadCount > 0 && <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 flex items-center justify-center"><span className="text-[10px] font-bold text-white">{unreadCount}</span></div>}
           </div>
-          <div><h2 className={`${mode === "fullpage" ? "text-sm" : "text-xs"} font-semibold uppercase tracking-wider text-foreground`}>Control Center</h2><p className="text-[8px] text-muted-foreground">{'>'} {unreadCount} unread • {notifications.length} total</p></div>
+          <div>
+            <h2 className={`${mode === "fullpage" ? "text-base" : "text-sm"} font-semibold text-foreground`}>Notifications</h2>
+            <p className="text-xs text-muted-foreground">{unreadCount} unread · {notifications.length} total</p>
+          </div>
         </div>
         <div className="flex items-center gap-1.5">
-          {unreadCount > 0 && <button onClick={markAllRead} className="text-[8px] px-2 py-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-all">Mark all read</button>}
-          {mode === "panel" && onExpand && <button onClick={onExpand} className="w-7 h-7 rounded-sm flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-all" title="Expand to full page"><Maximize2 className="w-3.5 h-3.5" /></button>}
-          {mode === "panel" && <button onClick={onClose} className="w-7 h-7 rounded-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all"><X className="w-4 h-4" /></button>}
+          {unreadCount > 0 && <button onClick={markAllRead} className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/80 transition-all">Mark all read</button>}
+          {mode === "panel" && onExpand && <button onClick={onExpand} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-muted/80 transition-all" title="Expand to full page"><Maximize2 className="w-4 h-4" /></button>}
+          {mode === "panel" && <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all"><X className="w-4 h-4" /></button>}
         </div>
       </div>
       <div className="flex gap-2 mb-3">
         {(["critical", "warning", "info", "success"] as NotifPriority[]).map(p => {
           const cfg = priorityConfig[p]; const count = grouped[p];
-          return (<button key={p} onClick={() => setFilter(filter === p ? "all" : p)} className={`flex-1 rounded-sm py-1.5 px-2 bg-muted/50 border transition-all ${filter === p ? `${cfg.border} ${cfg.bg}` : "border-border hover:border-muted-foreground/30"}`}><div className={`text-[10px] font-semibold ${count > 0 ? cfg.color : "text-muted-foreground"}`}>{count}</div><div className="text-[7px] text-muted-foreground uppercase tracking-widest">{p}</div></button>);
+          return (<button key={p} onClick={() => setFilter(filter === p ? "all" : p)} className={`flex-1 rounded-lg py-2 px-2 bg-muted/50 border transition-all ${filter === p ? `${cfg.border} ${cfg.bg}` : "border-border hover:border-muted-foreground/30"}`}><div className={`text-sm font-semibold ${count > 0 ? cfg.color : "text-muted-foreground"}`}>{count}</div><div className="text-xs text-muted-foreground capitalize">{p}</div></button>);
         })}
       </div>
       <div className="flex gap-1.5 flex-wrap">
-        <button onClick={() => setFilter(filter === "unread" ? "all" : "unread")} className={`px-2 py-1 rounded-sm text-[8px] uppercase tracking-wider transition-all ${filter === "unread" ? "text-primary border-border border terminal" : "text-muted-foreground hover:text-foreground"}`}>Unread ({unreadCount})</button>
+        <button onClick={() => setFilter(filter === "unread" ? "all" : "unread")} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filter === "unread" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}`}>Unread ({unreadCount})</button>
         <span className="text-border self-center">|</span>
         {(["all", "budgets", "creditcards", "subscriptions", "investments", "waitlist", "lifeevents"] as const).map(m => (
-          <button key={m} onClick={() => setModuleFilter(moduleFilter === m ? "all" : m)} className={`px-2 py-1 rounded-sm text-[8px] uppercase tracking-wider transition-all ${moduleFilter === m && m !== "all" ? "text-primary border-border border terminal" : "text-muted-foreground hover:text-foreground"}`}>{m === "all" ? "All" : moduleLabels[m as NotifModule]}</button>
+          <button key={m} onClick={() => setModuleFilter(moduleFilter === m ? "all" : m)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${moduleFilter === m && m !== "all" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}`}>{m === "all" ? "All" : moduleLabels[m as NotifModule]}</button>
         ))}
       </div>
     </div>
@@ -118,22 +121,29 @@ const NotificationCenter = ({ open, onClose, onNavigate, onExpand, mode = "panel
     const cfg = priorityConfig[n.priority]; const PriorityIcon = cfg.icon; const ModIcon = moduleIcons[n.module];
     return (
       <motion.div key={n.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 60, scale: 0.95 }} transition={{ delay: i * 0.03 }}
-        className={`rounded-sm border transition-all group ${cfg.border} ${!n.read ? cfg.bg : "bg-transparent opacity-60"}`}>
-        <div className="p-3">
-          <div className="flex items-start gap-2.5">
-            <div className={`w-7 h-7 rounded-sm bg-muted/50 border ${cfg.border} flex items-center justify-center shrink-0 mt-0.5`}><PriorityIcon className={`w-3 h-3 ${cfg.color}`} /></div>
+        className={`rounded-lg border transition-all group ${cfg.border} ${!n.read ? cfg.bg : "bg-transparent opacity-60"}`}>
+        <div className="p-4">
+          <div className="flex items-start gap-3">
+            <div className={`w-8 h-8 rounded-lg bg-muted/50 border ${cfg.border} flex items-center justify-center shrink-0 mt-0.5`}><PriorityIcon className={`w-3.5 h-3.5 ${cfg.color}`} /></div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap"><span className={`text-[10px] font-bold ${!n.read ? "text-foreground" : "text-muted-foreground"}`}>{n.title}</span>{!n.read && <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))] shrink-0" />}</div>
-                  <div className="flex items-center gap-1.5 mt-0.5"><span className={`text-[7px] px-1 py-0.5 rounded-sm ${cfg.badge} uppercase`}>{n.priority}</span><span className="text-[7px] text-muted-foreground flex items-center gap-0.5"><ModIcon className="w-2 h-2" /> {moduleLabels[n.module]}</span><span className="text-[7px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2 h-2" /> {n.timestamp}</span></div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-sm font-semibold ${!n.read ? "text-foreground" : "text-muted-foreground"}`}>{n.title}</span>
+                    {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-xs px-1.5 py-0.5 rounded-md ${cfg.badge} capitalize`}>{n.priority}</span>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><ModIcon className="w-3 h-3" /> {moduleLabels[n.module]}</span>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" /> {n.timestamp}</span>
+                  </div>
                 </div>
-                <button onClick={() => dismiss(n.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0"><X className="w-3 h-3" /></button>
+                <button onClick={() => dismiss(n.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0"><X className="w-3.5 h-3.5" /></button>
               </div>
-              <p className="text-[9px] text-muted-foreground leading-relaxed mt-1.5">{n.description}</p>
-              <div className="flex items-center gap-2 mt-2">
-                {n.actionLabel && <button onClick={() => handleAction(n)} className="text-[8px] px-2 py-1 rounded-sm text-primary border-border border bg-muted/50 hover:bg-[hsl(var(--primary))]/5 transition-all flex items-center gap-1">{n.actionLabel} <ChevronRight className="w-2.5 h-2.5" /></button>}
-                {!n.read && <button onClick={() => markRead(n.id)} className="text-[8px] px-2 py-1 rounded-sm text-muted-foreground hover:text-foreground transition-colors">Mark read</button>}
+              <p className="text-sm text-muted-foreground leading-relaxed mt-2">{n.description}</p>
+              <div className="flex items-center gap-2 mt-3">
+                {n.actionLabel && <button onClick={() => handleAction(n)} className="text-xs px-3 py-1.5 rounded-lg text-primary border border-border bg-muted/50 hover:bg-primary/5 transition-all flex items-center gap-1">{n.actionLabel} <ChevronRight className="w-3 h-3" /></button>}
+                {!n.read && <button onClick={() => markRead(n.id)} className="text-xs px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors">Mark read</button>}
               </div>
             </div>
           </div>
@@ -143,10 +153,10 @@ const NotificationCenter = ({ open, onClose, onNavigate, onExpand, mode = "panel
   };
 
   const renderNotifications = () => (
-    <div className={`flex-1 overflow-y-auto ${mode === "fullpage" ? "p-5" : "p-3"} space-y-2`}>
+    <div className={`flex-1 overflow-y-auto ${mode === "fullpage" ? "p-6" : "p-4"} space-y-2`}>
       <AnimatePresence mode="popLayout">
         {filtered.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12"><CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-3 opacity-40" /><p className="text-[10px] text-muted-foreground">All clear. No notifications match this filter.</p></motion.div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12"><CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-3 opacity-40" /><p className="text-sm text-muted-foreground">All clear. No notifications match this filter.</p></motion.div>
         ) : mode === "fullpage" ? (
           <div className="grid sm:grid-cols-2 gap-3">{filtered.map((n, i) => renderNotifCard(n, i))}</div>
         ) : filtered.map((n, i) => renderNotifCard(n, i))}
@@ -155,10 +165,10 @@ const NotificationCenter = ({ open, onClose, onNavigate, onExpand, mode = "panel
   );
 
   const renderFooter = () => (
-    <div className={`${mode === "fullpage" ? "px-5 py-3" : "p-3"} border-t border-border shrink-0`}>
+    <div className={`${mode === "fullpage" ? "px-6 py-3" : "p-4"} border-t border-border shrink-0`}>
       <div className="flex items-center justify-between">
-        <div className="text-[8px] text-muted-foreground">{criticalCount > 0 ? <span className="text-destructive font-bold">⚠ {criticalCount} critical action{criticalCount > 1 ? "s" : ""} required</span> : "All systems nominal"}</div>
-        <div className="text-[8px] text-muted-foreground">Showing {filtered.length} of {notifications.length}</div>
+        <div className="text-xs text-muted-foreground">{criticalCount > 0 ? <span className="text-destructive font-semibold">{criticalCount} critical action{criticalCount > 1 ? "s" : ""} required</span> : "All systems nominal"}</div>
+        <div className="text-xs text-muted-foreground">Showing {filtered.length} of {notifications.length}</div>
       </div>
     </div>
   );
@@ -173,7 +183,7 @@ const NotificationCenter = ({ open, onClose, onNavigate, onExpand, mode = "panel
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onClose} />
           <motion.div initial={{ x: "100%", opacity: 0.5 }} animate={{ x: 0, opacity: 1 }} exit={{ x: "100%", opacity: 0 }} transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-muted/50 border-l border-border flex flex-col overflow-hidden">
+            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-background border-l border-border flex flex-col overflow-hidden">
             {renderHeader()}{renderNotifications()}{renderFooter()}
           </motion.div>
         </>

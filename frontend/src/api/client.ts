@@ -1,4 +1,6 @@
 import { useAuthStore } from '@/stores/authStore'
+import { isDemoMode } from '@/lib/demo'
+import { handleMockRequest } from './mockHandlers'
 
 export const API_URL = import.meta.env.VITE_API_URL ?? ''
 
@@ -7,16 +9,15 @@ export function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-/**
- * Wrapper around fetch that automatically handles 401s by logging out.
- * All API calls should use this instead of raw fetch.
- */
 export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+  if (isDemoMode()) {
+    return handleMockRequest(input, init)
+  }
+
   const res = await fetch(input, init)
 
   if (res.status === 401) {
     useAuthStore.getState().logout()
-    // Force redirect — the AppLayout guard will handle showing login
     window.location.href = '/login'
     throw new Error('Session expired')
   }

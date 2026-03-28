@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RefreshCw, XCircle, AlertTriangle, Calendar, IndianRupee, CreditCard, Users, Clock, ToggleRight, Tag, Search, Loader2 } from "lucide-react";
+import { RefreshCw, XCircle, AlertTriangle, Calendar, IndianRupee, CreditCard, Clock, ToggleRight, Tag, Search, Loader2, Pencil, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
@@ -10,8 +11,9 @@ import {
   type Subscription,
 } from "@/api/subscriptions";
 
+const CURRENCY_LOCALES: Record<string, string> = { INR: "en-IN", USD: "en-US", EUR: "de-DE", GBP: "en-GB" };
 const fmt = (n: number, currency = "INR") =>
-  new Intl.NumberFormat(currency === "USD" ? "en-US" : "en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(Math.abs(n));
+  new Intl.NumberFormat(CURRENCY_LOCALES[currency] ?? "en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(Math.abs(n));
 
 const daysUntil = (date: string | null) => {
   if (!date) return 999;
@@ -41,7 +43,11 @@ const SubscriptionsPage = () => {
   useEffect(() => { fetchSubs(); }, [fetchSubs]);
 
   const activeSubs = subs.filter((s) => s.status === "active");
-  const monthlyCost = activeSubs.reduce((sum, s) => {
+  const primaryCurrency = activeSubs.length > 0
+    ? Object.entries(activeSubs.reduce<Record<string, number>>((acc, s) => { acc[s.currency] = (acc[s.currency] || 0) + 1; return acc; }, {}))
+        .sort((a, b) => b[1] - a[1])[0][0]
+    : "INR";
+  const monthlyCost = activeSubs.filter(s => s.currency === primaryCurrency).reduce((sum, s) => {
     const cost = parseFloat(s.cost);
     return sum + (s.cycle === "monthly" ? cost : Math.round(cost / 12));
   }, 0);
@@ -107,16 +113,16 @@ const SubscriptionsPage = () => {
       {/* Summary */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { label: "Monthly Cost", value: fmt(monthlyCost), sub: `${activeSubs.length} active`, accent: "text-primary" },
-          { label: "Yearly Projection", value: fmt(yearlyCost), sub: "estimated annual", accent: "text-[hsl(var(--text-amber-600 dark:text-amber-400))]" },
+          { label: "Monthly Cost", value: fmt(monthlyCost, primaryCurrency), sub: `${activeSubs.length} active`, accent: "text-primary" },
+          { label: "Yearly Projection", value: fmt(yearlyCost, primaryCurrency), sub: "estimated annual", accent: "text-amber-600 dark:text-amber-400" },
           { label: "Renewing Soon", value: String(upcomingCount), sub: "within 7 days", accent: upcomingCount > 0 ? "text-rose-500" : "text-emerald-600 dark:text-emerald-400" },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="bg-card border border-border shadow-sm rounded-sm p-4">
+            className="bg-card border border-border shadow-sm rounded-lg p-4">
             <div className="relative z-10">
-              <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">{card.label}</div>
+              <div className="text-xs text-muted-foreground mb-1">{card.label}</div>
               <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
-              <div className="text-[9px] text-muted-foreground mt-0.5">{card.sub}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{card.sub}</div>
             </div>
           </motion.div>
         ))}
@@ -127,7 +133,7 @@ const SubscriptionsPage = () => {
         <div className="flex gap-2">
           {(["all", "active", "cancelled"] as const).map((f) => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-wider transition-all ${
+              className={`px-3 py-1.5 rounded-md text-xs transition-all ${
                 filter === f ? "text-primary border-border border terminal" : "text-muted-foreground hover:text-foreground"
               }`}>
               {f} ({f === "all" ? subs.length : subs.filter((s) => s.status === f).length})
@@ -137,7 +143,7 @@ const SubscriptionsPage = () => {
         <button
           onClick={handleDetect}
           disabled={detecting}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-wider border-border border bg-muted/50 text-muted-foreground hover:text-primary transition-all disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs border-border border bg-muted/50 text-muted-foreground hover:text-primary transition-all disabled:opacity-50"
         >
           {detecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
           Detect Subscriptions
@@ -146,14 +152,14 @@ const SubscriptionsPage = () => {
 
       {/* Empty state */}
       {subs.length === 0 && (
-        <div className="bg-card border border-border shadow-sm rounded-sm p-8 text-center">
+        <div className="bg-card border border-border shadow-sm rounded-lg p-8 text-center">
           <div className="relative z-10">
             <div className="text-2xl mb-2">💳</div>
             <div className="text-[11px] text-muted-foreground mb-3">No subscriptions found yet</div>
             <button
               onClick={handleDetect}
               disabled={detecting}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm text-[10px] uppercase tracking-wider border-border border bg-muted/50 text-primary hover:bg-primary/5 transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs border-border border bg-muted/50 text-primary hover:bg-primary/5 transition-all disabled:opacity-50"
             >
               {detecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
               Detect from Transactions
@@ -176,10 +182,10 @@ const SubscriptionsPage = () => {
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.04 }}
                 onClick={() => setSelectedSub(sub)}
-                className={`bg-card border border-border shadow-sm rounded-sm p-4 group cursor-pointer hover:border-primary/40 transition-colors ${sub.status === "cancelled" ? "opacity-60" : ""}`}>
+                className={`bg-card border border-border shadow-sm rounded-lg p-4 group cursor-pointer hover:border-primary/40 transition-colors ${sub.status === "cancelled" ? "opacity-60" : ""}`}>
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-9 h-9 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center text-lg shrink-0"
+                    <div className="w-9 h-9 rounded-md bg-card border border-border shadow-sm flex items-center justify-center text-lg shrink-0"
                       style={{ borderColor: sub.color ? sub.color.replace(")", " / 0.3)") : undefined }}>
                       {sub.icon || "💳"}
                     </div>
@@ -187,17 +193,17 @@ const SubscriptionsPage = () => {
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] font-bold text-foreground">{sub.name}</span>
                         {sub.status === "cancelled" && (
-                          <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-destructive/10 text-destructive">CANCELLED</span>
+                          <span className="text-xs uppercase px-1.5 py-0.5 rounded-md bg-destructive/10 text-destructive">CANCELLED</span>
                         )}
                         {isSoon && (
-                          <span className="text-[8px] px-1.5 py-0.5 rounded-sm bg-[hsl(var(--text-amber-600 dark:text-amber-400))]/10 text-[hsl(var(--text-amber-600 dark:text-amber-400))] flex items-center gap-0.5">
+                          <span className="text-xs uppercase px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
                             <AlertTriangle className="w-2.5 h-2.5" /> SOON
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-[9px] text-muted-foreground">{sub.category}</span>
-                        <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
+                        <span className="text-xs text-muted-foreground">{sub.category}</span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-0.5">
                           <Calendar className="w-2.5 h-2.5" />
                           {sub.status === "active" && sub.renew_date
                             ? `Renews ${new Date(sub.renew_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })} (${days}d)`
@@ -211,9 +217,9 @@ const SubscriptionsPage = () => {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <div className="text-[11px] font-bold text-primary flex items-center gap-0.5 justify-end">
-                        {sub.currency === "USD" ? "$" : "₹"}{cost.toLocaleString(sub.currency === "USD" ? "en-US" : "en-IN")}
+                        {fmt(cost, sub.currency)}
                       </div>
-                      <div className="text-[8px] text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {sub.cycle === "yearly" ? `~${fmt(monthlized, sub.currency)}/mo` : "/month"}
                       </div>
                     </div>
@@ -222,23 +228,23 @@ const SubscriptionsPage = () => {
                       confirmId === sub.id ? (
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => cancelSub(sub.id)}
-                            className="text-[9px] px-2 py-1 rounded-sm bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
+                            className="text-xs px-2 py-1 rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
                             Confirm
                           </button>
                           <button onClick={() => setConfirmId(null)}
-                            className="text-[9px] px-2 py-1 rounded-sm text-muted-foreground hover:text-foreground transition-colors">
+                            className="text-xs px-2 py-1 rounded-md text-muted-foreground hover:text-foreground transition-colors">
                             Keep
                           </button>
                         </div>
                       ) : (
                         <button onClick={(e) => { e.stopPropagation(); setConfirmId(sub.id); }}
-                          className="w-7 h-7 rounded-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                          className="w-7 h-7 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                           <XCircle className="w-3.5 h-3.5" />
                         </button>
                       )
                     ) : (
                       <button onClick={(e) => { e.stopPropagation(); reactivate(sub.id); }}
-                        className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-sm text-muted-foreground hover:text-emerald-600 dark:text-emerald-400 hover:bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/5 transition-colors">
+                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-md text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/5 transition-colors">
                         <RefreshCw className="w-3 h-3" /> Reactivate
                       </button>
                     )}
@@ -253,96 +259,139 @@ const SubscriptionsPage = () => {
       {/* Detail Dialog */}
       <Dialog open={!!selectedSub} onOpenChange={(open) => !open && setSelectedSub(null)}>
         <DialogContent className="bg-card border border-border shadow-sm sm:max-w-md p-0 overflow-hidden z-[100]">
-          {selectedSub && (() => {
-            const cost = parseFloat(selectedSub.cost);
-            const totalSpent = selectedSub.total_spent ? parseFloat(selectedSub.total_spent) : undefined;
-            return (
-              <div className="relative z-10">
-                {/* Header */}
-                <div className="p-5 pb-4 border-b border-border/50">
-                  <DialogHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center text-2xl"
-                        style={{ borderColor: selectedSub.color ? selectedSub.color.replace(")", " / 0.4)") : undefined }}>
-                        {selectedSub.icon || "💳"}
-                      </div>
-                      <div>
-                        <DialogTitle className="text-sm font-semibold uppercase tracking-wider text-foreground">
-                          {selectedSub.name}
-                        </DialogTitle>
-                        <DialogDescription className="text-[9px] text-muted-foreground mt-0.5 flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 rounded-sm border border-border/50 bg-muted/30">{selectedSub.category}</span>
-                          <span className={`px-1.5 py-0.5 rounded-sm ${selectedSub.status === "active" ? "bg-[hsl(var(--text-emerald-600 dark:text-emerald-400))]/10 text-[hsl(var(--text-emerald-600 dark:text-emerald-400))]" : "bg-destructive/10 text-destructive"}`}>
-                            {selectedSub.status.toUpperCase()}
-                          </span>
-                        </DialogDescription>
-                      </div>
-                    </div>
-                  </DialogHeader>
-                </div>
-
-                {/* Description */}
-                {selectedSub.description && (
-                  <div className="px-5 py-3 border-b border-border/50">
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">{selectedSub.description}</p>
-                  </div>
-                )}
-
-                {/* Details Grid */}
-                <div className="px-5 py-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <DetailItem icon={<IndianRupee className="w-3 h-3" />} label="Cost" value={`${fmt(cost, selectedSub.currency)} / ${selectedSub.cycle === "monthly" ? "mo" : "yr"}`} accent />
-                    {selectedSub.plan && (
-                      <DetailItem icon={<Tag className="w-3 h-3" />} label="Plan" value={selectedSub.plan} />
-                    )}
-                    {selectedSub.payment_method && (
-                      <DetailItem icon={<CreditCard className="w-3 h-3" />} label="Payment" value={selectedSub.payment_method} />
-                    )}
-                    <DetailItem icon={<Calendar className="w-3 h-3" />} label="Next Renewal"
-                      value={selectedSub.status === "active" && selectedSub.renew_date
-                        ? `${new Date(selectedSub.renew_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} (${daysUntil(selectedSub.renew_date)}d)`
-                        : "—"
-                      }
-                    />
-                    {selectedSub.start_date && (
-                      <DetailItem icon={<Clock className="w-3 h-3" />} label="Member Since"
-                        value={`${new Date(selectedSub.start_date).toLocaleDateString("en-IN", { month: "short", year: "numeric" })} (${monthsSince(selectedSub.start_date)} mo)`}
-                      />
-                    )}
-                    {selectedSub.last_billed && (
-                      <DetailItem icon={<Calendar className="w-3 h-3" />} label="Last Billed"
-                        value={new Date(selectedSub.last_billed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                      />
-                    )}
-                    {totalSpent !== undefined && (
-                      <DetailItem icon={<IndianRupee className="w-3 h-3" />} label="Total Spent" value={fmt(totalSpent, selectedSub.currency)} accent />
-                    )}
-                    <DetailItem icon={<CreditCard className="w-3 h-3" />} label="Payments" value={`${selectedSub.payment_count} recorded`} />
-                  </div>
-
-                  {/* Auto-renew indicator */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-                    <ToggleRight className={`w-3.5 h-3.5 ${selectedSub.auto_renew ? "text-primary" : "text-muted-foreground"}`} />
-                    <span className="text-[9px] text-muted-foreground">
-                      Auto-renew: <span className={selectedSub.auto_renew ? "text-primary" : "text-destructive"}>{selectedSub.auto_renew ? "ON" : "OFF"}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
+          {selectedSub && <SubDetailContent sub={selectedSub} fmt={fmt} daysUntil={daysUntil} monthsSince={monthsSince} onUpdate={(updated) => { setSubs(prev => prev.map(s => s.id === updated.id ? updated : s)); setSelectedSub(updated); }} />}
         </DialogContent>
       </Dialog>
     </div>
   );
 };
 
+const SubDetailContent = ({ sub, fmt: fmtFn, daysUntil: daysUntilFn, monthsSince: monthsSinceFn, onUpdate }: {
+  sub: Subscription; fmt: (n: number, c?: string) => string; daysUntil: (d: string | null) => number; monthsSince: (d?: string | null) => number;
+  onUpdate: (s: Subscription) => void;
+}) => {
+  const [editingCost, setEditingCost] = useState(false);
+  const [editCost, setEditCost] = useState(sub.cost);
+  const [editCurrency, setEditCurrency] = useState(sub.currency);
+  const [saving, setSaving] = useState(false);
+
+  const cost = parseFloat(sub.cost);
+  const totalSpent = sub.total_spent ? parseFloat(sub.total_spent) : undefined;
+
+  const handleSaveCost = async () => {
+    setSaving(true);
+    try {
+      const updated = await updateSubscriptionApi(sub.id, { cost: editCost, currency: editCurrency });
+      onUpdate(updated);
+      setEditingCost(false);
+      toast.success("Subscription updated");
+    } catch { toast.error("Failed to update"); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="relative z-10">
+      <div className="p-5 pb-4 border-b border-border/50">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg bg-card border border-border shadow-sm flex items-center justify-center text-2xl"
+              style={{ borderColor: sub.color ? sub.color.replace(")", " / 0.4)") : undefined }}>
+              {sub.icon || "💳"}
+            </div>
+            <div>
+              <DialogTitle className="text-base font-semibold text-foreground">{sub.name}</DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                <span className="px-1.5 py-0.5 rounded-md border border-border/50 bg-muted/30">{sub.category}</span>
+                <span className={`uppercase px-1.5 py-0.5 rounded-md ${sub.status === "active" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-destructive/10 text-destructive"}`}>
+                  {sub.status.toUpperCase()}
+                </span>
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+      </div>
+
+      {sub.description && (
+        <div className="px-5 py-3 border-b border-border/50">
+          <p className="text-sm text-muted-foreground leading-relaxed">{sub.description}</p>
+        </div>
+      )}
+
+      <div className="px-5 py-4 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          {/* Editable cost + currency */}
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <IndianRupee className="w-3 h-3" /> Cost
+              {!editingCost && (
+                <button onClick={() => setEditingCost(true)} className="ml-1 text-muted-foreground hover:text-primary transition-colors">
+                  <Pencil className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            {editingCost ? (
+              <div className="flex items-center gap-1.5">
+                <select value={editCurrency} onChange={e => setEditCurrency(e.target.value)}
+                  className="h-7 rounded-md bg-card border border-border px-1.5 text-xs text-foreground w-16">
+                  <option value="INR">INR</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+                <Input value={editCost} onChange={e => setEditCost(e.target.value)}
+                  className="h-7 text-xs w-20" type="number" step="0.01" />
+                <button onClick={handleSaveCost} disabled={saving} className="text-primary hover:text-primary/80 transition-colors">
+                  <Check className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="text-xs font-semibold text-primary truncate">
+                {fmtFn(cost, sub.currency)} / {sub.cycle === "monthly" ? "mo" : "yr"}
+              </div>
+            )}
+          </div>
+
+          {sub.plan && <DetailItem icon={<Tag className="w-3 h-3" />} label="Plan" value={sub.plan} />}
+          {sub.payment_method && <DetailItem icon={<CreditCard className="w-3 h-3" />} label="Payment" value={sub.payment_method} />}
+          <DetailItem icon={<Calendar className="w-3 h-3" />} label="Next Renewal"
+            value={sub.status === "active" && sub.renew_date
+              ? `${new Date(sub.renew_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} (${daysUntilFn(sub.renew_date)}d)`
+              : "—"
+            }
+          />
+          {sub.start_date && (
+            <DetailItem icon={<Clock className="w-3 h-3" />} label="Member Since"
+              value={`${new Date(sub.start_date).toLocaleDateString("en-IN", { month: "short", year: "numeric" })} (${monthsSinceFn(sub.start_date)} mo)`}
+            />
+          )}
+          {sub.last_billed && (
+            <DetailItem icon={<Calendar className="w-3 h-3" />} label="Last Billed"
+              value={new Date(sub.last_billed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+            />
+          )}
+          {totalSpent !== undefined && (
+            <DetailItem icon={<IndianRupee className="w-3 h-3" />} label="Total Spent" value={fmtFn(totalSpent, sub.currency)} accent />
+          )}
+          <DetailItem icon={<CreditCard className="w-3 h-3" />} label="Payments" value={`${sub.payment_count} recorded`} />
+        </div>
+
+        <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+          <ToggleRight className={`w-3.5 h-3.5 ${sub.auto_renew ? "text-primary" : "text-muted-foreground"}`} />
+          <span className="text-xs text-muted-foreground">
+            Auto-renew: <span className={sub.auto_renew ? "text-primary" : "text-destructive"}>{sub.auto_renew ? "ON" : "OFF"}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DetailItem = ({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: boolean }) => (
   <div className="space-y-0.5">
-    <div className="flex items-center gap-1 text-[8px] text-muted-foreground uppercase tracking-widest">
+    <div className="flex items-center gap-1 text-xs text-muted-foreground">
       {icon} {label}
     </div>
-    <div className={`text-[10px] font-semibold ${accent ? "text-primary" : "text-foreground"} truncate`} title={value}>
+    <div className={`text-xs font-semibold ${accent ? "text-primary" : "text-foreground"} truncate`} title={value}>
       {value}
     </div>
   </div>

@@ -2,11 +2,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginApi } from '@/api/auth'
 import { useAuthStore } from '@/stores/authStore'
+import { isDemoMode } from '@/lib/demo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { TrendingUp } from 'lucide-react'
+import DemoLandingPage from '@/pages/DemoLandingPage'
 
-export default function LoginPage() {
+function LoginForm() {
   const navigate = useNavigate()
   const setToken = useAuthStore((s) => s.setToken)
   const [username, setUsername] = useState('')
@@ -31,10 +34,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-sm p-8 border rounded-xl shadow-sm flex flex-col gap-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">FinnLens</h1>
-          <p className="text-sm text-muted-foreground mt-1">Sign in to your account</p>
+      <div className="w-full max-w-sm p-8 border rounded-xl shadow-lg flex flex-col gap-6 bg-card">
+        <div className="flex items-center gap-2.5">
+          <TrendingUp className="w-6 h-6 text-primary" />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-primary">FinnLens</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Sign in to your account</p>
+          </div>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -51,4 +57,12 @@ export default function LoginPage() {
       </div>
     </div>
   )
+}
+
+export default function LoginPage() {
+  if (isDemoMode()) {
+    return <DemoLandingPage />
+  }
+
+  return <LoginForm />
 }

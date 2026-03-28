@@ -3,8 +3,8 @@ import { useAuthStore } from '@/stores/authStore'
 import { useState } from 'react'
 import {
   LayoutDashboard, Wallet, ArrowDownUp, BarChart3,
-  Bell, LineChart, Settings, LogOut, TrendingUp,
-  ChevronLeft, ChevronRight, Radio, CalendarDays
+  LineChart, Settings, LogOut, TrendingUp,
+  ChevronLeft, ChevronRight, CalendarDays, Bell
 } from 'lucide-react'
 
 const menuItems = [
@@ -15,7 +15,6 @@ const menuItems = [
   { icon: CalendarDays, label: "Calendar", route: "/calendar" },
   { icon: Bell, label: "Subscriptions", route: "/subscriptions" },
   { icon: LineChart, label: "Investments", route: "/investments" },
-  { icon: Radio, label: "Control Center", route: "/notifications" },
 ]
 
 export default function Sidebar() {
@@ -28,57 +27,57 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className={`${collapsed ? "w-16" : "w-56"} h-screen bg-muted/50 border-r border-border flex flex-col transition-all duration-300 shrink-0`}>
-      <div className="p-3 flex items-center gap-2 border-b border-border">
-        <TrendingUp className="w-4 h-4 text-primary shrink-0" />
-        {!collapsed && <span className="font-semibold text-[10px] text-primary tracking-[0.2em]">FINNLENS</span>}
+    <aside className={`${collapsed ? "w-16" : "w-60"} h-screen bg-muted/40 border-r border-border flex flex-col transition-all duration-300 shrink-0`}>
+      <div className="p-4 flex items-center gap-2.5 border-b border-border">
+        <TrendingUp className="w-5 h-5 text-primary shrink-0" />
+        {!collapsed && <span className="font-semibold text-sm text-primary tracking-wide">FINNLENS</span>}
       </div>
 
-      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
           <NavLink
             key={item.route}
             to={item.route}
             className={({ isActive }) =>
-              `w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm text-xs uppercase tracking-wider transition-all ${
+              `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive
-                  ? "text-primary bg-[hsl(var(--primary))]/[0.08] border-border border"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               }`
             }
           >
-            <item.icon className="w-4 h-4 shrink-0" />
+            <item.icon className="w-[18px] h-[18px] shrink-0" />
             {!collapsed && <span>{item.label}</span>}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-2 border-t border-border space-y-0.5">
+      <div className="p-2 border-t border-border space-y-1">
         <NavLink
           to="/settings"
           className={({ isActive }) =>
-            `w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm text-xs uppercase tracking-wider transition-all ${
+            `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
               isActive
-                ? "text-primary bg-primary/[0.08] border-border border"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
             }`
           }
         >
-          <Settings className="w-4 h-4 shrink-0" />
+          <Settings className="w-[18px] h-[18px] shrink-0" />
           {!collapsed && <span>Settings</span>}
         </NavLink>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm text-xs uppercase tracking-wider text-muted-foreground hover:text-rose-500 hover:bg-[hsl(var(--accent))]/[0.05] transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-rose-500 hover:bg-rose-500/5 transition-all"
         >
-          <LogOut className="w-4 h-4 shrink-0" />
+          <LogOut className="w-[18px] h-[18px] shrink-0" />
           {!collapsed && <span>Logout</span>}
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center py-1.5 text-muted-foreground hover:text-primary transition-colors"
+          className="w-full flex items-center justify-center py-2 text-muted-foreground hover:text-primary transition-colors"
         >
-          {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
       </div>
     </aside>
