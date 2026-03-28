@@ -85,6 +85,13 @@ class CreditCardParser:
 
         return domain_match and keyword_match
 
+    # Body keywords that indicate this is a bank account alert, not a CC alert
+    _BANK_ACCOUNT_KEYWORDS = [
+        "savings account", "bank account", "current account",
+        "imps payment", "neft payment", "rtgs payment",
+        "upi payment",
+    ]
+
     def parse(self, sender: str, subject: str, body: str, attachments: list[bytes] | None = None) -> list[ExtractionResult]:
         # Combine subject + body for searching
         text = f"{subject}\n{body}"
@@ -92,6 +99,11 @@ class CreditCardParser:
         # Strip HTML tags for plain text extraction
         clean_text = re.sub(r"<[^>]+>", " ", text)
         clean_text = re.sub(r"\s+", " ", clean_text)
+
+        # Reject bank account transaction alerts (same domain, different product)
+        clean_lower = clean_text.lower()
+        if any(kw in clean_lower for kw in self._BANK_ACCOUNT_KEYWORDS):
+            return []
 
         # Extract amount — prefer "transaction of <amount>" (contextual) over generic match
         amount_match = _TXN_AMOUNT_RE.search(clean_text)

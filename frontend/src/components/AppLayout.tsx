@@ -5,6 +5,7 @@ import { Bell, Search } from 'lucide-react'
 import Sidebar from './Sidebar'
 import ThemeToggle from './ThemeToggle'
 import NotificationCenter from './NotificationPanel'
+import SyncIndicator from './SyncIndicator'
 
 const viewLabels: Record<string, string> = {
   '/overview': 'Dashboard',
@@ -40,6 +41,7 @@ export default function AppLayout() {
         <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border px-5 py-3 flex items-center justify-between shrink-0">
           <h1 className="text-sm font-semibold text-foreground">{title}</h1>
           <div className="flex items-center gap-2">
+            <SyncIndicator />
             <ThemeToggle />
             <button className="w-8 h-8 rounded-sm bg-card border border-border shadow-sm flex items-center justify-center hover:bg-primary/[0.05] transition-all">
               <Search className="w-3.5 h-3.5 text-muted-foreground" />

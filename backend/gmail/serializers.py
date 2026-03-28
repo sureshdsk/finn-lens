@@ -7,6 +7,19 @@ class GmailStatusResponse(msgspec.Struct):
     email: str = ""
     last_sync_at: Optional[str] = None
     is_active: bool = False
+    needs_reauth: bool = False
+    reauth_reason: str = ""
+
+
+class PipelineStepSchema(msgspec.Struct):
+    step_name: str
+    status: str
+    total_items: int
+    processed_items: int
+    error_count: int
+    error_message: str
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
 
 
 class SyncJobResponse(msgspec.Struct):
@@ -19,6 +32,11 @@ class SyncJobResponse(msgspec.Struct):
     error_message: str
     started_at: str
     completed_at: Optional[str] = None
+    steps: list[PipelineStepSchema] = []
+
+
+class SyncTriggerRequest(msgspec.Struct):
+    months: int = 12  # 3, 6, or 12
 
 
 class SyncTriggerResponse(msgspec.Struct):
@@ -60,17 +78,26 @@ class SenderRuleSchema(msgspec.Struct):
     sender_pattern: str
     source_type: str
     is_enabled: bool
+    subject_pattern: str = ""
+    require_attachment: bool = False
+    priority: int = 0
 
 
 class CreateSenderRuleRequest(msgspec.Struct):
     sender_pattern: str
     source_type: str
     is_enabled: bool = True
+    subject_pattern: str = ""
+    require_attachment: bool = False
+    priority: int = 0
 
 
 class UpdateSenderRuleRequest(msgspec.Struct):
     is_enabled: Optional[bool] = None
     source_type: Optional[str] = None
+    subject_pattern: Optional[str] = None
+    require_attachment: Optional[bool] = None
+    priority: Optional[int] = None
 
 
 class ExtractedDataSchema(msgspec.Struct):

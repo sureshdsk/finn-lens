@@ -178,6 +178,7 @@ class GmailFetcher:
             domains.add(pattern[2:] if pattern.startswith("*@") else pattern)
 
         query = f"from:({' OR '.join(domains)}) newer_than:{months}m"
+        logger.info(f"Initial fetch: {len(domains)} domains, {months} months, query={query[:120]}")
         self._fetch_messages(service, account, sync_job, query)
 
     def fetch_incremental(self, account: GmailAccount, sync_job: SyncJob) -> None:
@@ -239,12 +240,22 @@ class GmailFetcher:
 
         sync_job.total_messages = len(all_ids)
         sync_job.save(update_fields=["total_messages"])
+        logger.info(f"Found {len(all_ids)} messages to fetch")
+
+        # Get the pipeline step for live progress updates to UI
+        fetch_step = sync_job.steps.filter(step_name="fetch").first()
+        if fetch_step:
+            fetch_step.total_items = len(all_ids)
+            fetch_step.save(update_fields=["total_items"])
 
         new_count = 0
         for i, msg_id in enumerate(all_ids):
             if EmailMessage.objects.filter(message_id=msg_id).exists():
                 sync_job.processed_messages = i + 1
                 sync_job.save(update_fields=["processed_messages"])
+                if fetch_step and (i + 1) % 10 == 0:
+                    fetch_step.processed_items = i + 1
+                    fetch_step.save(update_fields=["processed_items"])
                 continue
 
             try:
@@ -259,6 +270,19 @@ class GmailFetcher:
             sync_job.new_messages = new_count
             sync_job.save(update_fields=["processed_messages", "new_messages"])
 
+            if fetch_step and (i + 1) % 10 == 0:
+                fetch_step.processed_items = i + 1
+                fetch_step.save(update_fields=["processed_items"])
+
+            if (i + 1) % 50 == 0:
+                logger.info(f"Fetch progress: {i + 1}/{len(all_ids)} ({new_count} new)")
+
+        # Final update
+        if fetch_step:
+            fetch_step.processed_items = len(all_ids)
+            fetch_step.save(update_fields=["processed_items"])
+
+        logger.info(f"Fetch complete: {len(all_ids)} processed, {new_count} new")
         profile = service.users().getProfile(userId="me").execute()
         account.last_history_id = profile.get("historyId", "")
         account.save(update_fields=["last_history_id"])

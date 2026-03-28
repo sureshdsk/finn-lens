@@ -118,6 +118,8 @@ class GoogleCallbackViewSet(ViewSet):
                 "access_token": access_token,
                 "token_expiry": token_expiry,
                 "is_active": True,
+                "needs_reauth": False,
+                "reauth_reason": "",
             },
         )
 

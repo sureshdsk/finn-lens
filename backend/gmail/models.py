@@ -11,6 +11,8 @@ class GmailAccount(models.Model):
     access_token = models.TextField(blank=True, default="")  # Transient
     token_expiry = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    needs_reauth = models.BooleanField(default=False)
+    reauth_reason = models.TextField(blank=True, default="")
     last_sync_at = models.DateTimeField(null=True, blank=True)
     last_history_id = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -25,15 +27,14 @@ class GmailAccount(models.Model):
 class SyncJob(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),
-        ("fetching", "Fetching"),
-        ("classifying", "Classifying"),
-        ("parsing", "Parsing"),
+        ("running", "Running"),
         ("completed", "Completed"),
         ("failed", "Failed"),
     ]
 
     gmail_account = models.ForeignKey(GmailAccount, on_delete=models.CASCADE, related_name="sync_jobs")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    sync_months = models.IntegerField(default=12)  # how far back to fetch on initial sync
     total_messages = models.IntegerField(default=0)
     processed_messages = models.IntegerField(default=0)
     new_messages = models.IntegerField(default=0)
@@ -76,6 +77,9 @@ class EmailMessage(models.Model):
 class EmailSenderRule(models.Model):
     gmail_account = models.ForeignKey(GmailAccount, on_delete=models.CASCADE, related_name="sender_rules")
     sender_pattern = models.CharField(max_length=500)  # e.g. *@hdfcbank.net
+    subject_pattern = models.CharField(max_length=500, blank=True, default="")  # fnmatch on subject
+    require_attachment = models.BooleanField(default=False)
+    priority = models.IntegerField(default=0)  # higher = matched first
     source_type = models.CharField(max_length=20, choices=EmailMessage.SOURCE_TYPE_CHOICES)
     is_enabled = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -106,6 +110,41 @@ class ExtractedFinancialData(models.Model):
 
     def __str__(self):
         return f"{self.data_type}: {self.email.subject[:40]}"
+
+
+class PipelineStep(models.Model):
+    STEP_CHOICES = [
+        ("fetch", "Fetch Emails"),
+        ("classify", "Classify Senders"),
+        ("parse", "Parse Emails"),
+        ("materialize", "Materialize Data"),
+        ("classify_transactions", "Classify Transactions"),
+        ("detect_subscriptions", "Detect Subscriptions"),
+    ]
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("running", "Running"),
+        ("completed", "Completed"),
+        ("failed", "Failed"),
+        ("skipped", "Skipped"),
+    ]
+
+    sync_job = models.ForeignKey(SyncJob, on_delete=models.CASCADE, related_name="steps")
+    step_name = models.CharField(max_length=30, choices=STEP_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    total_items = models.IntegerField(default=0)
+    processed_items = models.IntegerField(default=0)
+    error_count = models.IntegerField(default=0)
+    error_message = models.TextField(blank=True, default="")
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.step_name} ({self.status})"
 
 
 class EmailAttachment(models.Model):

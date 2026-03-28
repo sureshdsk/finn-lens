@@ -3,11 +3,13 @@ from django_bolt.exceptions import NotFound, BadRequest
 from asgiref.sync import sync_to_async
 
 from .api import api
-from .models import GmailAccount, SyncJob, EmailMessage, EmailSenderRule, ExtractedFinancialData
+from .models import GmailAccount, SyncJob, PipelineStep, EmailMessage, EmailSenderRule, ExtractedFinancialData
 from .serializers import (
     GmailStatusResponse,
     SyncJobResponse,
+    SyncTriggerRequest,
     SyncTriggerResponse,
+    PipelineStepSchema,
     EmailMessageSchema,
     EmailMessageListSchema,
     EmailDetailSchema,
@@ -49,6 +51,8 @@ class GmailStatusViewSet(ViewSet):
                 email=account.email,
                 last_sync_at=account.last_sync_at.isoformat() if account.last_sync_at else None,
                 is_active=account.is_active,
+                needs_reauth=account.needs_reauth,
+                reauth_reason=account.reauth_reason,
             )
         except GmailAccount.DoesNotExist:
             return GmailStatusResponse(connected=False)
@@ -88,43 +92,82 @@ class SyncViewSet(ViewSet):
     auth = _auth
     guards = _guards
 
-    async def create(self, request: Request):
-        """POST /api/gmail/sync/ — trigger manual sync"""
+    async def create(self, request: Request, data: SyncTriggerRequest):
+        """POST /api/gmail/sync/ — trigger manual sync via arq pipeline"""
         user_id = int(request.context["user_id"])
         account = await _get_gmail_account(user_id)
 
+        if account.needs_reauth:
+            raise BadRequest(detail="Gmail authorization expired. Please reconnect your account.")
+
+        # Expire stale jobs stuck in pending/running for >10 minutes
+        from django.utils import timezone as dj_timezone
+        from datetime import timedelta
+        stale_cutoff = dj_timezone.now() - timedelta(minutes=10)
+        await SyncJob.objects.filter(
+            gmail_account=account,
+            status__in=["pending", "running"],
+            started_at__lt=stale_cutoff,
+        ).aupdate(status="failed", error_message="Timed out", completed_at=dj_timezone.now())
+
         # Check no sync already running
         running = await SyncJob.objects.filter(
-            gmail_account=account, status__in=["pending", "fetching", "classifying", "parsing"]
+            gmail_account=account, status__in=["pending", "running"]
         ).aexists()
         if running:
             raise BadRequest(detail="A sync is already in progress")
 
-        sync_job = await SyncJob.objects.acreate(gmail_account=account)
+        months = data.months if data.months in (3, 6, 12) else 12
+        sync_job = await SyncJob.objects.acreate(gmail_account=account, sync_months=months)
 
-        # Run sync synchronously in async context
-        from .services import sync_emails
-        await _run_sync(sync_emails, account, sync_job)
+        # Create pipeline steps
+        from gmail.tasks import PIPELINE_STEPS
+        for i, step_name in enumerate(PIPELINE_STEPS):
+            await PipelineStep.objects.acreate(
+                sync_job=sync_job, step_name=step_name, order=i
+            )
 
-        await sync_job.arefresh_from_db()
+        # Enqueue first task to arq
+        from arq.connections import create_pool, RedisSettings
+        import os
+        pool = await create_pool(
+            RedisSettings.from_dsn(os.environ.get("REDIS_URL", "redis://localhost:6379"))
+        )
+        await pool.enqueue_job("task_fetch", sync_job.pk)
+        await pool.close()
+
         return SyncTriggerResponse(sync_job_id=sync_job.pk)
 
 
-@api.viewset("/sync/{id}")
+@api.viewset("/sync-jobs")
 class SyncDetailViewSet(ViewSet):
     auth = _auth
     guards = _guards
 
-    async def retrieve(self, request: Request, id: int):
-        """GET /api/gmail/sync/{id}/ — poll sync progress"""
+    async def retrieve(self, request: Request, pk: int):
+        """GET /api/gmail/sync-jobs/{pk}/ — poll sync progress with per-step detail"""
         user_id = int(request.context["user_id"])
         try:
-            job = await SyncJob.objects.select_related("gmail_account").aget(pk=id)
+            job = await SyncJob.objects.select_related("gmail_account").aget(pk=pk)
         except SyncJob.DoesNotExist:
             raise NotFound(detail="Sync job not found")
 
         if job.gmail_account.user_id != user_id:
             raise NotFound(detail="Sync job not found")
+
+        steps = [
+            PipelineStepSchema(
+                step_name=s.step_name,
+                status=s.status,
+                total_items=s.total_items,
+                processed_items=s.processed_items,
+                error_count=s.error_count,
+                error_message=s.error_message,
+                started_at=s.started_at.isoformat() if s.started_at else None,
+                completed_at=s.completed_at.isoformat() if s.completed_at else None,
+            )
+            async for s in job.steps.all().order_by("order")
+        ]
 
         return SyncJobResponse(
             id=job.pk,
@@ -136,6 +179,7 @@ class SyncDetailViewSet(ViewSet):
             error_message=job.error_message,
             started_at=job.started_at.isoformat(),
             completed_at=job.completed_at.isoformat() if job.completed_at else None,
+            steps=steps,
         )
 
 
@@ -230,6 +274,9 @@ class SenderRuleListViewSet(ViewSet):
                 sender_pattern=r.sender_pattern,
                 source_type=r.source_type,
                 is_enabled=r.is_enabled,
+                subject_pattern=r.subject_pattern,
+                require_attachment=r.require_attachment,
+                priority=r.priority,
             )
             async for r in account.sender_rules.all().order_by("source_type", "sender_pattern")
         ]
@@ -245,12 +292,18 @@ class SenderRuleListViewSet(ViewSet):
             sender_pattern=data.sender_pattern,
             source_type=data.source_type,
             is_enabled=data.is_enabled,
+            subject_pattern=data.subject_pattern,
+            require_attachment=data.require_attachment,
+            priority=data.priority,
         )
         return SenderRuleSchema(
             id=rule.pk,
             sender_pattern=rule.sender_pattern,
             source_type=rule.source_type,
             is_enabled=rule.is_enabled,
+            subject_pattern=rule.subject_pattern,
+            require_attachment=rule.require_attachment,
+            priority=rule.priority,
         )
 
 
@@ -273,6 +326,12 @@ class SenderRuleDetailViewSet(ViewSet):
             rule.is_enabled = data.is_enabled
         if data.source_type is not None:
             rule.source_type = data.source_type
+        if data.subject_pattern is not None:
+            rule.subject_pattern = data.subject_pattern
+        if data.require_attachment is not None:
+            rule.require_attachment = data.require_attachment
+        if data.priority is not None:
+            rule.priority = data.priority
         await rule.asave()
 
         return SenderRuleSchema(
@@ -280,6 +339,9 @@ class SenderRuleDetailViewSet(ViewSet):
             sender_pattern=rule.sender_pattern,
             source_type=rule.source_type,
             is_enabled=rule.is_enabled,
+            subject_pattern=rule.subject_pattern,
+            require_attachment=rule.require_attachment,
+            priority=rule.priority,
         )
 
     async def delete(self, request: Request, id: int):

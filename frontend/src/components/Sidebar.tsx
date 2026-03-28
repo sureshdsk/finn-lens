@@ -25,7 +25,6 @@ export default function Sidebar() {
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
-
   const handleLogout = () => {
     logout()
     navigate('/login')
