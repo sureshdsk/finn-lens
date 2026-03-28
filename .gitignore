@@ -47,6 +47,7 @@ pnpm-debug.log*
 sample-data/
 Google Pay/
 data/
+!frontend/src/data/
 
 # ── Claude ────────────────────────────────────────────────────────────────────
 .claude/settings.local.json

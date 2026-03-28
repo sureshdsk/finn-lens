@@ -33,7 +33,7 @@ let demoProfile: UserProfile = {
   email: 'ammu@finnlens.com',
   is_staff: false,
   display_name: 'Ammu Kutty',
-  date_of_birth: '2021-03-28',
+  date_of_birth: '2018-08-01',
   avatar_url: '',
   currency: 'INR',
 }
