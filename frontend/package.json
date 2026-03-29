@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:demo": "VITE_DEMO_MODE=true VITE_DEMO_LANDING_PAGE=true vite",
     "build": "tsc -b && vite build",
-    "build:demo": "tsc -b && VITE_DEMO_MODE=true vite build",
+    "build:demo": "tsc -b && VITE_DEMO_MODE=true VITE_DEMO_LANDING_PAGE=true vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
