@@ -236,6 +236,8 @@ pnpm build:demo
 
 Open `http://localhost:5174` — you'll see a marketing landing page instead of the login form. Click **"Quick Login as Demo User"** or enter `demo` / `demo`.
 
+The marketing landing page is only enabled for `pnpm dev:demo`. `pnpm build:demo` still uses mocked data, but keeps the normal login page.
+
 **What works in demo mode:**
 - All pages display realistic mock data (overview, accounts, transactions, analytics, calendar, subscriptions, investments, budgets, assets, life events, waitlist, notifications, settings)
 - Write operations (add account, update profile, manage subscriptions, manage sender rules) modify in-memory state

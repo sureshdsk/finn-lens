@@ -1,4 +1,5 @@
 """arq worker configuration for the email sync pipeline."""
+
 import logging
 import os
 
@@ -24,6 +25,24 @@ from gmail.tasks import (
     task_classify_transactions,
     task_detect_subscriptions,
 )
+
+
+def _preload_ml_models():
+    from classifier.providers.local.model_loader import (
+        get_gliner_model,
+        get_gliclass_model,
+    )
+    import logging
+
+    logger = logging.getLogger(__name__)
+    logger.info("Preloading ML models...")
+    get_gliner_model()
+    logger.info("GLiNER model loaded")
+    get_gliclass_model()
+    logger.info("GLiClass model loaded")
+
+
+_preload_ml_models()
 
 
 class WorkerSettings:

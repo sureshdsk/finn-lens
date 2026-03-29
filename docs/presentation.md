@@ -14,7 +14,7 @@ mdc: true
 
 <br>
 
-Your email inbox already knows your finances. FinnLens brings it all together — everything runs on your own machine, no data leaves to a 3rd party.
+Your email inbox already knows your finances. FinnLens brings it all together.
 
 
 <style>
@@ -39,35 +39,44 @@ code {
 
 # The Problem
 
+<br>
 
-
-- **Financial data is scattered** across dozens of email senders — banks, credit cards, subscriptions, investment platforms
-
-- **Manual tracking is painful** — spreadsheets go stale, apps require repeated data entry
-
-- **No unified view** across credit cards, bank accounts, investments, and subscriptions
-
-- **Critical dates get missed** — bill due dates, SIP debits, subscription renewals
-
-- **3rd-party apps demand everything, give back nothing** — hand over your bank credentials, transaction history, and PAN number only to get targeted ads and spam calls in return
-
-
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'cScale0': '#ef4444', 'cScale1': '#f97316', 'cScale2': '#eab308', 'cScale3': '#a855f7', 'cScale4': '#ec4899', 'cScaleLabel0': '#fff', 'cScaleLabel1': '#000', 'cScaleLabel2': '#000', 'cScaleLabel3': '#fff', 'cScaleLabel4': '#fff' }}}%%
+mindmap
+  root((Your Finances))
+    Scattered Data
+      Dozens of email senders
+      Banks, CCs, subscriptions
+      Investment platforms
+    Manual Tracking
+      Spreadsheets go stale
+      Apps need repeated entry
+      Always playing catch-up
+    No Unified View
+      CCs + Bank accounts
+      Investments + Subs
+      Bills + SIP debits
+    Missed Deadlines
+      Bill due dates
+      Subscription renewals
+      SIP debits
+    Privacy Nightmare
+      3rd-party apps demand
+      Full Gmail access
+      PAN + transaction history
+      In return: ads & spam calls
+```
 
 ---
 
-# The Insight
+# The Solution
 
 <br>
 
-> Every financial transaction you make generates an email.
->
-> Credit card alerts, bank statements, subscription receipts, investment confirmations — **your inbox is already a financial database.**
+Your email inbox already knows your finances. FinnLens brings it all together — everything runs on your own machine, no data leaves to a 3rd party.
 
-<br>
 
-FinnLens treats Gmail as a **read-only data source** and builds a structured financial profile from what's already there.
-
-**Zero manual entry. Connect once, track everything.**
 
 ---
 
@@ -113,8 +122,8 @@ mindmap
 
 <br>
 
-### Live walkthrough:
+### Mock Demo
+### Live Demo
 
-mock demo: url
 
 ---

@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    help = "Create a superuser and a Family record for development"
+    help = "Create an admin superuser and a Family record"
 
     def add_arguments(self, parser):
         parser.add_argument("--username", default="admin")
@@ -36,8 +36,10 @@ class Command(BaseCommand):
             defaults={"name": family_name},
         )
         if fam_created:
-            self.stdout.write(self.style.SUCCESS(f"Created family: {family_name} (id={family.pk})"))
+            self.stdout.write(
+                self.style.SUCCESS(f"Created family: {family_name} (id={family.pk})")
+            )
         else:
             self.stdout.write(f"Family already exists: {family.name} (id={family.pk})")
 
-        self.stdout.write(self.style.SUCCESS("Bootstrap complete."))
+        self.stdout.write(self.style.SUCCESS("Setup complete."))
