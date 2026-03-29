@@ -56,15 +56,50 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "finnlens.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    import urllib.parse
+
+    parsed = urllib.parse.urlparse(DATABASE_URL)
+    if parsed.scheme == "postgresql":
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": parsed.path.lstrip("/"),
+                "USER": parsed.username or "",
+                "PASSWORD": parsed.password or "",
+                "HOST": parsed.hostname or "localhost",
+                "PORT": parsed.port or 5432,
+                "CONN_MAX_AGE": 0,
+                "OPTIONS": {
+                    "pool": {
+                        "min_size": 2,
+                        "max_size": 10,
+                    }
+                },
+            }
+        }
+    elif parsed.scheme in ("sqlite", "sqlite3", ""):
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": parsed.path.lstrip("/") or str(BASE_DIR / "db.sqlite3"),
+            }
+        }
+    else:
+        raise ValueError(f"Unsupported DATABASE_URL scheme: {parsed.scheme}")
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -84,7 +119,9 @@ BOLT_JWT_ALGORITHM = "HS256"
 BOLT_JWT_EXPIRATION = int(os.environ.get("BOLT_JWT_EXPIRATION", "3600"))
 
 # CORS
-CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    "CORS_ALLOWED_ORIGINS", "http://localhost:5173"
+).split(",")
 CORS_ALLOW_CREDENTIALS = True
 
 # Classifier
@@ -98,7 +135,9 @@ CLASSIFIER_MODEL_CACHE_DIR = os.environ.get(
 # Google OAuth
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
-GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "http://localhost:5173/oauth/google/callback")
+GOOGLE_REDIRECT_URI = os.environ.get(
+    "GOOGLE_REDIRECT_URI", "http://localhost:5174/oauth/google/callback"
+)
 GMAIL_TOKEN_ENCRYPTION_KEY = os.environ.get("GMAIL_TOKEN_ENCRYPTION_KEY", "")
 
 # Redis (for arq worker)
