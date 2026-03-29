@@ -11,7 +11,7 @@ COPY . .
 
 FROM base AS dev
 
-CMD ["pnpm", "dev", "--host", "0.0.0.0"]
+CMD ["pnpm", "dev", "--host", "0.0.0.0", "--port", "5174"]
 
 FROM base AS build
 
