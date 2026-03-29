@@ -28,6 +28,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - backend_venv:/app/.venv
       - classifier_cache:/root/.cache/finnlens
     environment:
       DATABASE_URL: postgresql://finnlens:finnlens@postgres:5432/finnlens
@@ -48,6 +49,7 @@ services:
       target: dev
     volumes:
       - ./backend:/app
+      - worker_venv:/app/.venv
       - classifier_cache:/root/.cache/finnlens
     environment:
       DATABASE_URL: postgresql://finnlens:finnlens@postgres:5432/finnlens
@@ -77,3 +79,5 @@ services:
 volumes:
   finnlens_pg_data:
   classifier_cache:
+  backend_venv:
+  worker_venv:

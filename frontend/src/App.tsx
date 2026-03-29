@@ -2,8 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { DarkModeProvider } from '@/contexts/DarkModeContext'
+import { showDemoLandingPage } from '@/lib/demo'
 import AppLayout from '@/components/AppLayout'
 import LoginPage from '@/pages/LoginPage'
+import DemoLandingPage from '@/pages/DemoLandingPage'
 import AddAccountPage from '@/pages/banking/AddAccountPage'
 import AccountDetailPage from '@/pages/banking/AccountDetailPage'
 import OverviewPage from '@/pages/OverviewPage'
@@ -21,8 +23,13 @@ import WaitlistPage from '@/pages/WaitlistPage'
 import NotificationsPage from '@/pages/NotificationsPage'
 import SettingsPage from '@/pages/SettingsPage'
 import OAuthCallbackPage from '@/pages/OAuthCallbackPage'
+import OnboardingPage from '@/pages/OnboardingPage'
 
 const queryClient = new QueryClient()
+
+function LandingRoute() {
+  return showDemoLandingPage() ? <DemoLandingPage /> : <LoginPage />
+}
 
 export default function App() {
   return (
@@ -30,7 +37,7 @@ export default function App() {
       <DarkModeProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login" element={<LandingRoute />} />
               <Route element={<AppLayout />}>
                 <Route path="/overview" element={<OverviewPage />} />
                 <Route path="/accounts" element={<AccountsPage />} />
@@ -55,6 +62,7 @@ export default function App() {
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
+              <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="/oauth/google/callback" element={<OAuthCallbackPage />} />
               <Route path="*" element={<Navigate to="/overview" replace />} />
             </Routes>

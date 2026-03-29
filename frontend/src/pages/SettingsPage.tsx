@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useDarkMode } from "@/contexts/DarkModeContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -27,10 +27,11 @@ const tabs: { id: SettingsTab; label: string; icon: React.ComponentType<{ classN
 
 const SettingsPage = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { colorMode, setColorMode } = useDarkMode();
   const qc = useQueryClient();
   const locState = location.state as { tab?: SettingsTab; promptSync?: boolean } | null;
-  const initialTab = locState?.tab ?? "profile";
+  const initialTab = locState?.tab ?? (searchParams.get("tab") as SettingsTab) ?? "profile";
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [showSyncPrompt, setShowSyncPrompt] = useState(locState?.promptSync === true);
 

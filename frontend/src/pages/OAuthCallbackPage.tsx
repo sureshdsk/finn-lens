@@ -28,7 +28,7 @@ export default function OAuthCallbackPage() {
       .then(() => {
         sessionStorage.removeItem('gmail_code_verifier')
         toast.success('Gmail connected successfully')
-        navigate('/settings', { replace: true, state: { tab: 'integrations', promptSync: true } })
+        navigate('/onboarding', { replace: true })
       })
       .catch((err) => {
         console.error('OAuth callback error:', err)
