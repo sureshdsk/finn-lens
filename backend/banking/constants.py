@@ -29,7 +29,7 @@ def infer_issuer(sender: str) -> str:
     return "OTHER"
 
 
-# Known subscription services: normalized merchant pattern → metadata
+# Known recurring services and billers: normalized merchant pattern → metadata
 KNOWN_SUBSCRIPTIONS: dict[str, dict[str, str]] = {
     "netflix": {"name": "Netflix", "category": "streaming", "icon": "🎬", "color": "hsl(0 70% 50%)"},
     "spotify": {"name": "Spotify", "category": "music", "icon": "🎵", "color": "hsl(145 100% 50%)"},
@@ -47,8 +47,8 @@ KNOWN_SUBSCRIPTIONS: dict[str, dict[str, str]] = {
     "zerodha": {"name": "Zerodha", "category": "finance", "icon": "📈", "color": "hsl(270 80% 65%)"},
     "linkedin premium": {"name": "LinkedIn Premium", "category": "other", "icon": "💼", "color": "hsl(210 90% 45%)"},
     "linkedin": {"name": "LinkedIn Premium", "category": "other", "icon": "💼", "color": "hsl(210 90% 45%)"},
-    "jio": {"name": "Jio", "category": "other", "icon": "📱", "color": "hsl(210 90% 55%)"},
-    "airtel": {"name": "Airtel", "category": "other", "icon": "📱", "color": "hsl(0 80% 50%)"},
+    "jio": {"name": "Jio", "category": "utilities", "icon": "📱", "color": "hsl(210 90% 55%)"},
+    "airtel": {"name": "Airtel", "category": "utilities", "icon": "📱", "color": "hsl(0 80% 50%)"},
     "notion": {"name": "Notion", "category": "productivity", "icon": "📝", "color": "hsl(0 0% 40%)"},
     "github": {"name": "GitHub", "category": "productivity", "icon": "💻", "color": "hsl(0 0% 30%)"},
     "dropbox": {"name": "Dropbox", "category": "cloud", "icon": "📦", "color": "hsl(210 80% 55%)"},
@@ -63,4 +63,14 @@ KNOWN_SUBSCRIPTIONS: dict[str, dict[str, str]] = {
     "zomato pro": {"name": "Zomato Pro", "category": "other", "icon": "🍔", "color": "hsl(0 80% 50%)"},
     "cult.fit": {"name": "cult.fit", "category": "fitness", "icon": "💪", "color": "hsl(350 80% 50%)"},
     "curefit": {"name": "cult.fit", "category": "fitness", "icon": "💪", "color": "hsl(350 80% 50%)"},
+    "tata power": {"name": "Tata Power", "category": "utilities", "icon": "⚡", "color": "hsl(35 95% 50%)"},
+    "bescom": {"name": "BESCOM", "category": "utilities", "icon": "⚡", "color": "hsl(45 95% 48%)"},
+    "adani electricity": {"name": "Adani Electricity", "category": "utilities", "icon": "⚡", "color": "hsl(20 90% 50%)"},
+    "broadband": {"name": "Broadband", "category": "utilities", "icon": "📶", "color": "hsl(205 85% 55%)"},
+    "fiber": {"name": "Fiber", "category": "utilities", "icon": "📶", "color": "hsl(205 85% 55%)"},
+    "electricity": {"name": "Electricity Bill", "category": "utilities", "icon": "⚡", "color": "hsl(45 95% 48%)"},
+    "insurance premium": {"name": "Insurance Premium", "category": "insurance", "icon": "🛡️", "color": "hsl(190 75% 45%)"},
+    "hdfc life": {"name": "HDFC Life", "category": "insurance", "icon": "🛡️", "color": "hsl(190 75% 45%)"},
+    "lic": {"name": "LIC", "category": "insurance", "icon": "🛡️", "color": "hsl(200 70% 45%)"},
+    "policybazaar": {"name": "Policybazaar", "category": "insurance", "icon": "🛡️", "color": "hsl(210 85% 50%)"},
 }

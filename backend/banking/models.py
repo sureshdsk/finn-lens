@@ -213,6 +213,8 @@ class Subscription(models.Model):
         ("music", "Music"),
         ("cloud", "Cloud Storage"),
         ("productivity", "Productivity"),
+        ("utilities", "Utilities"),
+        ("insurance", "Insurance"),
         ("gaming", "Gaming"),
         ("news", "News"),
         ("fitness", "Fitness"),

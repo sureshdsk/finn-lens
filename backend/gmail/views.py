@@ -29,9 +29,12 @@ async def _run_sync(fn, *args):
     return await sync_to_async(fn)(*args)
 
 
-async def _get_gmail_account(user_id: int) -> GmailAccount:
+async def _get_gmail_account(user_id: int, *, include_inactive: bool = False) -> GmailAccount:
     try:
-        return await GmailAccount.objects.aget(user_id=user_id, is_active=True)
+        qs = GmailAccount.objects.filter(user_id=user_id)
+        if not include_inactive:
+            qs = qs.filter(is_active=True)
+        return await qs.aget()
     except GmailAccount.DoesNotExist:
         raise NotFound(detail="No Gmail account connected")
 
@@ -45,7 +48,7 @@ class GmailStatusViewSet(ViewSet):
         """GET /api/gmail/status/ — connection status + last sync time"""
         user_id = int(request.context["user_id"])
         try:
-            account = await GmailAccount.objects.aget(user_id=user_id, is_active=True)
+            account = await _get_gmail_account(user_id, include_inactive=True)
             return GmailStatusResponse(
                 connected=True,
                 email=account.email,
@@ -66,7 +69,7 @@ class GmailDisconnectViewSet(ViewSet):
     async def create(self, request: Request):
         """POST /api/gmail/disconnect/ — revoke tokens and delete"""
         user_id = int(request.context["user_id"])
-        account = await _get_gmail_account(user_id)
+        account = await _get_gmail_account(user_id, include_inactive=True)
 
         # Try to revoke token at Google
         try:
@@ -95,10 +98,12 @@ class SyncViewSet(ViewSet):
     async def create(self, request: Request, data: SyncTriggerRequest):
         """POST /api/gmail/sync/ — trigger manual sync via arq pipeline"""
         user_id = int(request.context["user_id"])
-        account = await _get_gmail_account(user_id)
+        account = await _get_gmail_account(user_id, include_inactive=True)
 
         if account.needs_reauth:
-            raise BadRequest(detail="Gmail authorization expired. Please reconnect your account.")
+            raise BadRequest(detail=account.reauth_reason or "Gmail authorization expired. Please reconnect your account.")
+        if not account.is_active:
+            raise BadRequest(detail="Gmail account is inactive. Please reconnect your account.")
 
         # Expire stale jobs stuck in pending/running for >10 minutes
         from django.utils import timezone as dj_timezone
