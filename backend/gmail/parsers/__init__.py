@@ -81,6 +81,7 @@ from .cc_payment import CreditCardPaymentParser
 from .credit_card import CreditCardParser
 from .investment import GrowwInvestmentParser
 from .subscription import SubscriptionParser
+from .bill import BillParser
 
 _bank_statement_parser = BankStatementParser()
 register(_bank_statement_parser)
@@ -91,3 +92,4 @@ register(CreditCardPaymentParser())
 register(CreditCardParser())
 register(GrowwInvestmentParser())
 register(SubscriptionParser())
+register(BillParser())

@@ -91,6 +91,26 @@ async def _save_step_progress(step, fields=None):
     await step.asave(update_fields=fields)
 
 
+def _is_reauth_error(exc: Exception) -> bool:
+    err_str = str(exc).lower()
+    return any(token in err_str for token in (
+        "invalid_grant",
+        "token",
+        "revoked",
+        "insufficient authentication scopes",
+        "insufficient permission",
+        "insufficientpermissions",
+        "access denied",
+    ))
+
+
+def _reauth_reason(exc: Exception) -> str:
+    err_str = str(exc).lower()
+    if "insufficient authentication scopes" in err_str or "insufficient permission" in err_str:
+        return "Gmail access is missing required read permissions. Please reconnect your Gmail account."
+    return "Google authorization expired. Please reconnect your Gmail account."
+
+
 # ── Task: Fetch ──────────────────────────────────────────────────────────────
 
 
@@ -112,9 +132,9 @@ async def task_fetch(ctx, sync_job_id: int):
         try:
             await sync_to_async(get_gmail_service)(account)
         except Exception as e:
-            err_str = str(e).lower()
-            if "invalid_grant" in err_str or "token" in err_str or "revoked" in err_str:
-                await _mark_reauth(account, "Google authorization expired. Please reconnect your Gmail account.")
+            if _is_reauth_error(e):
+                reason = _reauth_reason(e)
+                await _mark_reauth(account, reason)
                 await _mark_failed(step, f"OAuth error: {e}")
                 await _fail_job(sync_job, f"OAuth error: {e}")
                 return
@@ -140,9 +160,9 @@ async def task_fetch(ctx, sync_job_id: int):
         from googleapiclient.errors import HttpError
 
         if isinstance(e, RefreshError):
-            await _mark_reauth(account, "Google authorization expired. Please reconnect your Gmail account.")
-        elif isinstance(e, HttpError) and e.resp.status in (401, 403):
-            await _mark_reauth(account, "Google access denied. Please reconnect your Gmail account.")
+            await _mark_reauth(account, _reauth_reason(e))
+        elif isinstance(e, HttpError) and e.resp.status in (401, 403) and _is_reauth_error(e):
+            await _mark_reauth(account, _reauth_reason(e))
 
         logger.exception(f"task_fetch failed for sync_job {sync_job_id}")
         await _mark_failed(step, str(e))

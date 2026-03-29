@@ -13,6 +13,8 @@ from django.db import transaction as db_transaction
 
 from .constants import KNOWN_SUBSCRIPTIONS
 from .models import (
+    BankAccount,
+    CreditCard,
     CreditCardTransaction,
     Family,
     Subscription,
@@ -28,6 +30,8 @@ class DetectedPayment:
     source: str  # "bank_txn" or "cc_txn"
     txn_id: int
     currency: str = "INR"
+    category: str = "uncategorized"
+    raw_description: str = ""
 
 
 @dataclass
@@ -55,8 +59,12 @@ def normalize_merchant(raw: str) -> str:
     for prefix in ("upi/", "upi-", "neft/", "imps/", "bil/", "ach d- "):
         if s.startswith(prefix):
             s = s[len(prefix):]
+    s = re.sub(r"\b(?:standing instruction|auto ?debit|autopay|bill pay|payment to|payment for)\b", " ", s)
+    s = re.sub(r"\b(?:subscription|membership|premium|renewal|plan)\b", " ", s)
+    s = s.replace(".com", " ").replace(".in", " ").replace(".ai", " ")
     # Remove trailing reference numbers, dates, ids
     s = re.sub(r"[/\-]\d{6,}$", "", s)
+    s = re.sub(r"[^a-z0-9\s&]+", " ", s)
     s = re.sub(r"\s*\*+\s*", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
     return s
@@ -68,6 +76,106 @@ def _match_known(pattern: str) -> dict[str, str] | None:
         if key in pattern:
             return meta
     return None
+
+
+def _is_subscription_like_single_payment(merchant: str, meta: dict[str, str] | None) -> bool:
+    if not meta:
+        return False
+
+    subscription_keywords = (
+        "subscription",
+        "membership",
+        "premium",
+        "plus",
+        "pro",
+        "plan",
+        "recurring",
+        "renewal",
+    )
+    if any(keyword in merchant for keyword in subscription_keywords):
+        return True
+
+    # A small subset of known services are strong recurring-signal merchants
+    # even when the bank/card descriptor is terse.
+    strong_recurring_services = {
+        "Netflix",
+        "Spotify",
+        "Claude Pro",
+        "ChatGPT Plus",
+        "YouTube Premium",
+        "iCloud+",
+        "Google One",
+        "Adobe Creative Cloud",
+        "GitHub",
+        "Dropbox",
+        "Notion",
+    }
+    return meta.get("name") in strong_recurring_services
+
+
+def _is_habitual_spend(payments: list[DetectedPayment], meta: dict[str, str] | None) -> bool:
+    if meta:
+        return False
+
+    habitual_categories = {"food", "groceries", "travel_transport", "ecommerce", "clothing"}
+    if payments and all(p.category in habitual_categories for p in payments):
+        return True
+
+    habitual_keywords = ("swiggy", "zomato", "bigbasket", "amazon", "flipkart", "uber", "ola", "zepto")
+    return all(any(keyword in p.raw_description.lower() for keyword in habitual_keywords) for p in payments)
+
+
+def _allowed_variance(meta: dict[str, str] | None) -> float:
+    if not meta:
+        return 0.10
+    category = meta.get("category")
+    if category in {"utilities", "insurance"}:
+        return 0.35
+    return 0.15
+
+
+def _default_cycle(meta: dict[str, str] | None, merchant: str) -> str:
+    yearly_keywords = ("annual", "yearly", "year", "premium")
+    if any(keyword in merchant for keyword in yearly_keywords):
+        return "yearly"
+    if meta and meta.get("category") == "insurance":
+        return "yearly"
+    return "monthly"
+
+
+def _label_bank_account(account: BankAccount | None) -> str:
+    if not account:
+        return "Bank account"
+    suffix = account.account_number[-4:] if account.account_number else ""
+    if suffix:
+        return f"{account.bank_name} ••{suffix}"
+    return account.bank_name
+
+
+def _label_credit_card(card: CreditCard | None) -> str:
+    if not card:
+        return "Credit card"
+    return f"{card.issuer} ••{card.card_last4}"
+
+
+def _derive_payment_method(payments: list[DetectedPayment]) -> str:
+    bank_txn_ids = [p.txn_id for p in payments if p.source == "bank_txn"]
+    cc_txn_ids = [p.txn_id for p in payments if p.source == "cc_txn"]
+    labels: list[str] = []
+
+    if bank_txn_ids:
+        labels.extend(sorted({
+            _label_bank_account(txn.account)
+            for txn in Transaction.objects.filter(pk__in=bank_txn_ids).select_related("account")
+        }))
+
+    if cc_txn_ids:
+        labels.extend(sorted({
+            _label_credit_card(txn.card)
+            for txn in CreditCardTransaction.objects.filter(pk__in=cc_txn_ids).select_related("card")
+        }))
+
+    return ", ".join(labels)
 
 
 def detect_subscriptions(family: Family) -> list[DetectedSubscription]:
@@ -93,6 +201,8 @@ def detect_subscriptions(family: Family) -> list[DetectedSubscription]:
                 source="bank_txn",
                 txn_id=txn.pk,
                 currency=currency,
+                category=txn.category,
+                raw_description=txn.description or txn.merchant_name,
             )
         )
 
@@ -113,13 +223,43 @@ def detect_subscriptions(family: Family) -> list[DetectedSubscription]:
                 source="cc_txn",
                 txn_id=txn.pk,
                 currency=currency,
+                category=txn.category,
+                raw_description=txn.description or txn.merchant_name,
             )
         )
 
     detected: list[DetectedSubscription] = []
 
     for (merchant, currency), payments in payments_by_key.items():
+        meta = _match_known(merchant)
+        if _is_habitual_spend(payments, meta):
+            continue
+
         if len(payments) < 2:
+            if len(payments) != 1 or not _is_subscription_like_single_payment(merchant, meta):
+                continue
+
+            payment = payments[0]
+            default_cycle = _default_cycle(meta, payment.raw_description.lower())
+            cycle_days = 365 if default_cycle == "yearly" else 30
+            detected.append(
+                DetectedSubscription(
+                    merchant_pattern=merchant,
+                    name=meta["name"] if meta else merchant.title(),
+                    category=meta["category"] if meta else "other",
+                    icon=meta["icon"] if meta else "💳",
+                    color=meta["color"] if meta else "hsl(175 100% 50%)",
+                    cycle=default_cycle,
+                    cost=payment.amount,
+                    confidence=0.65,
+                    currency=currency,
+                    payments=payments,
+                    last_billed_date=payment.date,
+                    next_renewal_date=payment.date + timedelta(days=cycle_days),
+                    start_date=payment.date,
+                    source=payment.source,
+                )
+            )
             continue
 
         # Sort by date
@@ -136,19 +276,20 @@ def detect_subscriptions(family: Family) -> list[DetectedSubscription]:
         median_interval = statistics.median(intervals)
 
         # Determine cycle
-        if 25 <= median_interval <= 35:
+        if 25 <= median_interval <= 40:
             cycle = "monthly"
-        elif 350 <= median_interval <= 380:
+        elif 330 <= median_interval <= 395:
             cycle = "yearly"
         else:
             continue
 
-        # Check amount consistency (within 10% of median)
+        # Check amount consistency. Utility/insurance bills fluctuate more than fixed subscriptions.
         amounts = [float(p.amount) for p in payments]
         median_amount = statistics.median(amounts)
         if median_amount <= 0:
             continue
-        consistent = sum(1 for a in amounts if abs(a - median_amount) / median_amount <= 0.10)
+        variance = _allowed_variance(meta)
+        consistent = sum(1 for a in amounts if abs(a - median_amount) / median_amount <= variance)
         if consistent < len(amounts) * 0.6:
             continue
 
@@ -166,7 +307,6 @@ def detect_subscriptions(family: Family) -> list[DetectedSubscription]:
         confidence = min(confidence, 1.0)
 
         # Enrich with known subscription metadata
-        meta = _match_known(merchant)
         name = meta["name"] if meta else merchant.title()
         category = meta["category"] if meta else "other"
         icon = meta["icon"] if meta else "💳"
@@ -238,18 +378,19 @@ def materialize_subscriptions(family: Family) -> dict[str, int]:
     """Detect subscriptions and persist them, merging with email-sourced data."""
     detected = detect_subscriptions(family)
 
-    # Also pull email-extracted subscription data
+    # Also pull email-extracted subscription and bill data
     email_subs: dict[str, dict] = {}
     try:
         from gmail.models import ExtractedFinancialData, GmailAccount
         gmail_accounts = GmailAccount.objects.filter(user=family.owner)
         extractions = ExtractedFinancialData.objects.filter(
             email__gmail_account__in=gmail_accounts,
-            data_type="subscription_renewal",
+            data_type__in=["subscription_renewal", "bill_notice"],
         )
         for ext in extractions:
             data = ext.data_json or {}
-            service_name = data.get("service_name", data.get("merchant_or_provider", "")).lower()
+            service_name = data.get("service_name") or data.get("biller_name") or data.get("merchant_or_provider", "")
+            service_name = service_name.lower()
             if service_name:
                 email_subs[service_name] = data
     except Exception:
@@ -261,6 +402,7 @@ def materialize_subscriptions(family: Family) -> dict[str, int]:
     for det in detected:
         # Merge email data if available (fuzzy match on merchant name)
         email_data = _find_email_match(det, email_subs)
+        payment_method = _derive_payment_method(det.payments)
 
         # Apply email enrichments
         plan = ""
@@ -268,9 +410,10 @@ def materialize_subscriptions(family: Family) -> dict[str, int]:
             plan = email_data.get("plan", "")
             if email_data.get("currency"):
                 det.currency = email_data["currency"]
-            if email_data.get("next_renewal_date"):
+            recurring_date = email_data.get("next_renewal_date") or email_data.get("due_date")
+            if recurring_date:
                 try:
-                    det.next_renewal_date = date.fromisoformat(email_data["next_renewal_date"])
+                    det.next_renewal_date = date.fromisoformat(recurring_date)
                 except (ValueError, TypeError):
                     pass
 
@@ -290,6 +433,7 @@ def materialize_subscriptions(family: Family) -> dict[str, int]:
                 "auto_renew": True,
                 "icon": det.icon,
                 "color": det.color,
+                "payment_method": payment_method,
                 "plan": plan,
                 "source": det.source,
                 "confidence": det.confidence,
@@ -304,6 +448,7 @@ def materialize_subscriptions(family: Family) -> dict[str, int]:
             sub.currency = det.currency
             sub.last_billed_date = det.last_billed_date
             sub.next_renewal_date = det.next_renewal_date
+            sub.payment_method = payment_method
             sub.confidence = det.confidence
             if plan:
                 sub.plan = plan
