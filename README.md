@@ -283,7 +283,7 @@ The marketing landing page is only enabled for `pnpm dev:demo`. `pnpm build:demo
    - `email`
    - `profile`
    - `https://www.googleapis.com/auth/gmail.readonly`
-5. If "Testing" mode, add your Google account as a test user
+5. Under **Audience → Test users**, add your email address so only you can access this
 6. (Optional) Submit for verification to make it available to anyone
 
 ### 4. Create OAuth Credentials

@@ -80,7 +80,7 @@ const oauthSubSteps = [
   {
     icon: Shield,
     title: 'Configure OAuth Consent Screen',
-    desc: 'Go to APIs & Services > OAuth consent screen. Choose "External" and add scopes: email, profile, gmail.readonly.',
+    desc: 'Go to APIs & Services > OAuth consent screen. Choose "External" and add scopes: email, profile, gmail.readonly. Then visit Audience > Test users and add your email address so only you can access this.',
   },
   {
     icon: Key,
