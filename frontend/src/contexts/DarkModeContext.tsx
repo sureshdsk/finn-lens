@@ -18,7 +18,7 @@ export const useDarkMode = () => {
 
 export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
   const [colorMode, setColorModeState] = useState<ColorMode>(() => {
-    return (localStorage.getItem("finnlens_color_mode") as ColorMode) || "dark";
+    return (localStorage.getItem("finnlens_color_mode") as ColorMode) || "light";
   });
 
   const setColorMode = (mode: ColorMode) => {

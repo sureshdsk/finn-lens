@@ -1,7 +1,7 @@
 {
   "name": "FinnLens",
   "short_name": "FinnLens",
-  "description": "FinnLens | Personal Finance Intelligence",
+  "description": "Your transactions year in review - privacy-first financial insights",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -14,8 +14,8 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#0d9488",
-  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "background_color": "#000000",
   "display": "standalone",
   "start_url": "/"
 }
