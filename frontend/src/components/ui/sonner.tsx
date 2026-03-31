@@ -1,13 +1,14 @@
-import { useTheme } from "next-themes"
+import type React from "react"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
+import { useDarkMode } from "@/contexts/DarkModeContext"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  const { isDark } = useDarkMode()
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={isDark ? "dark" : "light"}
       className="toaster group"
       icons={{
         success: (
@@ -28,10 +29,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
+          "--normal-bg": isDark ? "hsl(225 18% 10%)" : "hsl(0 0% 100%)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          "--normal-shadow": isDark
+            ? "0 10px 24px rgba(0, 0, 0, 0.45)"
+            : "0 10px 24px rgba(15, 23, 42, 0.14)",
         } as React.CSSProperties
       }
       toastOptions={{
