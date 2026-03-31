@@ -30,12 +30,6 @@ const howItWorksSteps = [
   { num: '3', title: 'Review one unified money system', desc: 'Daily spending, card liabilities, cash flow, and investment snapshots live in one place.', gradient: 'from-amber-500 to-orange-500' },
 ]
 
-const demoStats = [
-  { label: 'Accounts tracked', value: '12', color: 'text-teal-600 dark:text-teal-400' },
-  { label: 'Bills detected', value: '18', color: 'text-violet-600 dark:text-violet-400' },
-  { label: 'Messages parsed', value: '1,248', color: 'text-amber-600 dark:text-amber-400' },
-]
-
 const previewSignals = [
   { title: 'Statement sync complete', detail: 'HDFC, ICICI, Axis, AMEX', tone: 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30', dot: 'bg-emerald-500' },
   { title: 'Upcoming card due', detail: 'AMEX Platinum due in 3 days', tone: 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30', dot: 'bg-amber-500' },
@@ -343,14 +337,6 @@ export default function DemoLandingPage() {
                 <Rocket className="w-4 h-4 mr-2" /> Setup Instructions
               </Button>
             </div>
-            <div className="mt-10 grid grid-cols-3 gap-4 max-w-lg">
-              {demoStats.map((stat) => (
-                <div key={stat.label} className="rounded-2xl bg-white dark:bg-slate-900/80 border border-border/50 px-4 py-4 shadow-sm">
-                  <div className={`text-2xl font-bold tabular-nums ${stat.color}`}>{stat.value}</div>
-                  <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">{stat.label}</div>
-                </div>
-              ))}
-            </div>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.12 }} className="relative">
@@ -449,11 +435,7 @@ export default function DemoLandingPage() {
       <section id="features-section" className="px-6 py-24 bg-white/50 dark:bg-slate-900/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16 max-w-2xl mx-auto">
-            <p className="text-xs uppercase tracking-[0.22em] font-semibold text-teal-600 dark:text-teal-400 mb-3">What the demo proves</p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">A finance tool that feels operational,{' '}<span className="bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">not ornamental.</span></h2>
-            <p className="mt-4 text-muted-foreground">
-              The demo shows the product model clearly: structured extraction from messy financial inputs, a unified dashboard, and the useful follow-through around renewals, due dates, and trends.
-            </p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">Your data stays yours.{' '}<span className="bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">Your workflow stays operational.</span></h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {features.map((f, i) => (
