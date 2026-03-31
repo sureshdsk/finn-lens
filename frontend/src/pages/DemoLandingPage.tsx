@@ -42,6 +42,41 @@ const previewSignals = [
   { title: 'Subscription spike', detail: '3 renewals detected this week', tone: 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30', dot: 'bg-rose-500' },
 ]
 
+type RoadmapStatus = 'pending' | 'partial' | 'full'
+
+const roadmapItems: Array<{ area: string; status: RoadmapStatus; supported: string; notYet: string }> = [
+  {
+    area: 'Bank statement parser',
+    status: 'partial',
+    supported: 'ICICI',
+    notYet: 'IDFC FIRST, SBI, Federal Bank',
+  },
+  {
+    area: 'Credit card statement parser',
+    status: 'partial',
+    supported: 'ICICI, Axis (+ generic fallback)',
+    notYet: 'HDFC, SBI Card, Kotak, IndusInd, Standard Chartered, RBL, Yes Bank, AMEX, HSBC, Citi',
+  },
+  {
+    area: 'Investment email parser',
+    status: 'partial',
+    supported: 'Groww',
+    notYet: 'Zerodha, Kite, Angel One',
+  },
+  {
+    area: 'Subscription parser',
+    status: 'partial',
+    supported: 'Generic parser',
+    notYet: 'Platform-specific parsers',
+  },
+  {
+    area: 'Notifications',
+    status: 'pending',
+    supported: 'None',
+    notYet: 'End-to-end notification system',
+  },
+]
+
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   function copy() {
@@ -438,6 +473,50 @@ export default function DemoLandingPage() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-xs uppercase tracking-[0.22em] font-semibold text-teal-600 dark:text-teal-400 mb-3">Technical backlog</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">Roadmap status</h2>
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+              Status scale: <span className="font-medium text-foreground">pending</span>, <span className="font-medium text-foreground">partial</span>, <span className="font-medium text-foreground">full</span>.
+            </p>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-border/50 bg-white dark:bg-slate-900/70 shadow-sm">
+            <div className="grid grid-cols-[1fr_0.45fr_1fr_1fr] gap-3 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground border-b border-border/50">
+              <span>Features</span>
+              <span>Status</span>
+              <span>Supported now</span>
+              <span>Pending</span>
+            </div>
+            <div className="divide-y divide-border/40">
+              {roadmapItems.map((item) => (
+                <div key={item.area} className="grid grid-cols-[1fr_0.45fr_1fr_1fr] gap-3 px-5 py-4 text-sm">
+                  <p className="font-medium text-foreground">{item.area}</p>
+                  <div>
+                    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
+                      item.status === 'full'
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                        : item.status === 'partial'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+                          : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
+                    }`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <p className="text-emerald-700 dark:text-emerald-400">{item.supported}</p>
+                  <p className="text-muted-foreground">{item.notYet}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Notes: non-listed issuers/providers may have partial extraction through generic heuristics, but dedicated parsers are still pending.
+          </p>
         </div>
       </section>
 

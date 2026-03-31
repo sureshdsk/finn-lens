@@ -21,6 +21,22 @@ A personal finance intelligence platform. Connect your Gmail, and FinnLens autom
 | Package managers | `pnpm` (frontend), `uv` (backend) |
 | AI coding agents | [Claude Code](https://claude.ai/code) (Opus), [OpenCode](https://opencode.ai) (GLM-5) |
 
+## Pending Items
+
+Technical backlog status for core data coverage:
+
+| Features | Status | Supported now (parser-level) | Pending |
+|----------|--------|------------------------------|---------|
+| Bank statement parser | `partial` | ICICI | IDFC FIRST, SBI, Federal Bank |
+| Credit card statement parser | `partial` | ICICI, Axis (+ generic fallback) | HDFC, SBI Card, Kotak, IndusInd, Standard Chartered, RBL, Yes Bank, AMEX, HSBC, Citi |
+| Investment email parser | `partial` | Groww | Zerodha, Kite, Angel One |
+| Subscription parser | `partial` | Generic parser | Platform-specific parsers |
+| Notifications | `pending` | None | End-to-end notification system |
+
+Notes:
+- Credit cards outside ICICI/Axis may still extract partially via the generic fallback parser, but do not have dedicated issuer-specific parsers yet.
+- Some providers are recognized at sender-rule level, but parser-level extraction is still pending.
+
 ## Project Structure
 
 ```
