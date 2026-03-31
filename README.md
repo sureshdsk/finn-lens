@@ -6,6 +6,20 @@ A personal finance intelligence platform. Connect your Gmail, and FinnLens autom
   <img src="docs/finnlens-2-feat.png" alt="FinnLens Features" width="700" />
 </p>
 
+## Screenshots
+
+| Dashboard | Accounts |
+|-----------|----------|
+| ![FinnLens Dashboard](docs/finnlens-dashboard.png) | ![FinnLens Accounts](docs/finnlens-accounts.png) |
+
+| Calendar View | Gmail Sync |
+|---------------|------------|
+| ![FinnLens Calendar View](docs/finnlens-calendar-view.png) | ![FinnLens Gmail Sync](docs/finnlens-gmail-sync.png) |
+
+| Investment Tracking | Subscription Tracking |
+|---------------------|-----------------------|
+| ![FinnLens Investment Tracking](docs/finnlens-investment-tracking.png) | ![FinnLens Subscription Tracking](docs/finnlens-subscription-tracking.png) |
+
 ## Quick Links
 
 - [Getting Started](#getting-started)
