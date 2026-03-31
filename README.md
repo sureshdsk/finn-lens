@@ -6,6 +6,14 @@ A personal finance intelligence platform. Connect your Gmail, and FinnLens autom
   <img src="docs/finnlens-2-feat.png" alt="FinnLens Features" width="700" />
 </p>
 
+## Quick Links
+
+- [Getting Started](#getting-started)
+- [Setup Guides](#setup-guides)
+- [How It Works](#how-it-works)
+- [Make Commands](#make-commands)
+- [Pending Items](#pending-items)
+
 ## Stack
 
 | Layer | Tech |
@@ -448,27 +456,31 @@ print(result.pdf_password)           # suji0501
 
 ---
 
-## Environment Variables
+## Configuration Notes
 
-**`backend/.env`**
-```env
-SECRET_KEY=change-me-in-production
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-BOLT_JWT_SECRET=                    # min 32 chars
-BOLT_JWT_EXPIRATION=3600
-CORS_ALLOWED_ORIGINS=http://localhost:5174
-REDIS_URL=redis://localhost:6379
-DATABASE_URL=sqlite:///db.sqlite3   # Docker sets this to postgres:// automatically
+- Use `backend/.env.example` as the source of truth for backend environment variables.
+- Setup-specific environment details are documented in the Getting Started sections above.
 
-# Google OAuth (for Gmail sync)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=http://localhost:5174/oauth/google/callback
-GMAIL_TOKEN_ENCRYPTION_KEY=         # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-```
+---
 
-**`frontend/.env.local`**
-```env
-VITE_API_URL=http://localhost:8000
-```
+## Connect
+
+- LinkedIn: https://www.linkedin.com/in/sureshdsk/
+- X: https://x.com/sureshdsk
+- License: [MIT](LICENSE)
+
+## Pending Items
+
+Technical backlog status for core data coverage:
+
+| Features | Status | Supported now (parser-level) | Pending |
+|----------|--------|------------------------------|---------|
+| Bank statement parser | `partial` | ICICI | IDFC FIRST, SBI, Federal Bank |
+| Credit card statement parser | `partial` | ICICI, Axis (+ generic fallback) | HDFC, SBI Card, Kotak, IndusInd, Standard Chartered, RBL, Yes Bank, AMEX, HSBC, Citi |
+| Investment email parser | `partial` | Groww | Zerodha, Kite, Angel One |
+| Subscription parser | `partial` | Generic parser | Platform-specific parsers |
+| Notifications | `pending` | None | End-to-end notification system |
+
+Notes:
+- Credit cards outside ICICI/Axis may still extract partially via the generic fallback parser, but do not have dedicated issuer-specific parsers yet.
+- Some providers are recognized at sender-rule level, but parser-level extraction is still pending.
