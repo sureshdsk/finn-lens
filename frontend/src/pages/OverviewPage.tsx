@@ -43,7 +43,7 @@ function StatCards() {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {cards.map((card) => (
         <div key={card.label} className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -293,14 +293,14 @@ const OverviewPage = () => {
     <div className="space-y-5">
       <StatCards />
       <UpcomingTimeline />
-      <div className="grid lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2"><SpendingChart /></div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="md:col-span-2"><SpendingChart /></div>
         <SpendingBreakdown />
       </div>
-      <div className="grid lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-1"><InvestmentPanel /></div>
-        <div className="lg:col-span-1"><RecentTransactions /></div>
-        <div className="lg:col-span-1"><SubscriptionsSummary /></div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="md:col-span-1"><InvestmentPanel /></div>
+        <div className="md:col-span-1"><RecentTransactions /></div>
+        <div className="md:col-span-1"><SubscriptionsSummary /></div>
       </div>
     </div>
   )

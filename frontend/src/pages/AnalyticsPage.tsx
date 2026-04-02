@@ -85,8 +85,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-5">
-      {/* Summary cards */}
-      <div className="grid sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: 'Avg Monthly Spend', value: isLoading ? '...' : fmt(avgExpense), icon: TrendingDown, accent: 'text-amber-600 dark:text-amber-400' },
           { label: 'Savings Rate', value: isLoading ? '...' : `${savingsRate}%`, icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
@@ -106,7 +105,6 @@ export default function AnalyticsPage() {
         ))}
       </div>
 
-      {/* Income vs Expense chart */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
         className="bg-card border border-border shadow-sm rounded-lg p-5">
         <div className="relative z-10">
@@ -130,14 +128,13 @@ export default function AnalyticsPage() {
         </div>
       </motion.div>
 
-      {/* Category breakdown */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
         className="bg-card border border-border shadow-sm rounded-lg p-5">
         <div className="relative z-10">
           <h3 className="text-base font-semibold text-foreground mb-4">Spending by Category</h3>
           {isLoading ? <Skeleton className="h-[200px] w-full" /> : (
-            <div className="flex items-center gap-4">
-              <ResponsiveContainer width="50%" height={200}>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <ResponsiveContainer width="100%" height={200} className="sm:w-[50%] sm:min-w-[200px]">
                 <PieChart>
                   <Pie
                     data={cats.filter(c => c.category !== 'transfers_payments').map(c => ({ name: CATEGORY_LABELS[c.category] ?? c.category, value: Number(c.total) }))}
@@ -150,7 +147,7 @@ export default function AnalyticsPage() {
                   <Tooltip formatter={(v) => fmtFull(Number(v))} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono' }} />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="flex-1 space-y-1.5">
+              <div className="flex-1 space-y-1.5 w-full">
                 {cats.filter(c => c.category !== 'transfers_payments').slice(0, 8).map(c => (
                   <div key={c.category} className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
@@ -168,37 +165,38 @@ export default function AnalyticsPage() {
         </div>
       </motion.div>
 
-      {/* Monthly comparison table */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
         className="bg-card border border-border shadow-sm rounded-lg p-5">
         <div className="relative z-10">
           <h3 className="text-base font-semibold text-foreground mb-4">Monthly Comparison</h3>
-          <div className="grid grid-cols-5 gap-2 pb-2 border-b border-border text-xs font-medium text-muted-foreground">
-            <div>Month</div><div className="text-right">Income</div><div className="text-right">Expense</div><div className="text-right">Savings</div><div className="text-right">Rate</div>
-          </div>
-          {isLoading ? (
-            <div className="space-y-2 mt-2">{[0,1,2].map(i => <Skeleton key={i} className="h-6 w-full" />)}</div>
-          ) : (
-            <div className="divide-y divide-border">
-              {chartData.map((m, i) => {
-                const rate = m.income > 0 ? Math.round((m.savings / m.income) * 100) : 0
-                const prevExp = i > 0 ? chartData[i - 1].expense : m.expense
-                const expChange = prevExp > 0 ? ((m.expense - prevExp) / prevExp * 100).toFixed(1) : '0'
-                return (
-                  <div key={m.month} className="grid grid-cols-5 gap-2 py-2.5 items-center">
-                    <div className="text-xs font-bold text-foreground">{m.month}</div>
-                    <div className="text-xs text-emerald-600 dark:text-emerald-400 text-right">{fmtFull(m.income)}</div>
-                    <div className="text-right">
-                      <div className="text-xs text-rose-500">{fmtFull(m.expense)}</div>
-                      {i > 0 && <div className={`text-xs ${Number(expChange) > 0 ? 'text-rose-500' : 'text-emerald-600 dark:text-emerald-400'}`}>{Number(expChange) > 0 ? '+' : ''}{expChange}%</div>}
-                    </div>
-                    <div className="text-xs text-primary text-right">{fmtFull(m.savings)}</div>
-                    <div className={`text-xs font-bold text-right ${rate >= 30 ? 'text-emerald-600 dark:text-emerald-400' : rate >= 20 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-500'}`}>{rate}%</div>
-                  </div>
-                )
-              })}
+          <div className="overflow-x-auto">
+            <div className="grid grid-cols-5 gap-2 pb-2 border-b border-border text-xs font-medium text-muted-foreground min-w-[400px]">
+              <div>Month</div><div className="text-right">Income</div><div className="text-right">Expense</div><div className="text-right">Savings</div><div className="text-right">Rate</div>
             </div>
-          )}
+            {isLoading ? (
+              <div className="space-y-2 mt-2">{[0,1,2].map(i => <Skeleton key={i} className="h-6 w-full" />)}</div>
+            ) : (
+              <div className="divide-y divide-border min-w-[400px]">
+                {chartData.map((m, i) => {
+                  const rate = m.income > 0 ? Math.round((m.savings / m.income) * 100) : 0
+                  const prevExp = i > 0 ? chartData[i - 1].expense : m.expense
+                  const expChange = prevExp > 0 ? ((m.expense - prevExp) / prevExp * 100).toFixed(1) : '0'
+                  return (
+                    <div key={m.month} className="grid grid-cols-5 gap-2 py-2.5 items-center">
+                      <div className="text-xs font-bold text-foreground">{m.month}</div>
+                      <div className="text-xs text-emerald-600 dark:text-emerald-400 text-right">{fmtFull(m.income)}</div>
+                      <div className="text-right">
+                        <div className="text-xs text-rose-500">{fmtFull(m.expense)}</div>
+                        {i > 0 && <div className={`text-xs ${Number(expChange) > 0 ? 'text-rose-500' : 'text-emerald-600 dark:text-emerald-400'}`}>{Number(expChange) > 0 ? '+' : ''}{expChange}%</div>}
+                      </div>
+                      <div className="text-xs text-primary text-right">{fmtFull(m.savings)}</div>
+                      <div className={`text-xs font-bold text-right ${rate >= 30 ? 'text-emerald-600 dark:text-emerald-400' : rate >= 20 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-500'}`}>{rate}%</div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>

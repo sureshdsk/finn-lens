@@ -17,7 +17,11 @@ const menuItems = [
   { icon: LineChart, label: "Investments", route: "/investments" },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void
+}
+
+export default function Sidebar({ onNavigate }: SidebarProps) {
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
@@ -27,7 +31,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className={`${collapsed ? "w-16" : "w-60"} h-screen bg-muted/40 border-r border-border flex flex-col transition-all duration-300 shrink-0`}>
+    <aside className={`${collapsed ? "w-16" : "w-60"} h-full bg-muted/40 border-r border-border flex flex-col transition-all duration-300 shrink-0`}>
       <div className="p-4 flex items-center gap-2.5 border-b border-border">
         <TrendingUp className="w-5 h-5 text-primary shrink-0" />
         {!collapsed && <span className="font-semibold text-sm text-primary tracking-wide">FINNLENS</span>}
@@ -38,6 +42,7 @@ export default function Sidebar() {
           <NavLink
             key={item.route}
             to={item.route}
+            onClick={onNavigate}
             className={({ isActive }) =>
               `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive
@@ -55,6 +60,7 @@ export default function Sidebar() {
       <div className="p-2 border-t border-border space-y-1">
         <NavLink
           to="/settings"
+          onClick={onNavigate}
           className={({ isActive }) =>
             `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
               isActive
@@ -75,7 +81,7 @@ export default function Sidebar() {
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center py-2 text-muted-foreground hover:text-primary transition-colors"
+          className="hidden md:flex w-full items-center justify-center py-2 text-muted-foreground hover:text-primary transition-colors"
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>

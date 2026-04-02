@@ -269,12 +269,12 @@ const SettingsPage = () => {
                     <div className="text-xs text-muted-foreground">Read-only access to financial emails</div>
                   </div>
                 </div>
-                {gmailStatus?.connected ? (
+        {gmailStatus?.connected ? (
                   <div className="flex items-center gap-1.5">
                     {gmailStatus?.needs_reauth ? (
-                      <span className="flex items-center gap-1 text-xs text-destructive font-medium"><AlertTriangle className="w-3.5 h-3.5" />Needs reconnect</span>
+                      <span className="flex items-center gap-1 text-xs text-destructive font-medium"><AlertTriangle className="w-3.5 h-3.5" />Reconnect</span>
                     ) : (
-                      <span className="flex items-center gap-1 text-xs text-green-500 font-medium"><CheckCircle2 className="w-3.5 h-3.5" />Connected</span>
+                      <span className="flex items-center gap-1 text-xs text-green-500 font-medium"><CheckCircle2 className="w-3.5 h-3.5" /></span>
                     )}
                   </div>
                 ) : (
@@ -315,7 +315,7 @@ const SettingsPage = () => {
                         <div className="flex-1">
                           <div className="text-sm font-medium text-foreground">Gmail connected! Start your first sync?</div>
                           <p className="text-sm text-muted-foreground mt-0.5">Import your financial emails to auto-detect transactions, bills, and subscriptions.</p>
-                          <div className="flex gap-2 mt-3">
+                          <div className="flex flex-wrap gap-2 mt-3">
                             {[3, 6, 12].map(m => (
                               <button key={m} onClick={() => { startSync(m); setShowSyncPrompt(false); }}
                                 className={`text-sm px-4 py-2 rounded-lg font-medium transition-all ${m === 6 ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-card border border-border hover:bg-muted"}`}>
@@ -346,7 +346,7 @@ const SettingsPage = () => {
                     )}
 
                     {/* Account info + actions */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                           <span className="text-sm font-bold text-primary">{gmailStatus?.email?.charAt(0).toUpperCase()}</span>
@@ -359,7 +359,7 @@ const SettingsPage = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 shrink-0">
                         <button onClick={() => startSync()} disabled={syncing || !!gmailStatus?.needs_reauth}
                           className="bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 rounded-lg text-sm px-4 py-2 flex items-center gap-2 disabled:opacity-50">
                           <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />{syncing ? "Syncing..." : "Sync Now"}
@@ -396,7 +396,7 @@ const SettingsPage = () => {
 
                     {/* Sender Rules */}
                     <div className="pt-4 border-t border-border space-y-4">
-                      <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <Label className="text-sm text-muted-foreground">Email Sender Rules</Label>
                         <span className="text-xs text-muted-foreground">{senderRules.filter(r => r.is_enabled).length}/{senderRules.length} active</span>
                       </div>
@@ -417,21 +417,23 @@ const SettingsPage = () => {
                           <div className="text-sm text-muted-foreground py-4 text-center">No sender rules configured</div>
                         )}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Input value={newRulePattern} onChange={e => setNewRulePattern(e.target.value)}
                           placeholder="*@bank.com" className="text-sm flex-1" />
-                        <select value={newRuleType} onChange={e => setNewRuleType(e.target.value)}
-                          className="h-10 rounded-lg bg-card border border-border px-3 text-sm text-foreground">
-                          <option value="credit_card">Credit Card</option>
-                          <option value="bank">Bank</option>
-                          <option value="subscription">Subscription</option>
-                          <option value="ecommerce">E-commerce</option>
-                          <option value="bill">Bill</option>
-                          <option value="investment">Investment</option>
-                        </select>
-                        <button onClick={handleAddRule} className="bg-card border border-border font-medium shadow-sm hover:bg-muted rounded-lg text-sm px-4 py-2 flex items-center gap-1.5">
-                          <Plus className="w-3.5 h-3.5" />Add
-                        </button>
+                        <div className="flex gap-2">
+                          <select value={newRuleType} onChange={e => setNewRuleType(e.target.value)}
+                            className="h-10 rounded-lg bg-card border border-border px-3 text-sm text-foreground flex-1">
+                            <option value="credit_card">Credit Card</option>
+                            <option value="bank">Bank</option>
+                            <option value="subscription">Subscription</option>
+                            <option value="ecommerce">E-commerce</option>
+                            <option value="bill">Bill</option>
+                            <option value="investment">Investment</option>
+                          </select>
+                          <button onClick={handleAddRule} className="bg-card border border-border font-medium shadow-sm hover:bg-muted rounded-lg text-sm px-4 py-2 flex items-center gap-1.5 shrink-0">
+                            <Plus className="w-3.5 h-3.5" />Add
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

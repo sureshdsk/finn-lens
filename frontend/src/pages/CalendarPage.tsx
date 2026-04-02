@@ -204,9 +204,9 @@ export default function CalendarPage() {
   }, [])
 
   return (
-    <div className="flex h-[calc(100vh-7.5rem)] gap-0">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-7.5rem)] md:h-[calc(100vh-7.5rem)] gap-0">
       <div className="flex flex-col flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-5 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 shrink-0 gap-3">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -263,11 +263,11 @@ export default function CalendarPage() {
       <AnimatePresence>
         {selectedDate && (
           <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 380, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
+            initial={{ width: 0, opacity: 0, height: 0 }}
+            animate={{ width: 'auto', opacity: 1, height: 'auto' }}
+            exit={{ width: 0, opacity: 0, height: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="shrink-0 overflow-hidden"
+            className="shrink-0 overflow-hidden md:w-[380px]"
           >
             <DayDetailPanel
               date={selectedDate}

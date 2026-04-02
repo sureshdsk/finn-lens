@@ -177,14 +177,14 @@ function OAuthAccordion() {
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">{step.desc}</p>
                     {'origins' in step && step.origins && (
-                      <div className="mt-1.5 space-y-1">
+                      <div className="mt-1.5 space-y-1 overflow-x-auto">
                         <div>
                           <span className="text-[10px] font-medium text-foreground">Authorized origins: </span>
-                          <span className="text-[10px] font-mono text-muted-foreground">{step.origins.join(', ')}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">{step.origins.join(', ')}</span>
                         </div>
                         <div>
                           <span className="text-[10px] font-medium text-foreground">Redirect URIs: </span>
-                          <span className="text-[10px] font-mono text-muted-foreground">{step.redirectUris!.join(', ')}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">{step.redirectUris!.join(', ')}</span>
                         </div>
                       </div>
                     )}
@@ -299,15 +299,18 @@ export default function DemoLandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-teal-950/20">
-      <nav className="sticky top-0 z-50 border-b border-border/50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl px-6 py-3.5 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 border-b border-border/50 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <img src="/favicon-32x32.png" alt="FinnLens" className="h-8 w-8 rounded-lg" />
           <span className="block text-lg font-bold tracking-tight text-foreground">FinnLens</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <ThemeToggle />
-          <a href="https://github.com/sureshdsk/finn-lens" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-lg px-3 py-2">
+          <a href="https://github.com/sureshdsk/finn-lens" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-lg px-3 py-2">
             <Github className="w-4 h-4" /> Star on GitHub
+          </a>
+          <a href="https://github.com/sureshdsk/finn-lens" target="_blank" rel="noopener noreferrer" className="inline-flex sm:hidden items-center justify-center text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-lg p-2">
+            <Github className="w-4 h-4" />
           </a>
           <Button size="sm" className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 shadow-md shadow-teal-500/20 border-0" onClick={() => document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' })}>
             Try Demo
@@ -367,7 +370,7 @@ export default function DemoLandingPage() {
                       <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">+8.4%</div>
                     </div>
                   </div>
-                  <div className="mt-4 grid grid-cols-4 gap-2">
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
                       { label: 'Income', value: '2.79L', gradient: 'from-emerald-400 to-teal-400' },
                       { label: 'Spend', value: '1.95L', gradient: 'from-rose-400 to-pink-400' },
@@ -468,32 +471,34 @@ export default function DemoLandingPage() {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-border/50 bg-white dark:bg-slate-900/70 shadow-sm">
-            <div className="grid grid-cols-[1fr_0.45fr_1fr_1fr] gap-3 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground border-b border-border/50">
-              <span>Features</span>
-              <span>Status</span>
-              <span>Supported now</span>
-              <span>Pending</span>
-            </div>
-            <div className="divide-y divide-border/40">
-              {roadmapItems.map((item) => (
-                <div key={item.area} className="grid grid-cols-[1fr_0.45fr_1fr_1fr] gap-3 px-5 py-4 text-sm">
-                  <p className="font-medium text-foreground">{item.area}</p>
-                  <div>
-                    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
-                      item.status === 'full'
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
-                        : item.status === 'partial'
-                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
-                          : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
-                    }`}>
-                      {item.status}
-                    </span>
+          <div className="overflow-x-auto rounded-2xl border border-border/50 bg-white dark:bg-slate-900/70 shadow-sm">
+            <div className="min-w-[600px]">
+              <div className="grid grid-cols-[1fr_0.45fr_1fr_1fr] gap-3 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground border-b border-border/50">
+                <span>Features</span>
+                <span>Status</span>
+                <span>Supported now</span>
+                <span>Pending</span>
+              </div>
+              <div className="divide-y divide-border/40">
+                {roadmapItems.map((item) => (
+                  <div key={item.area} className="grid grid-cols-[1fr_0.45fr_1fr_1fr] gap-3 px-5 py-4 text-sm">
+                    <p className="font-medium text-foreground">{item.area}</p>
+                    <div>
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
+                        item.status === 'full'
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                          : item.status === 'partial'
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+                            : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
+                      }`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    <p className="text-emerald-700 dark:text-emerald-400">{item.supported}</p>
+                    <p className="text-muted-foreground">{item.notYet}</p>
                   </div>
-                  <p className="text-emerald-700 dark:text-emerald-400">{item.supported}</p>
-                  <p className="text-muted-foreground">{item.notYet}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">

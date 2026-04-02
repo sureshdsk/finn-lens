@@ -239,7 +239,7 @@ export default function TransactionsPage() {
 
       {/* Summary cards */}
       {summary && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">Spending</p>
@@ -262,15 +262,15 @@ export default function TransactionsPage() {
       )}
 
       {/* Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative">
+      <div className="flex items-center gap-2 flex-wrap overflow-x-auto -mx-1 px-1">
+        <div className="relative shrink-0">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="w-52 h-8 text-sm pl-8"
+            className="w-40 sm:w-52 h-8 text-sm pl-8"
           />
         </div>
 
@@ -310,13 +310,13 @@ export default function TransactionsPage() {
           </SelectContent>
         </Select>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2 shrink-0">
           {hasFilters && (
             <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={clearFilters}>
               <XIcon className="size-3 mr-1" /> Clear
             </Button>
           )}
-          <span className="text-xs text-muted-foreground tabular-nums">{total.toLocaleString()} transactions</span>
+          <span className="text-xs text-muted-foreground tabular-nums hidden sm:inline">{total.toLocaleString()} transactions</span>
         </div>
       </div>
 
@@ -342,74 +342,76 @@ export default function TransactionsPage() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[90px]">
-                    <button
-                      onClick={() => setDateSort(s => s === 'desc' ? 'asc' : 'desc')}
-                      className="inline-flex items-center gap-1 hover:text-foreground cursor-pointer"
-                    >
-                      Date
-                      {dateSort === 'desc' ? <ArrowDownIcon className="size-3" /> : <ArrowUpIcon className="size-3" />}
-                    </button>
-                  </TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="w-[90px]">Category</TableHead>
-                  <TableHead className="w-[100px]">Account</TableHead>
-                  <TableHead className="text-right w-[100px]">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {txns.map((t) => {
-                  const cat = CATEGORIES[t.category] ?? CATEGORIES.uncategorized
-                  const inst = INSTRUMENT_LABELS[t.instrument_type]
-                  const InstIcon = inst?.icon ?? LandmarkIcon
-                  return (
-                    <TableRow
-                      key={t.id}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedTxn(t.id)}
-                    >
-                      <TableCell className="text-muted-foreground tabular-nums text-xs">
-                        {formatDate(t.transaction_date)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="min-w-0">
-                            {t.merchant_name && (
-                              <span className="font-medium text-sm block truncate">{t.merchant_name}</span>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-[90px]">
+                      <button
+                        onClick={() => setDateSort(s => s === 'desc' ? 'asc' : 'desc')}
+                        className="inline-flex items-center gap-1 hover:text-foreground cursor-pointer"
+                      >
+                        Date
+                        {dateSort === 'desc' ? <ArrowDownIcon className="size-3" /> : <ArrowUpIcon className="size-3" />}
+                      </button>
+                    </TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="w-[90px]">Category</TableHead>
+                    <TableHead className="w-[100px] hidden sm:table-cell">Account</TableHead>
+                    <TableHead className="text-right w-[100px]">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {txns.map((t) => {
+                    const cat = CATEGORIES[t.category] ?? CATEGORIES.uncategorized
+                    const inst = INSTRUMENT_LABELS[t.instrument_type]
+                    const InstIcon = inst?.icon ?? LandmarkIcon
+                    return (
+                      <TableRow
+                        key={t.id}
+                        className="cursor-pointer"
+                        onClick={() => setSelectedTxn(t.id)}
+                      >
+                        <TableCell className="text-muted-foreground tabular-nums text-xs">
+                          {formatDate(t.transaction_date)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="min-w-0">
+                              {t.merchant_name && (
+                                <span className="font-medium text-sm block truncate">{t.merchant_name}</span>
+                              )}
+                              <p className="text-xs text-muted-foreground line-clamp-1">{t.description}</p>
+                            </div>
+                            {t.source_count > 1 && (
+                              <span className="shrink-0 inline-flex items-center gap-0.5 text-xs text-muted-foreground" title={`${t.source_count} sources`}>
+                                <LayersIcon className="size-3" />{t.source_count}
+                              </span>
                             )}
-                            <p className="text-xs text-muted-foreground line-clamp-1">{t.description}</p>
                           </div>
-                          {t.source_count > 1 && (
-                            <span className="shrink-0 inline-flex items-center gap-0.5 text-xs text-muted-foreground" title={`${t.source_count} sources`}>
-                              <LayersIcon className="size-3" />{t.source_count}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cat.color}`}>
-                          {cat.label}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1">
-                          <InstIcon className="size-3" />
-                          {t.credit_card_label || t.bank_account_label || '—'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums font-medium">
-                        <span className={Number(t.amount) < 0 ? 'text-emerald-600' : ''}>
-                          {Number(t.amount) < 0 ? '–' : ''}{fmt(Math.abs(Number(t.amount)), t.currency)}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cat.color}`}>
+                            {cat.label}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
+                          <span className="inline-flex items-center gap-1">
+                            <InstIcon className="size-3" />
+                            {t.credit_card_label || t.bank_account_label || '—'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums font-medium">
+                          <span className={Number(t.amount) < 0 ? 'text-emerald-600' : ''}>
+                            {Number(t.amount) < 0 ? '–' : ''}{fmt(Math.abs(Number(t.amount)), t.currency)}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
