@@ -89,7 +89,7 @@ export default function AccountsPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Accounts</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -189,7 +189,7 @@ export default function AccountsPage() {
                 <button
                   key={`bank-${acc.id}`}
                   onClick={() => navigate(`/accounts/${acc.id}`)}
-                  className="w-full flex items-center gap-4 p-4 text-left hover:bg-muted/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                  className="w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 text-left hover:bg-muted/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
                 >
                   <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center shrink-0">
                     <Landmark className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
@@ -197,14 +197,14 @@ export default function AccountsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-foreground">{acc.bank_name} Bank</span>
-                      <Badge variant="outline" className="text-xs px-1.5 py-0">Bank</Badge>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0 hidden sm:inline-flex">Bank</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {acc.account_holder_name || 'Account'}
                       {acc.account_number && <> · ••••{acc.account_number.slice(-4)}</>}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
+                  <div className="text-right shrink-0 hidden sm:block">
                     <div className="text-sm font-medium text-foreground tabular-nums">
                       {acc.transaction_count.toLocaleString()} txns
                     </div>
@@ -223,7 +223,7 @@ export default function AccountsPage() {
                 <button
                   key={`card-${card.id}`}
                   onClick={() => navigate(`/accounts/cards/${card.id}`)}
-                  className="w-full flex items-center gap-4 p-4 text-left hover:bg-muted/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                  className="w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 text-left hover:bg-muted/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 relative ${
                     overdue ? 'bg-rose-50 dark:bg-rose-950/30' : dueSoon ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-violet-50 dark:bg-violet-950/30'
@@ -242,7 +242,7 @@ export default function AccountsPage() {
                       <span className="text-sm font-medium text-foreground">
                         {ISSUER_LABELS[card.issuer] ?? card.issuer}
                       </span>
-                      <Badge variant="outline" className="text-xs px-1.5 py-0">Credit</Badge>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0 hidden sm:inline-flex">Credit</Badge>
                       {pendingBill && (
                         <Badge
                           variant="secondary"
@@ -263,7 +263,7 @@ export default function AccountsPage() {
                       {card.card_name && <> · {card.card_name}</>}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
+                  <div className="text-right shrink-0 hidden sm:block">
                     {pendingBill?.total_due ? (
                       <>
                         <div className={`text-sm font-medium tabular-nums ${overdue ? 'text-rose-500' : dueSoon ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'}`}>
@@ -311,7 +311,7 @@ export default function AccountsPage() {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[400px]">
                     <thead>
                       <tr className="border-b text-muted-foreground">
                         <th className="text-left py-3 px-4 font-medium">Month</th>

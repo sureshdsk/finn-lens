@@ -111,7 +111,7 @@ const SubscriptionsPage = () => {
   return (
     <div className="space-y-5">
       {/* Summary */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {[
           { label: "Monthly Cost", value: fmt(monthlyCost, primaryCurrency), sub: `${activeSubs.length} active`, accent: "text-primary" },
           { label: "Yearly Projection", value: fmt(yearlyCost, primaryCurrency), sub: "estimated annual", accent: "text-amber-600 dark:text-amber-400" },
@@ -129,7 +129,7 @@ const SubscriptionsPage = () => {
       </div>
 
       {/* Actions + Filter tabs */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex gap-2">
           {(["all", "active", "cancelled"] as const).map((f) => (
             <button key={f} onClick={() => setFilter(f)}

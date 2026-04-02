@@ -90,7 +90,7 @@ const InvestmentsPage = () => {
   return (
     <div className="space-y-5">
       {/* Summary cards */}
-      <div className="grid sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Portfolio Value", value: fmt(data.total_current), sub: `Invested: ${fmt(data.total_invested)}`, accent: "text-primary" },
           { label: "Total P&L", value: `${data.total_pnl >= 0 ? "+" : ""}${fmt(data.total_pnl)}`, sub: `${data.total_pnl >= 0 ? "+" : ""}${data.total_pnl_pct.toFixed(2)}%`, accent: data.total_pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500" },
@@ -108,7 +108,7 @@ const InvestmentsPage = () => {
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Allocation breakdown */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="bg-card border border-border shadow-sm rounded-lg p-5">
@@ -193,7 +193,8 @@ const InvestmentsPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-12 gap-2 pb-2 border-b border-border text-xs text-muted-foreground">
+          <div className="overflow-x-auto">
+            <div className="grid grid-cols-12 gap-2 pb-2 border-b border-border text-xs text-muted-foreground min-w-[500px]">
             <div className="col-span-4">Scheme</div>
             <div className="col-span-2 text-right">Units × NAV</div>
             <div className="col-span-2 text-right">Invested</div>
@@ -201,7 +202,7 @@ const InvestmentsPage = () => {
             <div className="col-span-2 text-right">P&L</div>
           </div>
 
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border min-w-[500px]">
             {sorted.map((h, i) => {
               const shortName = h.scheme_name.replace(/\s*(Direct|Growth|Plan)\s*/gi, " ").trim();
               return (
@@ -238,6 +239,7 @@ const InvestmentsPage = () => {
                 </motion.div>
               );
             })}
+            </div>
           </div>
         </div>
       </motion.div>
