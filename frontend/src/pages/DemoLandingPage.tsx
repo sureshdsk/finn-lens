@@ -271,30 +271,12 @@ const setupModes = [
 export default function DemoLandingPage() {
   const navigate = useNavigate()
   const setToken = useAuthStore((s) => s.setToken)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const [activeSetupTab, setActiveSetupTab] = useState('docker')
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    await new Promise(r => setTimeout(r, 600))
-    if (username === 'finnlens' && password === 'finnlens') {
-      setToken(DEMO_TOKEN)
-      navigate('/overview')
-      toast.success('Welcome to Demo Mode')
-    } else {
-      setError('Use finnlens:finnlens to enter demo mode')
-    }
-    setLoading(false)
-  }
-
   function tryDemo() {
-    setUsername('finnlens')
-    setPassword('finnlens')
+    setToken(DEMO_TOKEN)
+    navigate('/overview')
+    toast.success('Welcome to Demo Mode')
   }
 
   return (
@@ -638,20 +620,16 @@ export default function DemoLandingPage() {
               <span className="text-lg font-bold tracking-tight text-foreground">FinnLens</span>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="demo-username">Username</Label>
-                <Input id="demo-username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="finnlens" required />
+                <Input id="demo-username" value="finnlens" readOnly placeholder="finnlens" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="demo-password">Password</Label>
-                <Input id="demo-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="finnlens" required />
+                <Input id="demo-password" type="password" value="finnlens" readOnly placeholder="finnlens" />
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" disabled={loading} className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 border-0 shadow-lg shadow-teal-500/20">
-                {loading ? 'Signing in...' : 'Open Demo Workspace'}
-              </Button>
-              <Button type="button" variant="outline" onClick={tryDemo} className="w-full rounded-xl">
+              <Button type="button" onClick={tryDemo} className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 border-0 shadow-lg shadow-teal-500/20 rounded-xl">
                 Quick Login as Demo User
               </Button>
             </form>
