@@ -167,7 +167,7 @@ const AssetsPage = () => {
             className="bg-card border border-border shadow-sm rounded-lg p-4">
             <div className="relative z-10">
               <div className="text-xs text-muted-foreground mb-1">{card.label}</div>
-              <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
+              <div className={`text-lg font-semibold ${card.accent} privacy-mask`}>{card.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{card.sub}</div>
             </div>
           </motion.div>
@@ -200,7 +200,7 @@ const AssetsPage = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-muted-foreground">{((value / totalCurrent) * 100).toFixed(1)}%</span>
-                      <span className="text-xs font-bold text-foreground">{fmt(value)}</span>
+                      <span className="text-xs font-bold text-foreground privacy-mask">{fmt(value)}</span>
                     </div>
                   </div>
                 );
@@ -233,7 +233,7 @@ const AssetsPage = () => {
                     <div className="text-right">
                       <div className={`text-xs font-bold flex items-center gap-0.5 justify-end ${gain >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                         {gain >= 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-                        {gain >= 0 ? "+" : ""}{fmt(gain)}
+                        {gain >= 0 ? "+" : ""}<span className="privacy-mask">{fmt(gain)}</span>
                       </div>
                       <div className={`text-xs ${a.appreciationRate >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                         {a.appreciationRate >= 0 ? "+" : ""}{a.appreciationRate}%/yr
@@ -356,7 +356,7 @@ const AssetsPage = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <div className="text-[11px] font-semibold text-primary">{fmt(asset.currentValue)}</div>
+                        <div className="text-[11px] font-semibold text-primary privacy-mask">{fmt(asset.currentValue)}</div>
                         <div className={`text-xs font-bold ${gain >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                           {gain >= 0 ? "+" : ""}{gainPct}%
                         </div>

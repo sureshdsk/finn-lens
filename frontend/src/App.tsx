@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { DarkModeProvider } from '@/contexts/DarkModeContext'
+import { PrivacyProvider } from '@/contexts/PrivacyContext'
 import { showDemoLandingPage } from '@/lib/demo'
 import AppLayout from '@/components/AppLayout'
 import LoginPage from '@/pages/LoginPage'
@@ -35,6 +36,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <DarkModeProvider>
+        <PrivacyProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<LandingRoute />} />
@@ -68,6 +70,7 @@ export default function App() {
             </Routes>
           </BrowserRouter>
           <Toaster />
+        </PrivacyProvider>
       </DarkModeProvider>
     </QueryClientProvider>
   )

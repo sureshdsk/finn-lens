@@ -229,7 +229,7 @@ function TransactionTable({
                         </span>
                       </TableCell>
                       <TableCell className="text-right align-top pt-3 tabular-nums font-medium">
-                        <span className={Number(t.amount) < 0 ? 'text-emerald-600' : ''}>
+                        <span className={`privacy-mask ${Number(t.amount) < 0 ? 'text-emerald-600' : ''}`}>
                           {Number(t.amount) < 0 ? '–' : ''}{fmt(Math.abs(Number(t.amount)), t.currency)}
                         </span>
                       </TableCell>
@@ -301,11 +301,11 @@ function BillSection({
                 ? `${formatDateShort(b.billing_period_start)} – ${formatDateShort(b.billing_period_end)}`
                 : formatDate(b.statement_date)}
             </span>
-            <span className="tabular-nums text-sm font-semibold min-w-[100px]">
+            <span className="tabular-nums text-sm font-semibold min-w-[100px] privacy-mask">
               {b.transactions_total ? fmt(b.transactions_total) : '—'}
             </span>
             {b.total_due && (
-              <span className="text-xs text-muted-foreground tabular-nums">
+              <span className="text-xs text-muted-foreground tabular-nums privacy-mask">
                 Due: {fmt(b.total_due)}
               </span>
             )}

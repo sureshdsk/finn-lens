@@ -99,7 +99,7 @@ export default function CreditCardsPage() {
                     </p>
                     {card.last_bill_total && (
                       <p className="text-xs text-muted-foreground">
-                        Last bill: {fmt(card.last_bill_total)}
+                        Last bill: <span className="privacy-mask">{fmt(card.last_bill_total)}</span>
                       </p>
                     )}
                   </div>

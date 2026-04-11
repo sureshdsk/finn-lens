@@ -267,7 +267,7 @@ export default function AccountsPage() {
                     {pendingBill?.total_due ? (
                       <>
                         <div className={`text-sm font-medium tabular-nums ${overdue ? 'text-rose-500' : dueSoon ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'}`}>
-                          {fmt(pendingBill.total_due)}
+                          <span className="privacy-mask">{fmt(pendingBill.total_due)}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">due</div>
                       </>
@@ -277,7 +277,7 @@ export default function AccountsPage() {
                           {card.transaction_count.toLocaleString()} txns
                         </div>
                         {card.last_bill_total ? (
-                          <div className="text-xs text-muted-foreground tabular-nums">Last bill {fmt(card.last_bill_total)}</div>
+                          <div className="text-xs text-muted-foreground tabular-nums">Last bill <span className="privacy-mask">{fmt(card.last_bill_total)}</span></div>
                         ) : (
                           <div className="text-xs text-muted-foreground">{card.currency}</div>
                         )}
@@ -324,10 +324,10 @@ export default function AccountsPage() {
                       {summary.map((s) => (
                         <tr key={`${s.year}-${s.month}`} className="border-b last:border-0">
                           <td className="py-2.5 px-4">{MONTHS[s.month - 1]}</td>
-                          <td className="text-right py-2.5 px-4 text-red-500 tabular-nums">{fmt(s.total_debit)}</td>
-                          <td className="text-right py-2.5 px-4 text-emerald-600 tabular-nums">{fmt(s.total_credit)}</td>
+                          <td className="text-right py-2.5 px-4 text-red-500 tabular-nums"><span className="privacy-mask">{fmt(s.total_debit)}</span></td>
+                          <td className="text-right py-2.5 px-4 text-emerald-600 tabular-nums"><span className="privacy-mask">{fmt(s.total_credit)}</span></td>
                           <td className={`text-right py-2.5 px-4 font-medium tabular-nums ${Number(s.net) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {fmt(s.net)}
+                            <span className="privacy-mask">{fmt(s.net)}</span>
                           </td>
                         </tr>
                       ))}

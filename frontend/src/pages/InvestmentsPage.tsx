@@ -101,8 +101,8 @@ const InvestmentsPage = () => {
             className="bg-card border border-border shadow-sm rounded-lg p-4">
             <div className="relative z-10">
               <div className="text-xs text-muted-foreground mb-1">{card.label}</div>
-              <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{card.sub}</div>
+              <div className={`text-lg font-semibold ${card.accent} privacy-mask`}>{card.value}</div>
+              <div className="text-xs text-muted-foreground mt-0.5 privacy-mask">{card.sub}</div>
             </div>
           </motion.div>
         ))}
@@ -133,7 +133,7 @@ const InvestmentsPage = () => {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="text-xs text-muted-foreground">{((h.current_value / data.total_current) * 100).toFixed(1)}%</span>
-                      <span className="text-xs font-bold text-foreground">{fmt(h.current_value)}</span>
+                      <span className="text-xs font-bold text-foreground privacy-mask">{fmt(h.current_value)}</span>
                     </div>
                   </div>
                 );
@@ -162,7 +162,7 @@ const InvestmentsPage = () => {
                       <div className="text-xs font-bold text-foreground truncate">{shortName}</div>
                       <div className="text-xs text-muted-foreground">{sip.due_date || "—"}</div>
                     </div>
-                    <div className="text-xs font-bold text-primary shrink-0">{sip.amount ? fmt(sip.amount) : "—"}</div>
+                    <div className="text-xs font-bold text-primary shrink-0 privacy-mask">{sip.amount ? fmt(sip.amount) : "—"}</div>
                   </motion.div>
                 );
               })}
@@ -222,13 +222,13 @@ const InvestmentsPage = () => {
                     <div className="text-xs text-muted-foreground">@ {h.latest_nav.toFixed(2)}</div>
                   </div>
                   <div className="col-span-2 text-right">
-                    <div className="text-xs text-foreground">{fmt(h.total_invested)}</div>
+                    <div className="text-xs text-foreground privacy-mask">{fmt(h.total_invested)}</div>
                   </div>
                   <div className="col-span-2 text-right">
-                    <div className="text-xs font-bold text-foreground">{fmt(h.current_value)}</div>
+                    <div className="text-xs font-bold text-foreground privacy-mask">{fmt(h.current_value)}</div>
                   </div>
                   <div className="col-span-2 text-right">
-                    <div className={`text-xs font-bold flex items-center justify-end gap-0.5 ${h.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                    <div className={`text-xs font-bold flex items-center justify-end gap-0.5 privacy-mask ${h.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                       {h.pnl >= 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
                       {h.pnl >= 0 ? "+" : ""}{fmt(h.pnl)}
                     </div>

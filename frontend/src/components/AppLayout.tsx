@@ -7,6 +7,7 @@ import { isDemoMode } from '@/lib/demo'
 import { Search, Eye, Menu, X, TrendingUp } from 'lucide-react'
 import Sidebar from './Sidebar'
 import ThemeToggle from './ThemeToggle'
+import PrivacyToggle from './PrivacyToggle'
 import NotificationCenter from './NotificationPanel'
 import SyncIndicator from './SyncIndicator'
 
@@ -89,6 +90,7 @@ export default function AppLayout() {
             </div>
             <div className="flex items-center gap-2">
               <SyncIndicator />
+              <PrivacyToggle />
               <ThemeToggle />
               <button className="w-9 h-9 rounded-lg bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/80 transition-all">
                 <Search className="w-4 h-4 text-muted-foreground" />

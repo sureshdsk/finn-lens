@@ -54,7 +54,7 @@ function StatCards() {
           {isLoading ? (
             <Skeleton className="h-7 w-20 mb-1" />
           ) : (
-            <div className="text-xl font-semibold tracking-tight text-foreground">{card.value}</div>
+            <div className="text-xl font-semibold tracking-tight text-foreground privacy-mask">{card.value}</div>
           )}
           <div className="text-xs text-muted-foreground mt-0.5">{card.label}</div>
         </div>
@@ -189,7 +189,7 @@ function UpcomingTimeline() {
           <p className="text-xs text-muted-foreground mt-0.5">Next 15 days</p>
         </div>
         <div className="text-right">
-          <div className="text-lg font-semibold text-foreground tabular-nums">{fmt(totalUpcoming)}</div>
+          <div className="text-lg font-semibold text-foreground tabular-nums privacy-mask">{fmt(totalUpcoming)}</div>
           <p className="text-xs text-muted-foreground">total outflow</p>
         </div>
       </div>
@@ -209,7 +209,7 @@ function UpcomingTimeline() {
               <div className="text-xs text-muted-foreground">{item.sublabel}</div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-sm font-medium text-foreground tabular-nums">{item.amount}</div>
+              <div className="text-sm font-medium text-foreground tabular-nums privacy-mask">{item.amount}</div>
               <div className={`text-xs tabular-nums ${item.urgent ? 'text-rose-500 font-medium' : 'text-muted-foreground'}`}>
                 {item.days <= 0 ? 'Overdue' : item.days === 1 ? 'Tomorrow' : `${item.days} days`}
               </div>
@@ -257,7 +257,7 @@ function SubscriptionsSummary() {
       ) : (
         <>
           <div className="flex items-baseline gap-1 mb-4">
-            <span className="text-xl font-semibold text-foreground tabular-nums">{fmt(effectiveMonthly)}</span>
+            <span className="text-xl font-semibold text-foreground tabular-nums privacy-mask">{fmt(effectiveMonthly)}</span>
             <span className="text-xs text-muted-foreground">/month</span>
           </div>
 
@@ -271,7 +271,7 @@ function SubscriptionsSummary() {
                     <div className="text-xs text-muted-foreground capitalize">{sub.cycle}</div>
                   </div>
                 </div>
-                <span className="text-sm font-medium text-foreground tabular-nums shrink-0">{fmt(sub.cost)}</span>
+                <span className="text-sm font-medium text-foreground tabular-nums shrink-0 privacy-mask">{fmt(sub.cost)}</span>
               </div>
             ))}
           </div>

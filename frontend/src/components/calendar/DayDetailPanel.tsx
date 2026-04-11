@@ -66,7 +66,7 @@ export default function DayDetailPanel({ date, events, onClose }: DayDetailPanel
                   </div>
                   <span className="text-[10px] font-medium text-rose-600/70 dark:text-rose-400/70 uppercase tracking-wider">Spent</span>
                 </div>
-                <div className="text-lg font-bold text-rose-700 dark:text-rose-300 tracking-tight">{fmt(tx.totalDebits)}</div>
+                <div className="text-lg font-bold text-rose-700 dark:text-rose-300 tracking-tight privacy-mask">{fmt(tx.totalDebits)}</div>
                 <div className="text-[10px] text-rose-500/60 dark:text-rose-400/50 mt-0.5">{tx.debits.length} transaction{tx.debits.length !== 1 ? 's' : ''}</div>
               </div>
             )}
@@ -78,7 +78,7 @@ export default function DayDetailPanel({ date, events, onClose }: DayDetailPanel
                   </div>
                   <span className="text-[10px] font-medium text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider">Received</span>
                 </div>
-                <div className="text-lg font-bold text-emerald-700 dark:text-emerald-300 tracking-tight">{fmt(tx.totalCredits)}</div>
+                <div className="text-lg font-bold text-emerald-700 dark:text-emerald-300 tracking-tight privacy-mask">{fmt(tx.totalCredits)}</div>
                 <div className="text-[10px] text-emerald-500/60 dark:text-emerald-400/50 mt-0.5">{tx.credits.length} credit{tx.credits.length !== 1 ? 's' : ''}</div>
               </div>
             )}
@@ -115,7 +115,7 @@ export default function DayDetailPanel({ date, events, onClose }: DayDetailPanel
                   </div>
                 </div>
                 <span className="text-[12px] font-bold text-rose-600 dark:text-rose-400 ml-3 shrink-0">
-                  -{fmt(t.amount)}
+                  <span className="privacy-mask">-{fmt(t.amount)}</span>
                 </span>
               </div>
             ))}
@@ -139,7 +139,7 @@ export default function DayDetailPanel({ date, events, onClose }: DayDetailPanel
                   </div>
                 </div>
                 <span className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 ml-3 shrink-0">
-                  +{fmt(t.amount)}
+                  <span className="privacy-mask">+{fmt(t.amount)}</span>
                 </span>
               </div>
             ))}
@@ -178,7 +178,7 @@ export default function DayDetailPanel({ date, events, onClose }: DayDetailPanel
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1 ml-3 shrink-0">
-                  <span className="text-[12px] font-bold text-foreground">{fmt(b.totalDue)}</span>
+                  <span className="text-[12px] font-bold text-foreground privacy-mask">{fmt(b.totalDue)}</span>
                   <span className={cn(
                     'text-[9px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider',
                     b.kind === 'paid'
@@ -211,7 +211,7 @@ export default function DayDetailPanel({ date, events, onClose }: DayDetailPanel
                     <div className="text-[10px] text-muted-foreground mt-0.5 capitalize">{s.cycle} renewal</div>
                   </div>
                 </div>
-                <span className="text-[12px] font-bold text-foreground ml-3 shrink-0">{fmt(s.cost)}</span>
+                <span className="text-[12px] font-bold text-foreground ml-3 shrink-0 privacy-mask">{fmt(s.cost)}</span>
               </div>
             ))}
           </Section>

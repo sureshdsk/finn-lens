@@ -54,7 +54,7 @@ const BudgetsPage = () => {
             className="bg-card border border-border shadow-sm rounded-lg p-4">
             <div className="relative z-10">
               <div className="text-xs text-muted-foreground mb-1">{card.label}</div>
-              <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
+              <div className={`text-lg font-semibold ${card.accent} privacy-mask`}>{card.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{card.sub}</div>
             </div>
           </motion.div>
@@ -128,8 +128,8 @@ const BudgetsPage = () => {
                 </div>
 
                 <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="text-xs font-semibold text-foreground">{fmt(b.spent)}</span>
-                  <span className="text-xs text-muted-foreground">of {fmt(b.budget)}</span>
+                  <span className="text-xs font-semibold text-foreground privacy-mask">{fmt(b.spent)}</span>
+                  <span className="text-xs text-muted-foreground">of <span className="privacy-mask">{fmt(b.budget)}</span></span>
                 </div>
 
                 <div className="bg-muted/50 rounded-md h-2.5 overflow-hidden mb-2">
@@ -146,7 +146,7 @@ const BudgetsPage = () => {
 
                 <div className="flex items-center justify-between">
                   <span className={`text-xs font-bold ${over ? "text-rose-500" : "text-emerald-600 dark:text-emerald-400"}`}>
-                    {over ? `OVER by ${fmt(Math.abs(remaining))}` : `${fmt(remaining)} left`}
+                    <span className="privacy-mask">{over ? `OVER by ${fmt(Math.abs(remaining))}` : `${fmt(remaining)} left`}</span>
                   </span>
                   <span className="text-xs text-muted-foreground">{pct.toFixed(0)}%</span>
                 </div>

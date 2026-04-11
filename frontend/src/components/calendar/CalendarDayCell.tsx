@@ -97,7 +97,7 @@ export default function CalendarDayCell({
         )}
 
         {totalDebits > 0 && isCurrentMonth && (
-          <span className="text-[10px] text-muted-foreground/80 leading-none font-semibold tracking-tight">
+          <span className="text-[10px] text-muted-foreground/80 leading-none font-semibold tracking-tight privacy-mask">
             ₹{totalDebits >= 1000 ? `${(totalDebits / 1000).toFixed(1)}k` : Math.round(totalDebits)}
           </span>
         )}

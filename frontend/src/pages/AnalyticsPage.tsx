@@ -41,7 +41,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <div key={p.dataKey} className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full" style={{ background: p.color }} />
           <span className="text-muted-foreground capitalize">{p.dataKey}:</span>
-          <span className="text-foreground font-bold">{fmtFull(p.value)}</span>
+          <span className="text-foreground font-bold privacy-mask">{fmtFull(p.value)}</span>
         </div>
       ))}
     </div>
@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
               <div className="text-xs text-muted-foreground mb-1">{card.label}</div>
               <div className="flex items-center gap-1.5">
                 <card.icon className={`w-4 h-4 ${card.accent}`} />
-                <span className={`text-lg font-semibold ${card.accent}`}>{card.value}</span>
+                <span className={`text-lg font-semibold ${card.accent} privacy-mask`}>{card.value}</span>
               </div>
             </div>
           </motion.div>
@@ -184,12 +184,12 @@ export default function AnalyticsPage() {
                   return (
                     <div key={m.month} className="grid grid-cols-5 gap-2 py-2.5 items-center">
                       <div className="text-xs font-bold text-foreground">{m.month}</div>
-                      <div className="text-xs text-emerald-600 dark:text-emerald-400 text-right">{fmtFull(m.income)}</div>
+                      <div className="text-xs text-emerald-600 dark:text-emerald-400 text-right privacy-mask">{fmtFull(m.income)}</div>
                       <div className="text-right">
-                        <div className="text-xs text-rose-500">{fmtFull(m.expense)}</div>
+                        <div className="text-xs text-rose-500 privacy-mask">{fmtFull(m.expense)}</div>
                         {i > 0 && <div className={`text-xs ${Number(expChange) > 0 ? 'text-rose-500' : 'text-emerald-600 dark:text-emerald-400'}`}>{Number(expChange) > 0 ? '+' : ''}{expChange}%</div>}
                       </div>
-                      <div className="text-xs text-primary text-right">{fmtFull(m.savings)}</div>
+                      <div className="text-xs text-primary text-right privacy-mask">{fmtFull(m.savings)}</div>
                       <div className={`text-xs font-bold text-right ${rate >= 30 ? 'text-emerald-600 dark:text-emerald-400' : rate >= 20 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-500'}`}>{rate}%</div>
                     </div>
                   )
