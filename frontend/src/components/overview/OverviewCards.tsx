@@ -32,7 +32,7 @@ const OverviewCards = () => {
           {isLoading ? (
             <Skeleton className="h-6 w-24" />
           ) : (
-            <div className="text-base font-semibold text-primary">{card.value}</div>
+            <div className="text-base font-semibold text-primary"><span className="privacy-mask">{card.value}</span></div>
           )}
         </div>
       ))}

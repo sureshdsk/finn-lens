@@ -59,8 +59,8 @@ const SpendingChart = () => {
                   {/* Tooltip on hover */}
                   <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-popover border border-border rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
                     <div className="text-xs text-foreground font-medium">{month.month_label}</div>
-                    <div className="text-xs text-muted-foreground">In: {fmt(incomeData[i])}</div>
-                    <div className="text-xs text-muted-foreground">Out: {fmt(expenseData[i])}</div>
+                    <div className="text-xs text-muted-foreground">In: <span className="privacy-mask">{fmt(incomeData[i])}</span></div>
+                    <div className="text-xs text-muted-foreground">Out: <span className="privacy-mask">{fmt(expenseData[i])}</span></div>
                   </div>
                 </div>
                 <span className="text-xs text-muted-foreground">{month.month_label?.slice(0, 3)}</span>

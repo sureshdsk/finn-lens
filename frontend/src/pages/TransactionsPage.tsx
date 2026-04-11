@@ -114,7 +114,7 @@ function TransactionDetail({ id, onClose }: { id: number; onClose: () => void })
                 <p className="font-semibold text-lg">{data.merchant_name || data.description.slice(0, 50)}</p>
                 <p className="text-sm text-muted-foreground">{formatDate(data.transaction_date)}</p>
               </div>
-              <p className={`text-xl font-bold tabular-nums ${Number(data.amount) < 0 ? 'text-emerald-600' : ''}`}>
+              <p className={`text-xl font-bold tabular-nums privacy-mask ${Number(data.amount) < 0 ? 'text-emerald-600' : ''}`}>
                 {fmt(data.amount, data.currency)}
               </p>
             </div>
@@ -243,13 +243,13 @@ export default function TransactionsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">Spending</p>
-              <p className="text-xl font-bold tabular-nums mt-1">{fmt(summary.total_spending)}</p>
+              <p className="text-xl font-bold tabular-nums mt-1 privacy-mask">{fmt(summary.total_spending)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">Income</p>
-              <p className="text-xl font-bold tabular-nums mt-1 text-emerald-600">{fmt(summary.total_income)}</p>
+              <p className="text-xl font-bold tabular-nums mt-1 text-emerald-600 privacy-mask">{fmt(summary.total_income)}</p>
             </CardContent>
           </Card>
           <Card>
@@ -402,7 +402,7 @@ export default function TransactionsPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-right tabular-nums font-medium">
-                          <span className={Number(t.amount) < 0 ? 'text-emerald-600' : ''}>
+                          <span className={`privacy-mask ${Number(t.amount) < 0 ? 'text-emerald-600' : ''}`}>
                             {Number(t.amount) < 0 ? '–' : ''}{fmt(Math.abs(Number(t.amount)), t.currency)}
                           </span>
                         </TableCell>

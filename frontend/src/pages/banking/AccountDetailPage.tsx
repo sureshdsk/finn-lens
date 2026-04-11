@@ -558,13 +558,13 @@ export default function AccountDetailPage() {
                         <CategoryBadge txn={t} onOverride={handleOverride} />
                       </TableCell>
                       <TableCell className="text-right align-top pt-3 text-red-500 tabular-nums">
-                        {t.debit ? fmt(t.debit) : ''}
+                        <span className="privacy-mask">{t.debit ? fmt(t.debit) : ''}</span>
                       </TableCell>
                       <TableCell className="text-right align-top pt-3 text-emerald-600 tabular-nums">
-                        {t.credit ? fmt(t.credit) : ''}
+                        <span className="privacy-mask">{t.credit ? fmt(t.credit) : ''}</span>
                       </TableCell>
                       <TableCell className="text-right align-top pt-3 font-medium tabular-nums">
-                        {fmt(t.balance)}
+                        <span className="privacy-mask">{fmt(t.balance)}</span>
                       </TableCell>
                     </TableRow>
                   )

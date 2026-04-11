@@ -29,7 +29,7 @@ const InvestmentPanel = () => {
             <Skeleton className="h-5 w-20" />
           ) : (
             <>
-              <div className="text-sm font-semibold text-foreground tabular-nums">{fmt(totalValue)}</div>
+              <div className="text-sm font-semibold text-foreground tabular-nums privacy-mask">{fmt(totalValue)}</div>
               <div className={`text-xs tabular-nums ${totalPnlPct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}`}>
                 {totalPnlPct >= 0 ? '+' : ''}{totalPnlPct.toFixed(1)}%
               </div>
@@ -58,7 +58,7 @@ const InvestmentPanel = () => {
                 <div className="text-xs text-muted-foreground">{h.total_units.toFixed(2)} units</div>
               </div>
               <div className="text-right shrink-0">
-                <div className="text-sm font-medium text-foreground tabular-nums">{fmt(h.current_value)}</div>
+                <div className="text-sm font-medium text-foreground tabular-nums privacy-mask">{fmt(h.current_value)}</div>
                 <div className={`text-xs tabular-nums flex items-center gap-0.5 justify-end ${h.pnl_pct >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                   {h.pnl_pct >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   {h.pnl_pct >= 0 ? "+" : ""}{h.pnl_pct.toFixed(1)}%

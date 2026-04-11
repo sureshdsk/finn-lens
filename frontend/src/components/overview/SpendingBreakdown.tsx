@@ -74,7 +74,7 @@ const SpendingBreakdown = () => {
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-sm font-semibold text-foreground tabular-nums">{fmt(total)}</div>
+                  <div className="text-sm font-semibold text-foreground tabular-nums privacy-mask">{fmt(total)}</div>
                   <div className="text-xs text-muted-foreground">Total</div>
                 </div>
               </div>
@@ -95,7 +95,7 @@ const SpendingBreakdown = () => {
                     </span>
                   </div>
                   <div className="text-right flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground tabular-nums">{fmt(Number(cat.total))}</span>
+                    <span className="text-sm font-medium text-foreground tabular-nums privacy-mask">{fmt(Number(cat.total))}</span>
                     <span className="text-xs text-muted-foreground tabular-nums w-8 text-right">{pct}%</span>
                   </div>
                 </div>

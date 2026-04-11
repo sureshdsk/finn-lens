@@ -121,7 +121,7 @@ const SubscriptionsPage = () => {
             className="bg-card border border-border shadow-sm rounded-lg p-4">
             <div className="relative z-10">
               <div className="text-xs text-muted-foreground mb-1">{card.label}</div>
-              <div className={`text-lg font-semibold ${card.accent}`}>{card.value}</div>
+              <div className={`text-lg font-semibold ${card.accent} privacy-mask`}>{card.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{card.sub}</div>
             </div>
           </motion.div>
@@ -216,10 +216,10 @@ const SubscriptionsPage = () => {
 
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className="text-[11px] font-bold text-primary flex items-center gap-0.5 justify-end">
+                      <div className="text-[11px] font-bold text-primary flex items-center gap-0.5 justify-end privacy-mask">
                         {fmt(cost, sub.currency)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground privacy-mask">
                         {sub.cycle === "yearly" ? `~${fmt(monthlized, sub.currency)}/mo` : "/month"}
                       </div>
                     </div>

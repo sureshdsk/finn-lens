@@ -158,3 +158,13 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Privacy mode — blur sensitive amounts */
+.privacy-mode .privacy-mask {
+  filter: blur(8px);
+  user-select: none;
+  transition: filter 0.2s ease;
+}
+.privacy-mode .privacy-mask:hover {
+  filter: blur(4px);
+}

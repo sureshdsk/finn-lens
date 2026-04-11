@@ -69,7 +69,7 @@ const RecentTransactions = () => {
                     </div>
                   </div>
                 </div>
-                <span className={`text-sm font-medium tabular-nums shrink-0 ${isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
+                <span className={`text-sm font-medium tabular-nums shrink-0 privacy-mask ${isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
                   {isCredit ? '+' : ''}{fmt(amount)}
                 </span>
               </div>

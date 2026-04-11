@@ -116,10 +116,10 @@ export default function BankingDashboard() {
                       {summary.map((s) => (
                         <tr key={`${s.year}-${s.month}`} className="border-b last:border-0">
                           <td className="py-2.5 px-4">{MONTHS[s.month - 1]}</td>
-                          <td className="text-right py-2.5 px-4 text-red-500 tabular-nums">{fmt(s.total_debit)}</td>
-                          <td className="text-right py-2.5 px-4 text-emerald-600 tabular-nums">{fmt(s.total_credit)}</td>
+                          <td className="text-right py-2.5 px-4 text-red-500 tabular-nums"><span className="privacy-mask">{fmt(s.total_debit)}</span></td>
+                          <td className="text-right py-2.5 px-4 text-emerald-600 tabular-nums"><span className="privacy-mask">{fmt(s.total_credit)}</span></td>
                           <td className={`text-right py-2.5 px-4 font-medium tabular-nums ${Number(s.net) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {fmt(s.net)}
+                            <span className="privacy-mask">{fmt(s.net)}</span>
                           </td>
                         </tr>
                       ))}
